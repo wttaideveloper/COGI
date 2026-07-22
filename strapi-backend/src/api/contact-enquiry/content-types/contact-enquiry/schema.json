@@ -1,0 +1,61 @@
+{
+  "kind": "collectionType",
+  "collectionName": "contact_enquiries",
+  "info": {
+    "displayName": "Contact Enquiry",
+    "singularName": "contact-enquiry",
+    "pluralName": "contact-enquiries",
+    "description": "Contact and program interest form submissions"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "phone": {
+      "type": "string"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": ["contact", "join", "program-interest", "general"],
+      "default": "contact",
+      "required": true
+    },
+    "pathway": {
+      "type": "enumeration",
+      "enum": ["pray", "participate", "partner"]
+    },
+    "message": {
+      "type": "text",
+      "required": true
+    },
+    "program": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program.program"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["new", "in-progress", "resolved", "spam"],
+      "default": "new"
+    },
+    "notes": {
+      "type": "text",
+      "private": true
+    },
+    "source": {
+      "type": "string"
+    },
+    "ipAddress": {
+      "type": "string"
+    }
+  }
+}

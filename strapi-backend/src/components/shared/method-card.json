@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_shared_method_cards",
+  "info": {
+    "displayName": "Method Card",
+    "icon": "layer",
+    "description": "Enable / Train / Support method card"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}

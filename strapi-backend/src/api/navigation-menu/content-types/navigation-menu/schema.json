@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "navigation_menus",
+  "info": {
+    "displayName": "Navigation Menu",
+    "singularName": "navigation-menu",
+    "pluralName": "navigation-menus",
+    "description": "Header, footer, and mobile navigation menus"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "name",
+      "required": true
+    },
+    "location": {
+      "type": "enumeration",
+      "enum": ["header", "footer", "mobile", "utility"],
+      "default": "header"
+    },
+    "items": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.nav-item"
+    }
+  }
+}

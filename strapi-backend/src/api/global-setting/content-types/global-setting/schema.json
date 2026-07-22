@@ -1,0 +1,102 @@
+{
+  "kind": "singleType",
+  "collectionName": "global_settings",
+  "info": {
+    "displayName": "Global Setting",
+    "singularName": "global-setting",
+    "pluralName": "global-settings",
+    "description": "Organisation identity, contact, SEO defaults, cookie, maintenance"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "organizationName": {
+      "type": "string",
+      "required": true,
+      "default": "Companions of Grace International"
+    },
+    "tagline": {
+      "type": "string",
+      "default": "Equipping Healthcare Professionals for Kingdom Engagement"
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "logoDark": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "favicon": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "primaryEmail": {
+      "type": "email"
+    },
+    "secondaryEmail": {
+      "type": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "secondaryPhone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "text"
+    },
+    "mapsUrl": {
+      "type": "string"
+    },
+    "social": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.social-links"
+    },
+    "defaultSeo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    },
+    "cookieNotice": {
+      "type": "richtext"
+    },
+    "privacyPolicyUrl": {
+      "type": "string",
+      "default": "/privacy-policy"
+    },
+    "termsUrl": {
+      "type": "string",
+      "default": "/terms-of-use"
+    },
+    "cookieNoticeUrl": {
+      "type": "string",
+      "default": "/cookie-notice"
+    },
+    "maintenanceMode": {
+      "type": "boolean",
+      "default": false
+    },
+    "maintenanceMessage": {
+      "type": "text"
+    },
+    "giveLivelyEmbedId": {
+      "type": "string"
+    },
+    "vision": {
+      "type": "text"
+    },
+    "mission": {
+      "type": "text"
+    },
+    "scriptureReferences": {
+      "type": "string"
+    }
+  }
+}

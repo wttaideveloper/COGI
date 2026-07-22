@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_sections_newsletters",
+  "info": {
+    "displayName": "Newsletter Section",
+    "icon": "envelop",
+    "description": "Newsletter signup form section"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "showWhatsApp": {
+      "type": "boolean",
+      "default": true
+    },
+    "settings": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.section-settings"
+    }
+  }
+}

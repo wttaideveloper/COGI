@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_sections_contact_forms",
+  "info": {
+    "displayName": "Contact Form Section",
+    "icon": "envelop",
+    "description": "Contact or enquiry form section"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "formType": {
+      "type": "enumeration",
+      "enum": ["contact", "join", "program-interest"],
+      "default": "contact"
+    },
+    "settings": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.section-settings"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "cogi-platform",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Companions of Grace International — public site, admin portal, and Strapi CMS",
+  "scripts": {
+    "dev:web": "npm run dev --prefix public-website",
+    "dev:admin": "npm run dev --prefix admin-portal",
+    "dev:cms": "npm run develop --prefix strapi-backend",
+    "build:web": "npm run build --prefix public-website",
+    "build:admin": "npm run build --prefix admin-portal",
+    "build:cms": "npm run build --prefix strapi-backend"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_sections_image_texts",
+  "info": {
+    "displayName": "Image Text Section",
+    "icon": "picture",
+    "description": "Image alongside text content"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "content": {
+      "type": "richtext"
+    },
+    "image": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.media-alt"
+    },
+    "imagePosition": {
+      "type": "enumeration",
+      "enum": ["left", "right"],
+      "default": "left"
+    },
+    "settings": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.section-settings"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_sections_maps",
+  "info": {
+    "displayName": "Map Section",
+    "icon": "earth",
+    "description": "Interactive world map of service locations"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "settings": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.section-settings"
+    }
+  }
+}

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>COGI Homepage Concept 02 — Companion Split</title>
+  <style>
+    @page { size: A4; margin: 10mm; }
+    :root {
+      --forest: #1B4D3E;
+      --deep: #0F2F27;
+      --leaf: #2F6B57;
+      --gold: #B8956A;
+      --paper: #F7FAF8;
+      --ink: #152821;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #dfe8e3; line-height: 1.5; }
+    .page-label { max-width: 1100px; margin: 16px auto 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--forest); font-weight: 700; }
+    .cover-note { max-width: 1100px; margin: 0 auto 40px; padding: 16px 18px; background: #fff8e8; border-left: 4px solid var(--gold); font-size: 13px; }
+    .frame { max-width: 1100px; margin: 0 auto 28px; background: #fff; box-shadow: 0 12px 40px rgba(15,47,39,0.12); overflow: hidden; }
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 16px 32px;
+      background: var(--deep);
+      color: #e7f1ec;
+    }
+    .logo { font-family: Georgia, serif; font-weight: 700; font-size: 17px; }
+    nav { display: flex; gap: 18px; font-size: 12px; font-weight: 600; justify-content: center; }
+    .donate { justify-self: end; background: var(--gold); color: var(--deep); padding: 10px 16px; font-size: 12px; font-weight: 700; text-decoration: none; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      min-height: 520px;
+    }
+    .hero-visual {
+      background: url('04-global-community.jpg') center/cover no-repeat;
+      min-height: 520px;
+      position: relative;
+    }
+    .hero-visual::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 35%;
+      background: linear-gradient(to top, rgba(15,47,39,0.55), transparent);
+    }
+    .hero-copy {
+      background: var(--forest);
+      color: #fff;
+      padding: 56px 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .hero-copy .eyebrow { color: var(--gold); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-bottom: 14px; }
+    .hero-copy h1 { font-family: Georgia, serif; font-size: 38px; line-height: 1.15; margin-bottom: 16px; }
+    .hero-copy p { color: rgba(255,255,255,0.88); font-size: 15px; max-width: 36ch; }
+    .actions { margin-top: 28px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { display: inline-block; padding: 12px 18px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .btn-gold { background: var(--gold); color: var(--deep); }
+    .btn-ghost { border: 1.5px solid rgba(255,255,255,0.7); color: #fff; }
+    .band {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--paper);
+      border-bottom: 1px solid #d5e2db;
+    }
+    .band div { padding: 22px 28px; border-right: 1px solid #d5e2db; }
+    .band div:last-child { border-right: 0; }
+    .band strong { display: block; font-family: Georgia, serif; font-size: 28px; color: var(--forest); }
+    .band span { font-size: 12px; color: #567066; }
+    section { padding: 52px 44px; }
+    h2 { font-family: Georgia, serif; font-size: 30px; color: var(--forest); margin-bottom: 12px; }
+    .mission {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 36px;
+      align-items: center;
+      background: #fff;
+    }
+    .mission-photo {
+      height: 280px;
+      background: url('02-care-hands.jpg') center/cover no-repeat;
+    }
+    .mission blockquote {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 2px solid var(--gold);
+      font-family: Georgia, serif;
+      font-style: italic;
+      color: var(--leaf);
+    }
+    .methods { background: var(--paper); }
+    .method-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 28px; border: 1px solid #cfdcd5; }
+    .method-row article { padding: 28px 22px; border-right: 1px solid #cfdcd5; background: #fff; }
+    .method-row article:last-child { border-right: 0; }
+    .num { font-size: 12px; letter-spacing: 0.14em; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+    .method-row h3 { font-family: Georgia, serif; color: var(--forest); margin-bottom: 8px; }
+    .method-row p { font-size: 14px; color: #456057; }
+    .spotlight {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      background: var(--deep);
+      color: #e8f1ec;
+    }
+    .spotlight-copy { padding: 52px 44px; }
+    .spotlight h2 { color: #fff; }
+    .spotlight p { opacity: 0.88; margin: 12px 0 24px; max-width: 40ch; }
+    .spotlight-photo { background: url('03-healthcare-team.jpg') center/cover no-repeat; min-height: 320px; }
+    .quote-strip {
+      padding: 40px 44px;
+      background: #fff;
+      text-align: center;
+    }
+    .quote-strip q {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      color: var(--forest);
+      font-style: italic;
+      display: block;
+      max-width: 40ch;
+      margin: 0 auto 12px;
+    }
+    .quote-strip cite { font-size: 13px; color: #5d746a; font-style: normal; }
+    .cta {
+      padding: 60px 44px;
+      background:
+        linear-gradient(90deg, rgba(27,77,62,0.94) 0%, rgba(27,77,62,0.72) 55%, rgba(27,77,62,0.4) 100%),
+        url('05-hope-care.jpg') right center/cover no-repeat;
+      color: #fff;
+    }
+    .cta h2 { color: #fff; }
+    .cta p { max-width: 40ch; margin: 10px 0 22px; opacity: 0.9; }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 28px 44px;
+      background: #0b241e;
+      color: #a9c0b6;
+      font-size: 12px;
+    }
+    footer strong { color: #fff; font-family: Georgia, serif; display: block; margin-bottom: 6px; }
+    @media print {
+      body { background: #fff; }
+      .frame { box-shadow: none; }
+      section, .hero, .spotlight, footer { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <p class="page-label">Client review · Concept 02 of 03</p>
+  <div class="cover-note">
+    <strong>Concept 02 — Companion Split (modern editorial)</strong><br />
+    Split hero: photography on one side, brand message on the other. Feels contemporary and confident, with a dark header and clear modular sections. Best if the client wants a fresher, more design-forward homepage.
+  </div>
+
+  <div class="frame">
+    <header>
+      <div class="logo">Companions of Grace International</div>
+      <nav><span>About</span><span>Programs</span><span>Resources</span><span>Get Involved</span></nav>
+      <a class="donate" href="#">Donate</a>
+    </header>
+
+    <div class="hero">
+      <div class="hero-visual" role="img" aria-label="Healthcare mission"></div>
+      <div class="hero-copy">
+        <div class="eyebrow">Communities of Grace</div>
+        <h1>Equipping Healthcare Professionals for Kingdom Engagement</h1>
+        <p>COGI cultivates communities of grace among healthcare professionals serving missionally around the world.</p>
+        <div class="actions">
+          <a class="btn btn-gold" href="#">Join the Movement</a>
+          <a class="btn btn-ghost" href="#">Watch Intro</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="band">
+      <div><strong>10+</strong><span>Countries</span></div>
+      <div><strong>500+</strong><span>Professionals</span></div>
+      <div><strong>30+</strong><span>Programs</span></div>
+    </div>
+
+    <section class="mission">
+      <div class="mission-photo" role="img" aria-label="Serving with care"></div>
+      <div>
+        <h2>Our Mission</h2>
+        <p>Inspire and enable transformation so healthcare professionals think, live, and work missionally — in clinics, hospitals, and communities worldwide.</p>
+        <blockquote>“Let your light shine before others…” — Matthew 5:16</blockquote>
+      </div>
+    </section>
+
+    <section class="methods">
+      <h2>How we walk with professionals</h2>
+      <p style="color:#567066;max-width:48ch;">Three pathways that form the COGI rhythm of enable, train, and support.</p>
+      <div class="method-row">
+        <article><div class="num">01</div><h3>Enable</h3><p>Build local communities of grace that sustain vocation and discipleship.</p></article>
+        <article><div class="num">02</div><h3>Train</h3><p>Offer cohorts and courses that connect clinical skill with Kingdom purpose.</p></article>
+        <article><div class="num">03</div><h3>Support</h3><p>Provide mentoring, prayer, and fellowship across seasons of service.</p></article>
+      </div>
+    </section>
+
+    <div class="spotlight">
+      <div class="spotlight-copy">
+        <h2>Stories from the field</h2>
+        <p>Meet practitioners who are discovering their clinical work as a place of worship and mission.</p>
+        <a class="btn btn-gold" href="#">Read stories</a>
+      </div>
+      <div class="spotlight-photo" role="img" aria-label="Community story"></div>
+    </div>
+
+    <div class="quote-strip">
+      <q>COGI helped me see my clinical work as a place of worship and mission.</q>
+      <cite>— Dr. Miriam, Kenya · C4C</cite>
+    </div>
+
+    <section class="cta">
+      <h2>Take the next step</h2>
+      <p>Explore programs, join a cohort, or support the movement financially.</p>
+      <a class="btn btn-gold" href="#">Get Involved</a>
+    </section>
+
+    <footer>
+      <div><strong>Companions of Grace International</strong>Equipping healthcare professionals for Kingdom engagement.</div>
+      <div>About · Programs · Resources · Donate</div>
+      <div>© COGI · All rights reserved</div>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_sections_cta_banners",
+  "info": {
+    "displayName": "CTA Banner Section",
+    "icon": "bullhorn",
+    "description": "Full-width call-to-action banner"
+  },
+  "options": {},
+  "attributes": {
+    "cta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.cta",
+      "required": true
+    },
+    "settings": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.section-settings"
+    }
+  }
+}

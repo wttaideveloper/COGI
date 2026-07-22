@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>COGI Homepage Concept 04 — Ocean Clarity</title>
+  <style>
+    @page { size: A4; margin: 10mm; }
+    :root {
+      --navy: #0B3A4A;
+      --teal: #1A6B7A;
+      --sky: #E6F3F5;
+      --sand: #F7F4EF;
+      --coral: #D96B4C;
+      --ink: #14262C;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #d5e0e3; line-height: 1.5; }
+    .page-label { max-width: 1100px; margin: 16px auto 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); font-weight: 700; }
+    .cover-note { max-width: 1100px; margin: 0 auto 40px; padding: 16px 18px; background: #fff4ef; border-left: 4px solid var(--coral); font-size: 13px; }
+    .frame { max-width: 1100px; margin: 0 auto 28px; background: #fff; box-shadow: 0 12px 40px rgba(11,58,74,0.12); overflow: hidden; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 18px 36px; background: var(--navy); color: #e8f4f6; }
+    .logo { font-family: Georgia, serif; font-size: 18px; font-weight: 700; max-width: 240px; line-height: 1.2; }
+    nav { display: flex; gap: 20px; font-size: 13px; font-weight: 600; }
+    .btn { display: inline-block; padding: 12px 20px; background: var(--coral); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
+    .btn-dark { background: var(--navy); color: #fff; }
+    .btn-line { background: transparent; border: 1.5px solid #fff; color: #fff; }
+    .hero {
+      display: grid; grid-template-columns: 1fr 1fr; min-height: 500px;
+      background: linear-gradient(160deg, var(--sky) 0%, #fff 60%);
+    }
+    .hero-copy { padding: 56px 44px; display: flex; flex-direction: column; justify-content: center; }
+    .eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--teal); font-weight: 700; margin-bottom: 12px; }
+    .hero h1 { font-family: Georgia, serif; font-size: 40px; line-height: 1.12; color: var(--navy); margin-bottom: 14px; }
+    .hero p { color: #3d5a63; max-width: 38ch; margin-bottom: 24px; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .hero-photo {
+      background:
+        linear-gradient(45deg, rgba(11,58,74,0.25), transparent 40%),
+        url('01-clinic-team.jpg') center/cover no-repeat;
+      min-height: 500px;
+    }
+    .strip { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--navy); color: #d8eef2; }
+    .strip div { padding: 22px 28px; border-right: 1px solid rgba(255,255,255,0.12); text-align: center; }
+    .strip div:last-child { border-right: 0; }
+    .strip strong { display: block; font-family: Georgia, serif; font-size: 30px; color: #fff; }
+    .strip span { font-size: 12px; opacity: 0.8; }
+    section { padding: 52px 44px; }
+    h2 { font-family: Georgia, serif; font-size: 30px; color: var(--navy); margin-bottom: 12px; }
+    .mission { background: var(--sand); text-align: center; }
+    .mission p { max-width: 54ch; margin: 0 auto; font-size: 17px; }
+    .scripture { margin: 24px auto 0; max-width: 44ch; border-top: 2px solid var(--coral); padding-top: 16px; font-family: Georgia, serif; font-style: italic; color: var(--teal); }
+    .methods { background: #fff; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; }
+    .card { background: var(--sky); padding: 26px 20px; border-top: 4px solid var(--teal); }
+    .card h3 { font-family: Georgia, serif; color: var(--navy); margin-bottom: 8px; }
+    .card p { font-size: 14px; color: #3d5a63; }
+    .story {
+      display: grid; grid-template-columns: 1.1fr 0.9fr; background: var(--teal); color: #fff;
+    }
+    .story-copy { padding: 52px 44px; }
+    .story h2 { color: #fff; }
+    .story p { opacity: 0.9; margin: 12px 0 22px; max-width: 38ch; }
+    .story-photo { min-height: 300px; background: url('03-healthcare-team.jpg') center/cover no-repeat; }
+    .cta {
+      padding: 64px 44px; text-align: center; color: #fff;
+      background: linear-gradient(120deg, rgba(11,58,74,0.92), rgba(26,107,122,0.75)), url('05-hope-care.jpg') center/cover no-repeat;
+    }
+    .cta h2 { color: #fff; }
+    .cta p { max-width: 42ch; margin: 10px auto 22px; opacity: 0.92; }
+    footer { background: var(--navy); color: #a9c8d0; padding: 32px 44px; display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 20px; font-size: 13px; }
+    footer strong { color: #fff; font-family: Georgia, serif; display: block; margin-bottom: 8px; }
+    @media print { body { background: #fff; } .frame { box-shadow: none; } section, .hero, .story, footer { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <p class="page-label">Client review · Concept 04 · Different color system</p>
+  <div class="cover-note">
+    <strong>Concept 04 — Ocean Clarity</strong><br />
+    Color: deep navy + teal + coral accent on soft sand/sky backgrounds. Layout: light content hero with large photo panel (not dark overlay). Feels calm, clinical, and global.
+  </div>
+  <div class="frame">
+    <header>
+      <div class="logo">Companions of Grace International</div>
+      <nav><span>About</span><span>Programs</span><span>Resources</span><span>Get Involved</span></nav>
+      <a class="btn" href="#">Donate</a>
+    </header>
+    <div class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Healthcare · Faith · Mission</div>
+        <h1>Equipping Healthcare Professionals for Kingdom Engagement</h1>
+        <p>COGI cultivates communities of grace among healthcare professionals serving missionally around the world.</p>
+        <div class="actions">
+          <a class="btn" href="#">Join the Movement</a>
+          <a class="btn btn-dark" href="#">Explore Programs</a>
+        </div>
+      </div>
+      <div class="hero-photo" role="img" aria-label="Clinic team"></div>
+    </div>
+    <div class="strip">
+      <div><strong>10+</strong><span>Countries</span></div>
+      <div><strong>500+</strong><span>Professionals</span></div>
+      <div><strong>30+</strong><span>Programs</span></div>
+    </div>
+    <section class="mission">
+      <h2>Our Mission</h2>
+      <p>Inspire and enable transformation so healthcare professionals think, live, and work missionally.</p>
+      <p class="scripture">“Let your light shine before others…” — Matthew 5:16</p>
+    </section>
+    <section class="methods">
+      <h2>Our Methods</h2>
+      <p style="color:#3d5a63;max-width:48ch;">Enable, train, and support for lasting Kingdom engagement.</p>
+      <div class="grid-3">
+        <div class="card"><h3>Enable</h3><p>Form communities of grace where vocation and faith grow together.</p></div>
+        <div class="card"><h3>Train</h3><p>Equip cohorts with missional frameworks for clinical contexts.</p></div>
+        <div class="card"><h3>Support</h3><p>Walk with practitioners through mentoring, prayer, and fellowship.</p></div>
+      </div>
+    </section>
+    <div class="story">
+      <div class="story-copy">
+        <h2>Stories of grace</h2>
+        <p>Hear how clinicians are discovering their daily work as a place of worship and mission.</p>
+        <a class="btn" href="#">Read stories</a>
+      </div>
+      <div class="story-photo"></div>
+    </div>
+    <section class="cta">
+      <h2>Ready to walk with us?</h2>
+      <p>Partner through community, learning, or generosity.</p>
+      <a class="btn" href="#">Get Involved</a>
+    </section>
+    <footer>
+      <div><strong>Companions of Grace International</strong>Equipping healthcare professionals for Kingdom engagement.</div>
+      <div><strong>Explore</strong>About · Programs · Resources</div>
+      <div><strong>Connect</strong>Newsletter · Contact · Donate</div>
+    </footer>
+  </div>
+</body>
+</html>

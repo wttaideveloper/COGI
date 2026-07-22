@@ -1,0 +1,78 @@
+{
+  "kind": "collectionType",
+  "collectionName": "programs",
+  "info": {
+    "displayName": "Program",
+    "singularName": "program",
+    "pluralName": "programs",
+    "description": "COGI ministry programs"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "summary": {
+      "type": "text",
+      "required": true
+    },
+    "body": {
+      "type": "richtext"
+    },
+    "area": {
+      "type": "enumeration",
+      "enum": [
+        "kingdom-of-god",
+        "missional-training",
+        "care-for-caregiver",
+        "missional-church-healthcare"
+      ]
+    },
+    "experiences": {
+      "type": "json",
+      "description": "Array of program experiences/sub-offerings"
+    },
+    "cta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.button"
+    },
+    "featuredImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images", "videos"]
+    },
+    "order": {
+      "type": "integer",
+      "default": 0
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    },
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    },
+    "locations": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::location.location"
+    }
+  }
+}

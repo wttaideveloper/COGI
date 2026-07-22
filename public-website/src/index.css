@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --color-teal-deep: #0a4d4a;
+  --color-teal-mid: #0e6b66;
+  --color-teal-light: #1a8a84;
+  --color-gold: #c9a227;
+  --color-gold-light: #e0bc4a;
+  --color-mist: #f4f8f7;
+  --color-mist-dark: #e8f0ef;
+  --color-ink: #1a2e2d;
+  --color-ink-muted: #4a6361;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: linear-gradient(180deg, var(--color-mist) 0%, #ffffff 40%, var(--color-mist-dark) 100%);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .bg-mist-gradient {
+    background: linear-gradient(135deg, var(--color-mist) 0%, #ffffff 50%, var(--color-mist-dark) 100%);
+  }
+
+  .bg-teal-gradient {
+    background: linear-gradient(135deg, var(--color-teal-deep) 0%, var(--color-teal-mid) 60%, var(--color-teal-light) 100%);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .focus\:not-sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: inherit;
+    margin: inherit;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_shared_section_settings",
+  "info": {
+    "displayName": "Section Settings",
+    "icon": "cog",
+    "description": "Layout and visibility settings for page sections"
+  },
+  "options": {},
+  "attributes": {
+    "anchorId": {
+      "type": "string"
+    },
+    "backgroundColor": {
+      "type": "enumeration",
+      "enum": ["default", "white", "mist", "teal", "dark"],
+      "default": "default"
+    },
+    "paddingTop": {
+      "type": "enumeration",
+      "enum": ["none", "small", "medium", "large"],
+      "default": "medium"
+    },
+    "paddingBottom": {
+      "type": "enumeration",
+      "enum": ["none", "small", "medium", "large"],
+      "default": "medium"
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

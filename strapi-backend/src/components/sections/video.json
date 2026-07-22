@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_sections_videos",
+  "info": {
+    "displayName": "Video Section",
+    "icon": "play",
+    "description": "Embedded or linked video block"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "videoUrl": {
+      "type": "string",
+      "required": true
+    },
+    "caption": {
+      "type": "text"
+    },
+    "thumbnail": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "settings": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.section-settings"
+    }
+  }
+}

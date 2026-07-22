@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "audit_records",
+  "info": {
+    "displayName": "Audit Record",
+    "singularName": "audit-record",
+    "pluralName": "audit-records",
+    "description": "Admin action audit log"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "actor": {
+      "type": "string",
+      "required": true
+    },
+    "actorEmail": {
+      "type": "email"
+    },
+    "action": {
+      "type": "enumeration",
+      "enum": ["create", "update", "delete", "publish", "unpublish", "login", "logout"],
+      "required": true
+    },
+    "entityType": {
+      "type": "string",
+      "required": true
+    },
+    "recordId": {
+      "type": "string"
+    },
+    "diff": {
+      "type": "json"
+    },
+    "ip": {
+      "type": "string"
+    },
+    "userAgent": {
+      "type": "string"
+    }
+  }
+}

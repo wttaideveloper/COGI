@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_shared_media_alts",
+  "info": {
+    "displayName": "Media Alt",
+    "icon": "picture",
+    "description": "Image with accessibility metadata"
+  },
+  "options": {},
+  "attributes": {
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images"]
+    },
+    "alt": {
+      "type": "string",
+      "required": true
+    },
+    "caption": {
+      "type": "text"
+    }
+  }
+}

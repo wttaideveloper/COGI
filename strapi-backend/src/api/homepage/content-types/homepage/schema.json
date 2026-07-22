@@ -1,0 +1,84 @@
+{
+  "kind": "singleType",
+  "collectionName": "homepages",
+  "info": {
+    "displayName": "Homepage",
+    "singularName": "homepage",
+    "pluralName": "homepages",
+    "description": "Homepage sections, hero, stats, and visibility controls"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "seo": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.seo"
+    },
+    "heroSlides": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.hero-slide"
+    },
+    "missionHeading": {
+      "type": "string",
+      "default": "Our Mission"
+    },
+    "missionText": {
+      "type": "richtext"
+    },
+    "missionScripture": {
+      "type": "string"
+    },
+    "videoUrl": {
+      "type": "string"
+    },
+    "videoHeading": {
+      "type": "string",
+      "default": "Watch Our Story"
+    },
+    "methods": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.method-card"
+    },
+    "impactStats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.statistic"
+    },
+    "portfolioAreas": {
+      "type": "component",
+      "repeatable": true,
+      "component": "shared.portfolio-area"
+    },
+    "storiesIntro": {
+      "type": "richtext"
+    },
+    "featuredStories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::story.story"
+    },
+    "featuredEvents": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::event.event"
+    },
+    "newsletter": {
+      "type": "component",
+      "repeatable": false,
+      "component": "sections.newsletter"
+    },
+    "sectionVisibility": {
+      "type": "json",
+      "description": "Map of section keys to boolean visibility flags"
+    },
+    "sectionOrder": {
+      "type": "json",
+      "description": "Ordered array of section keys for homepage layout"
+    }
+  }
+}

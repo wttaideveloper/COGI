@@ -1,0 +1,39 @@
+{
+  "kind": "collectionType",
+  "collectionName": "newsletter_subscribers",
+  "info": {
+    "displayName": "Newsletter Subscriber",
+    "singularName": "newsletter-subscriber",
+    "pluralName": "newsletter-subscribers",
+    "description": "Newsletter subscription records"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email",
+      "required": true,
+      "unique": true
+    },
+    "whatsapp": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "consent": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "subscribedAt": {
+      "type": "datetime"
+    }
+  }
+}

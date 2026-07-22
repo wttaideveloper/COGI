@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "gallery_albums",
+  "info": {
+    "displayName": "Gallery Album",
+    "singularName": "gallery-album",
+    "pluralName": "gallery-albums",
+    "description": "Photo gallery albums"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images"]
+    },
+    "association": {
+      "type": "enumeration",
+      "enum": ["program", "event", "general", "team"],
+      "default": "general"
+    },
+    "relatedProgram": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::program.program"
+    },
+    "relatedEvent": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::event.event"
+    }
+  }
+}

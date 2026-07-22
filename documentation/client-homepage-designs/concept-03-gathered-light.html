@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>COGI Homepage Concept 03 — Gathered Light</title>
+  <style>
+    @page { size: A4; margin: 10mm; }
+    :root {
+      --forest: #1B4D3E;
+      --deep: #163C31;
+      --sage: #DCE8E1;
+      --soft: #F2F7F4;
+      --gold: #C4A574;
+      --ink: #1A2E28;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #d8e3dd; line-height: 1.5; }
+    .page-label { max-width: 1100px; margin: 16px auto 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--forest); font-weight: 700; }
+    .cover-note { max-width: 1100px; margin: 0 auto 40px; padding: 16px 18px; background: #fff8e8; border-left: 4px solid var(--gold); font-size: 13px; }
+    .frame { max-width: 1100px; margin: 0 auto 28px; background: var(--soft); box-shadow: 0 12px 40px rgba(22,60,49,0.12); overflow: hidden; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      background: transparent;
+    }
+    .logo {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--forest);
+      letter-spacing: -0.02em;
+    }
+    nav { display: flex; gap: 20px; font-size: 13px; font-weight: 600; color: var(--deep); }
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background: var(--forest);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn-gold { background: var(--gold); color: var(--deep); }
+    .btn-line { background: transparent; border: 1.5px solid var(--forest); color: var(--forest); }
+    .hero {
+      padding: 28px 40px 48px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+    .hero-brand {
+      font-family: Georgia, serif;
+      font-size: 56px;
+      line-height: 1.05;
+      color: var(--forest);
+      max-width: 14ch;
+    }
+    .hero-lead {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 28px;
+      align-items: end;
+    }
+    .hero-copy h1 {
+      font-family: Georgia, serif;
+      font-size: 28px;
+      color: var(--deep);
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+    .hero-copy p { color: #456057; max-width: 36ch; margin-bottom: 22px; }
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .hero-photo {
+      height: 340px;
+      background:
+        linear-gradient(to top, rgba(27,77,62,0.25), transparent 40%),
+        url('01-clinic-team.jpg') center/cover no-repeat;
+    }
+    .mission {
+      margin: 0 40px;
+      padding: 40px;
+      background: #fff;
+      text-align: center;
+    }
+    .mission h2 { font-family: Georgia, serif; font-size: 30px; color: var(--forest); margin-bottom: 14px; }
+    .mission p { max-width: 52ch; margin: 0 auto; font-size: 17px; }
+    .scripture {
+      margin: 24px auto 0;
+      max-width: 42ch;
+      font-family: Georgia, serif;
+      font-style: italic;
+      color: var(--deep);
+      border-top: 1px solid var(--gold);
+      padding-top: 18px;
+    }
+    .gallery {
+      padding: 48px 40px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+    }
+    .g-large {
+      min-height: 360px;
+      background:
+        linear-gradient(to top, rgba(15,40,33,0.75), transparent 50%),
+        url('03-healthcare-team.jpg') center/cover no-repeat;
+      color: #fff;
+      display: flex;
+      align-items: flex-end;
+      padding: 24px;
+    }
+    .g-large h3 { font-family: Georgia, serif; font-size: 26px; }
+    .g-stack { display: grid; gap: 16px; }
+    .g-small {
+      min-height: 172px;
+      background-size: cover;
+      background-position: center;
+      color: #fff;
+      display: flex;
+      align-items: flex-end;
+      padding: 18px;
+      position: relative;
+    }
+    .g-small::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(15,40,33,0.7), transparent 55%);
+    }
+    .g-small h3 { position: relative; font-family: Georgia, serif; font-size: 18px; }
+    .g1 { background-image: url('02-care-hands.jpg'); }
+    .g2 { background-image: url('05-hope-care.jpg'); }
+    .methods { padding: 20px 40px 48px; }
+    .methods h2 { font-family: Georgia, serif; font-size: 30px; color: var(--forest); margin-bottom: 8px; }
+    .methods .sub { color: #567066; margin-bottom: 24px; }
+    .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .pillar {
+      background: #fff;
+      padding: 26px 20px;
+      border-bottom: 3px solid var(--forest);
+    }
+    .pillar h3 { font-family: Georgia, serif; color: var(--forest); margin-bottom: 8px; }
+    .pillar p { font-size: 14px; color: #456057; }
+    .impact {
+      margin: 0 40px 40px;
+      padding: 36px;
+      background: var(--deep);
+      color: #e7f1ec;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      text-align: center;
+    }
+    .impact strong { display: block; font-family: Georgia, serif; font-size: 42px; color: var(--gold); }
+    .impact span { font-size: 13px; opacity: 0.85; }
+    .testimonial {
+      margin: 0 40px 40px;
+      padding: 36px 40px;
+      background: var(--sage);
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+    .avatar {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: url('04-global-community.jpg') center/cover no-repeat;
+    }
+    .testimonial q {
+      font-family: Georgia, serif;
+      font-size: 22px;
+      font-style: italic;
+      color: var(--forest);
+      display: block;
+      margin-bottom: 10px;
+    }
+    .testimonial cite { font-style: normal; font-size: 13px; color: #456057; }
+    .cta {
+      margin: 0 40px 40px;
+      padding: 48px;
+      background:
+        linear-gradient(120deg, rgba(27,77,62,0.9), rgba(22,60,49,0.75)),
+        url('05-hope-care.jpg') center/cover no-repeat;
+      color: #fff;
+      text-align: center;
+    }
+    .cta h2 { font-family: Georgia, serif; font-size: 32px; margin-bottom: 10px; }
+    .cta p { max-width: 40ch; margin: 0 auto 22px; opacity: 0.92; }
+    footer {
+      background: #fff;
+      padding: 28px 40px 36px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      gap: 20px;
+      font-size: 13px;
+      color: #567066;
+      border-top: 1px solid #d5e2db;
+    }
+    footer strong { color: var(--forest); font-family: Georgia, serif; display: block; margin-bottom: 8px; font-size: 15px; }
+    @media print {
+      body { background: #fff; }
+      .frame { box-shadow: none; }
+      .hero, .mission, .gallery, .methods, .impact, .testimonial, .cta, footer { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <p class="page-label">Client review · Concept 03 of 03</p>
+  <div class="cover-note">
+    <strong>Concept 03 — Gathered Light (warm community)</strong><br />
+    Brand-forward opening with COGI as the large visual signal, then a story-led photo gallery and softer section rhythm. Best if the client wants a welcoming, human, fellowship-centered homepage.
+  </div>
+
+  <div class="frame">
+    <header>
+      <div class="logo">COGI</div>
+      <nav><span>About</span><span>Programs</span><span>Resources</span><span>Get Involved</span></nav>
+      <a class="btn btn-gold" href="#">Donate</a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-brand">Companions of Grace International</div>
+      <div class="hero-lead">
+        <div class="hero-copy">
+          <h1>Equipping Healthcare Professionals for Kingdom Engagement</h1>
+          <p>COGI cultivates communities of grace among healthcare professionals serving missionally around the world.</p>
+          <div class="hero-actions">
+            <a class="btn" href="#">Join the Movement</a>
+            <a class="btn btn-line" href="#">Explore Programs</a>
+          </div>
+        </div>
+        <div class="hero-photo" role="img" aria-label="Clinic team"></div>
+      </div>
+    </section>
+
+    <section class="mission">
+      <h2>Our Mission</h2>
+      <p>Inspire and enable transformation so healthcare professionals think, live, and work missionally.</p>
+      <p class="scripture">“Let your light shine before others…” — Matthew 5:16</p>
+    </section>
+
+    <section class="gallery">
+      <div class="g-large">
+        <div>
+          <h3>Communities of grace in healthcare</h3>
+          <p style="opacity:0.9;margin-top:6px;font-size:14px;">Featured story</p>
+        </div>
+      </div>
+      <div class="g-stack">
+        <div class="g-small g1"><h3>Enable &amp; train</h3></div>
+        <div class="g-small g2"><h3>Support &amp; send</h3></div>
+      </div>
+    </section>
+
+    <section class="methods">
+      <h2>Our Methods</h2>
+      <p class="sub">A simple rhythm for lasting Kingdom engagement.</p>
+      <div class="pillars">
+        <div class="pillar"><h3>Enable</h3><p>Form communities where faith and vocation grow side by side.</p></div>
+        <div class="pillar"><h3>Train</h3><p>Equip professionals with missional imagination for daily practice.</p></div>
+        <div class="pillar"><h3>Support</h3><p>Sustain people through mentoring, prayer, and shared life.</p></div>
+      </div>
+    </section>
+
+    <div class="impact">
+      <div><strong>10+</strong><span>Countries</span></div>
+      <div><strong>500+</strong><span>Professionals</span></div>
+      <div><strong>30+</strong><span>Programs</span></div>
+    </div>
+
+    <div class="testimonial">
+      <div class="avatar" role="img" aria-label="Community member"></div>
+      <div>
+        <q>COGI helped me see my clinical work as a place of worship and mission.</q>
+        <cite>— Dr. Miriam, Kenya · C4C program</cite>
+      </div>
+    </div>
+
+    <section class="cta">
+      <h2>Walk with the movement</h2>
+      <p>Partner through learning, community, or generosity — and help healthcare professionals serve with grace.</p>
+      <a class="btn btn-gold" href="#">Get Involved</a>
+    </section>
+
+    <footer>
+      <div>
+        <strong>Companions of Grace International</strong>
+        Equipping healthcare professionals for Kingdom engagement around the world.
+      </div>
+      <div><strong>Explore</strong>About · Programs · Resources</div>
+      <div><strong>Connect</strong>Newsletter · Contact · Donate</div>
+    </footer>
+  </div>
+</body>
+</html>

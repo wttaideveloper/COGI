@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>COGI Homepage Concept 05 — Sunrise Hope</title>
+  <style>
+    @page { size: A4; margin: 10mm; }
+    :root {
+      --burgundy: #6B2D3C;
+      --wine: #8E3B4F;
+      --blush: #F8EEEF;
+      --cream: #FFFCF8;
+      --amber: #E09B3D;
+      --ink: #2A1C20;
+      --slate: #4A3A3E;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "Segoe UI", system-ui, sans-serif; color: var(--ink); background: #e8ddd8; line-height: 1.5; }
+    .page-label { max-width: 1100px; margin: 16px auto 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--burgundy); font-weight: 700; }
+    .cover-note { max-width: 1100px; margin: 0 auto 40px; padding: 16px 18px; background: #fff7e8; border-left: 4px solid var(--amber); font-size: 13px; }
+    .frame { max-width: 1100px; margin: 0 auto 28px; background: var(--cream); box-shadow: 0 12px 40px rgba(107,45,60,0.12); overflow: hidden; }
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 40px; background: var(--cream); border-bottom: 1px solid #edd8db;
+    }
+    .logo { font-family: Georgia, serif; font-size: 20px; font-weight: 700; color: var(--burgundy); }
+    nav { display: flex; gap: 18px; font-size: 13px; font-weight: 600; color: var(--slate); }
+    .btn { display: inline-block; padding: 12px 20px; background: var(--burgundy); color: #fff; text-decoration: none; font-weight: 700; font-size: 13px; }
+    .btn-amber { background: var(--amber); color: #2A1C20; }
+    .btn-line { background: transparent; border: 1.5px solid #fff; color: #fff; }
+    .hero {
+      position: relative; min-height: 520px; color: #fff; padding: 72px 48px 56px;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      background:
+        linear-gradient(115deg, rgba(107,45,60,0.9) 10%, rgba(142,59,79,0.55) 50%, rgba(224,155,61,0.35) 100%),
+        url('05-hope-care.jpg') center/cover no-repeat;
+    }
+    .eyebrow { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #f3d39a; font-weight: 700; margin-bottom: 12px; }
+    .hero h1 { font-family: Georgia, serif; font-size: 44px; line-height: 1.12; max-width: 15ch; }
+    .hero p { margin-top: 14px; max-width: 44ch; color: rgba(255,255,255,0.92); }
+    .actions { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .mission {
+      display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 0; background: #fff;
+    }
+    .mission-photo { min-height: 300px; background: url('02-care-hands.jpg') center/cover no-repeat; }
+    .mission-copy { padding: 48px 40px; background: var(--blush); }
+    h2 { font-family: Georgia, serif; font-size: 30px; color: var(--burgundy); margin-bottom: 12px; }
+    .mission-copy p { color: var(--slate); }
+    .scripture { margin-top: 20px; padding-left: 16px; border-left: 3px solid var(--amber); font-family: Georgia, serif; font-style: italic; color: var(--wine); }
+    .methods { padding: 52px 44px; background: var(--cream); }
+    .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 24px; }
+    .pillar { background: #fff; padding: 26px 20px; box-shadow: 0 4px 18px rgba(107,45,60,0.06); border-radius: 4px; }
+    .pillar .n { color: var(--amber); font-size: 12px; font-weight: 700; letter-spacing: 0.12em; margin-bottom: 8px; }
+    .pillar h3 { font-family: Georgia, serif; color: var(--burgundy); margin-bottom: 8px; }
+    .pillar p { font-size: 14px; color: var(--slate); }
+    .impact {
+      margin: 0 44px 44px; padding: 36px; background: var(--burgundy); color: #f8eef0;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;
+    }
+    .impact strong { display: block; font-family: Georgia, serif; font-size: 40px; color: var(--amber); }
+    .impact span { font-size: 13px; opacity: 0.85; }
+    .quote {
+      margin: 0 44px 44px; padding: 36px 40px; background: #fff; text-align: center;
+      border-top: 1px solid #edd8db; border-bottom: 1px solid #edd8db;
+    }
+    .quote q { font-family: Georgia, serif; font-size: 22px; font-style: italic; color: var(--burgundy); display: block; max-width: 40ch; margin: 0 auto 10px; }
+    .quote cite { font-style: normal; font-size: 13px; color: var(--slate); }
+    .cta {
+      margin: 0 44px 44px; padding: 48px; text-align: center; color: #fff;
+      background: linear-gradient(120deg, rgba(107,45,60,0.92), rgba(224,155,61,0.55)), url('04-global-community.jpg') center/cover no-repeat;
+    }
+    .cta h2 { color: #fff; }
+    .cta p { max-width: 40ch; margin: 10px auto 22px; opacity: 0.92; }
+    footer { background: #3d1a24; color: #d8b8c0; padding: 32px 44px; display: flex; justify-content: space-between; gap: 20px; font-size: 13px; }
+    footer strong { color: #fff; font-family: Georgia, serif; display: block; margin-bottom: 6px; }
+    @media print { body { background: #fff; } .frame { box-shadow: none; } .hero, .mission, .methods, footer { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <p class="page-label">Client review · Concept 05 · Different color system</p>
+  <div class="cover-note">
+    <strong>Concept 05 — Sunrise Hope</strong><br />
+    Color: burgundy / wine + warm amber accents on blush cream. Layout: cinematic gradient hero with soft story blocks. Feels compassionate, pastoral, and inviting.
+  </div>
+  <div class="frame">
+    <header>
+      <div class="logo">Companions of Grace International</div>
+      <nav><span>About</span><span>Programs</span><span>Resources</span><span>Get Involved</span></nav>
+      <a class="btn btn-amber" href="#">Donate</a>
+    </header>
+    <div class="hero">
+      <div class="eyebrow">Companions of Grace International</div>
+      <h1>Equipping Healthcare Professionals for Kingdom Engagement</h1>
+      <p>COGI cultivates communities of grace among healthcare professionals serving missionally around the world.</p>
+      <div class="actions">
+        <a class="btn btn-amber" href="#">Join the Movement</a>
+        <a class="btn btn-line" href="#">Explore Programs</a>
+      </div>
+    </div>
+    <div class="mission">
+      <div class="mission-photo"></div>
+      <div class="mission-copy">
+        <h2>Our Mission</h2>
+        <p>Inspire and enable transformation so healthcare professionals think, live, and work missionally.</p>
+        <p class="scripture">“Let your light shine before others…” — Matthew 5:16</p>
+      </div>
+    </div>
+    <section class="methods">
+      <h2>Our Methods</h2>
+      <p style="color:var(--slate);max-width:48ch;">A rhythm of enable, train, and support.</p>
+      <div class="pillars">
+        <div class="pillar"><div class="n">01</div><h3>Enable</h3><p>Communities of grace that sustain vocation and discipleship.</p></div>
+        <div class="pillar"><div class="n">02</div><h3>Train</h3><p>Cohorts that connect clinical skill with Kingdom purpose.</p></div>
+        <div class="pillar"><div class="n">03</div><h3>Support</h3><p>Mentoring, prayer, and fellowship across seasons of service.</p></div>
+      </div>
+    </section>
+    <div class="impact">
+      <div><strong>10+</strong><span>Countries</span></div>
+      <div><strong>500+</strong><span>Professionals</span></div>
+      <div><strong>30+</strong><span>Programs</span></div>
+    </div>
+    <div class="quote">
+      <q>COGI helped me see my clinical work as a place of worship and mission.</q>
+      <cite>— Dr. Miriam, Kenya · C4C</cite>
+    </div>
+    <section class="cta">
+      <h2>Walk with the movement</h2>
+      <p>Learn, join community, or give — every step strengthens grace in healthcare.</p>
+      <a class="btn btn-amber" href="#">Get Involved</a>
+    </section>
+    <footer>
+      <div><strong>Companions of Grace International</strong>Equipping healthcare professionals for Kingdom engagement.</div>
+      <div>About · Programs · Resources · Donate</div>
+      <div>© COGI</div>
+    </footer>
+  </div>
+</body>
+</html>

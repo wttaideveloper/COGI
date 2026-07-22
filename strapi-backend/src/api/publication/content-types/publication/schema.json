@@ -1,0 +1,50 @@
+{
+  "kind": "collectionType",
+  "collectionName": "publications",
+  "info": {
+    "displayName": "Publication",
+    "singularName": "publication",
+    "pluralName": "publications",
+    "description": "Downloadable publications and documents"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["files", "images"]
+    },
+    "cover": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["report", "guide", "curriculum", "newsletter", "other"],
+      "default": "other"
+    },
+    "publishedDate": {
+      "type": "date"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

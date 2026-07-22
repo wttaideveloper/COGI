@@ -1,0 +1,32 @@
+{
+  "collectionName": "components_sections_card_grids",
+  "info": {
+    "displayName": "Card Grid Section",
+    "icon": "grid",
+    "description": "Grid of content cards"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "columns": {
+      "type": "integer",
+      "default": 3,
+      "min": 1,
+      "max": 4
+    },
+    "cards": {
+      "type": "json",
+      "description": "Array of { title, description, image, link } objects"
+    },
+    "settings": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.section-settings"
+    }
+  }
+}

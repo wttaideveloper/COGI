@@ -1,0 +1,51 @@
+{
+  "kind": "singleType",
+  "collectionName": "header_settings",
+  "info": {
+    "displayName": "Header Setting",
+    "singularName": "header-setting",
+    "pluralName": "header-settings",
+    "description": "Site header configuration"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "sticky": {
+      "type": "boolean",
+      "default": true
+    },
+    "showDonateCta": {
+      "type": "boolean",
+      "default": true
+    },
+    "donateCta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.button"
+    },
+    "contactCta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.button"
+    },
+    "navigationMenu": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::navigation-menu.navigation-menu"
+    },
+    "announcementBar": {
+      "type": "text"
+    },
+    "announcementEnabled": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

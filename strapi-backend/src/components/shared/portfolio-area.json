@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_shared_portfolio_areas",
+  "info": {
+    "displayName": "Portfolio Area",
+    "icon": "grid",
+    "description": "Ministry portfolio area on homepage"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "cta": {
+      "type": "component",
+      "repeatable": false,
+      "component": "shared.link"
+    }
+  }
+}

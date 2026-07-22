@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "locations",
+  "info": {
+    "displayName": "Location",
+    "singularName": "location",
+    "pluralName": "locations",
+    "description": "Countries and regions where COGI serves"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "country": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "country"
+    },
+    "region": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "text"
+    },
+    "latitude": {
+      "type": "decimal"
+    },
+    "longitude": {
+      "type": "decimal"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

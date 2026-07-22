@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /preview/
+Disallow: /admin
+
+Sitemap: https://coginternational.org/sitemap.xml
