@@ -1045,7 +1045,7 @@ export interface ApiNewsletterSubscriberNewsletterSubscriber
 export interface ApiPagePage extends Struct.CollectionTypeSchema {
   collectionName: 'pages';
   info: {
-    description: 'Custom pages with dynamic zone page builder';
+    description: 'Custom pages with page builder';
     displayName: 'Page';
     pluralName: 'pages';
     singularName: 'page';
@@ -1057,31 +1057,25 @@ export interface ApiPagePage extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    externalUrl: Schema.Attribute.Text;
+    heroImageUrl: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::page.page'> &
       Schema.Attribute.Private;
+    pageType: Schema.Attribute.Enumeration<['content', 'link']> &
+      Schema.Attribute.DefaultTo<'content'>;
     parentPage: Schema.Attribute.Relation<'manyToOne', 'api::page.page'>;
     publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      [
-        'sections.hero',
-        'sections.rich-text',
-        'sections.image-text',
-        'sections.card-grid',
-        'sections.statistics',
-        'sections.cta-banner',
-        'sections.video',
-        'sections.faq-accordion',
-        'sections.newsletter',
-        'sections.contact-form',
-        'sections.map',
-        'sections.embed',
-      ]
-    >;
+    sections: Schema.Attribute.JSON;
     seo: Schema.Attribute.Component<'shared.seo', false>;
+    showInFooter: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    showInHeader: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     showInSitemap: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     slug: Schema.Attribute.UID<'title'> & Schema.Attribute.Required;
+    status: Schema.Attribute.Enumeration<['draft', 'published']> &
+      Schema.Attribute.DefaultTo<'draft'>;
     summary: Schema.Attribute.Text;
+    templateId: Schema.Attribute.String;
     title: Schema.Attribute.String & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

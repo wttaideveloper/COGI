@@ -1,3 +1,4 @@
-﻿import { factories } from '@strapi/strapi';
+﻿import { coreRouterWithPublish } from '../../../utils/publish-actions';
 
-export default factories.createCoreRouter('api::location.location');
+export default coreRouterWithPublish('api::location.location', 'locations');
+

@@ -6,13 +6,15 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   const data = await fetchFromStrapi<{ data: BlogPost[] }>('/news-articles', {
     sort: 'publishedAt:desc',
   })
-  return data?.data ?? fallbackBlogPosts
+  if (data === null) return fallbackBlogPosts
+  return data.data ?? []
 }
 
 export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
   const data = await fetchFromStrapi<{ data: BlogPost[] }>('/news-articles', {
     'filters[slug][$eq]': slug,
   })
-  if (data?.data?.[0]) return data.data[0]
-  return fallbackBlogPosts.find((p) => p.slug === slug)
+  if (data === null) return fallbackBlogPosts.find((p) => p.slug === slug)
+  if (data.data?.[0]) return data.data[0]
+  return undefined
 }

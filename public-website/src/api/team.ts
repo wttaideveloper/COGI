@@ -7,13 +7,15 @@ export async function getBoardMembers(): Promise<TeamMember[]> {
     'filters[role][$eq]': 'board',
     sort: 'order:asc',
   })
-  return data?.data ?? fallbackBoardMembers
+  if (data === null) return fallbackBoardMembers
+  return data.data ?? []
 }
 
 export async function getGlobalTeam(): Promise<TeamMember[]> {
   const data = await fetchFromStrapi<{ data: TeamMember[] }>('/team-members', {
-    'filters[role][$eq]': 'global',
+    'filters[role][$eq]': 'global-team',
     sort: 'order:asc',
   })
-  return data?.data ?? fallbackGlobalTeam
+  if (data === null) return fallbackGlobalTeam
+  return data.data ?? []
 }

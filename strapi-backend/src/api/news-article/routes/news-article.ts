@@ -1,3 +1,4 @@
-﻿import { factories } from '@strapi/strapi';
+﻿import { coreRouterWithPublish } from '../../../utils/publish-actions';
 
-export default factories.createCoreRouter('api::news-article.news-article');
+export default coreRouterWithPublish('api::news-article.news-article', 'news-articles');
+

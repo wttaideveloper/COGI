@@ -35,6 +35,7 @@ export interface HomepageRecord {
   primaryCtaHref: string
   missionTitle: string
   missionStatement: string
+  missionScripture?: string
   stats: Array<{ value: string; label: string }>
   sections: HomepageSection[]
 }

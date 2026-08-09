@@ -6,5 +6,6 @@ export async function getPartners(): Promise<Partner[]> {
   const data = await fetchFromStrapi<{ data: Partner[] }>('/partners', {
     sort: 'order:asc',
   })
-  return data?.data ?? fallbackPartners
+  if (data === null) return fallbackPartners
+  return data.data ?? []
 }

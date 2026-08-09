@@ -1,3 +1,4 @@
-﻿import { factories } from '@strapi/strapi';
+﻿import { coreRouterWithPublish } from '../../../utils/publish-actions';
 
-export default factories.createCoreRouter('api::event.event');
+export default coreRouterWithPublish('api::event.event', 'events');
+

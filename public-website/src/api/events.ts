@@ -6,15 +6,17 @@ export async function getEvents(): Promise<Event[]> {
   const data = await fetchFromStrapi<{ data: Event[] }>('/events', {
     sort: 'startDate:asc',
   })
-  return data?.data ?? fallbackEvents
+  if (data === null) return fallbackEvents
+  return data.data ?? []
 }
 
 export async function getEventBySlug(slug: string): Promise<Event | undefined> {
   const data = await fetchFromStrapi<{ data: Event[] }>('/events', {
     'filters[slug][$eq]': slug,
   })
-  if (data?.data?.[0]) return data.data[0]
-  return fallbackEvents.find((e) => e.slug === slug)
+  if (data === null) return fallbackEvents.find((e) => e.slug === slug)
+  if (data.data?.[0]) return data.data[0]
+  return undefined
 }
 
 export async function getFeaturedEvent(): Promise<Event | null> {

@@ -4,7 +4,7 @@ import type { GlobalSettings } from '@/types'
 
 export async function getGlobalSettings(): Promise<GlobalSettings> {
   const data = await fetchFromStrapi<{ data: GlobalSettings }>('/global-setting', {
-    populate: 'deep',
+    populate: '*',
   })
   return data?.data ?? fallbackGlobalSettings
 }

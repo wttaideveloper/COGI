@@ -5,7 +5,7 @@
     "displayName": "Page",
     "singularName": "page",
     "pluralName": "pages",
-    "description": "Custom pages with dynamic zone page builder"
+    "description": "Custom pages with page builder"
   },
   "options": {
     "draftAndPublish": true
@@ -21,25 +21,38 @@
       "targetField": "title",
       "required": true
     },
+    "status": {
+      "type": "enumeration",
+      "enum": ["draft", "published"],
+      "default": "draft"
+    },
+    "pageType": {
+      "type": "enumeration",
+      "enum": ["content", "link"],
+      "default": "content"
+    },
     "summary": {
       "type": "text"
     },
+    "heroImageUrl": {
+      "type": "text"
+    },
+    "externalUrl": {
+      "type": "text"
+    },
+    "showInHeader": {
+      "type": "boolean",
+      "default": true
+    },
+    "showInFooter": {
+      "type": "boolean",
+      "default": false
+    },
+    "templateId": {
+      "type": "string"
+    },
     "sections": {
-      "type": "dynamiczone",
-      "components": [
-        "sections.hero",
-        "sections.rich-text",
-        "sections.image-text",
-        "sections.card-grid",
-        "sections.statistics",
-        "sections.cta-banner",
-        "sections.video",
-        "sections.faq-accordion",
-        "sections.newsletter",
-        "sections.contact-form",
-        "sections.map",
-        "sections.embed"
-      ]
+      "type": "json"
     },
     "seo": {
       "type": "component",

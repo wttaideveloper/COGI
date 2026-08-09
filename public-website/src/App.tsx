@@ -24,6 +24,7 @@ import { DonatePage } from '@/pages/DonatePage'
 import { ContactPage } from '@/pages/ContactPage'
 import { SearchPage } from '@/pages/SearchPage'
 import { LegalPage } from '@/pages/LegalPage'
+import { CustomPage } from '@/pages/CustomPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 const queryClient = new QueryClient({
@@ -67,6 +68,7 @@ export default function App() {
               <Route path="terms-of-use" element={<LegalPage />} />
               <Route path="cookie-notice" element={<LegalPage />} />
               <Route path="accessibility" element={<LegalPage />} />
+              <Route path=":slug" element={<CustomPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>

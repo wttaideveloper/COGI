@@ -1,73 +1,77 @@
 # Deployment Guide
 
-## Environments
+This project ships Docker Compose files that deploy the full stack on a single EC2 instance: public website, admin portal, and Strapi behind one Nginx reverse proxy. The database is **Neon PostgreSQL** (hosted), so **no PostgreSQL container is created**. The deploy scripts are distro-aware and support **Ubuntu (apt)** and **Amazon Linux 2023 (dnf)**.
 
-| App | Suggested host | Domain |
-|-----|----------------|--------|
-| Public website | Vercel / Netlify | coginternational.org |
-| Admin portal | Vercel / Netlify | admin.coginternational.org |
-| Strapi | Render / Railway / Azure | api.coginternational.org |
-| Database | Managed PostgreSQL | private |
-| Media | Cloudinary or S3 | CDN |
-| Email | Resend / SES / SMTP | — |
+## Architecture
 
-## PostgreSQL
+One host serves all apps with **path prefixes** (no subdomains needed):
 
-1. Provision a managed Postgres instance.
-2. Set Strapi env:
+| App | URL path | Upstream |
+|-----|----------|----------|
+| Public website | `/` | `public-website` |
+| Admin portal | `/admin` | `admin-portal` |
+| Strapi API | `/api` | `strapi` |
+| Strapi admin | `/admin-strapi` | `strapi` |
+| Site config read | `/site-config.json` | `config-sync` |
+| Site config write | `/__site-config` | `config-sync` |
 
-```env
-DATABASE_CLIENT=postgres
-DATABASE_HOST=...
-DATABASE_PORT=5432
-DATABASE_NAME=cogi_strapi
-DATABASE_USERNAME=...
-DATABASE_PASSWORD=...
-DATABASE_SSL=true
-```
+Database is Neon Postgres — `DATABASE_URL` is passed to the `strapi` container via env (no `postgres` service).
 
-3. Deploy Strapi; schemas sync on first boot.
-4. Create Super Admin via Strapi admin UI.
-5. Seed content (see seed script / admin import).
+## All-in-one EC2 (recommended)
 
-## Strapi production
+1. Provision an EC2 instance (Ubuntu 22.04/24.04 or Amazon Linux 2023, ≥2 GB RAM). Open ports `22` (SSH), `80`, `443` in the security group.
+2. SSH in, transfer or clone the repo, and run the setup + deploy scripts:
+   ```bash
+   chmod +x deployment/ec2-setup.sh deploy.sh deploy-ssl.sh
+   bash deployment/ec2-setup.sh        # installs Docker + Compose v2 (apt or dnf)
+   # log out and back in so the docker group takes effect, then:
+   git clone <repo-url> && cd <repo>
+   cp .env.example .env
+   nano .env   # set real values (see below)
+   bash deploy.sh                       # validates secrets, builds, starts stack
+   ```
+3. `deploy.sh` validates required secrets and brings up the stack. It will also install Docker/Compose itself if they are missing (same apt/dnf logic as `ec2-setup.sh`).
 
-- Set strong unique `APP_KEYS`, `JWT_SECRET`, `ADMIN_JWT_SECRET`, salts.
-- `PUBLIC_URL` = public API URL.
-- Configure CORS for public + admin origins.
-- Enable HTTPS only; put Cloudflare in front.
-- Configure upload provider (S3/Cloudinary) for media persistence.
-- Schedule database backups daily; retain media backups separately.
+### Set the real values in `.env` before building (critical)
 
-## Frontends
+- `DATABASE_URL` — your **Neon** connection string (direct / non-pooled):
+  `postgresql://user:password@ep-xxxx.us-east-2.aws.neon.tech/cogi?sslmode=require`. Get it from Neon console → Connect.
+- `DATABASE_SSL=true`.
+- `VITE_STRAPI_URL`, `VITE_PUBLIC_SITE_URL`, `VITE_ADMIN_SITE_URL` are baked into the frontends at **build time** — set them to your public host (domain or EC2 IP). Same origin for everything, path prefixes only:
+  ```env
+  STRAPI_URL=https://www.yourdomain.com
+  VITE_STRAPI_URL=https://www.yourdomain.com
+  VITE_PUBLIC_SITE_URL=https://www.yourdomain.com
+  VITE_ADMIN_SITE_URL=https://www.yourdomain.com/admin
+  CORS_ORIGIN=https://www.yourdomain.com
+  DATABASE_SSL=true
+  ```
+- Generate strong secrets for `APP_KEYS`, `API_TOKEN_SALT`, `ADMIN_JWT_SECRET`, `TRANSFER_TOKEN_SALT`, `JWT_SECRET`, `ENCRYPTION_KEY` (`openssl rand -base64 32`).
 
-Build:
+### SSL (optional, needs a domain)
 
 ```bash
-cd public-website && npm ci && npm run build
-cd admin-portal && npm ci && npm run build
+bash deploy-ssl.sh yourdomain.com
 ```
 
-Env:
+This obtains a Let's Encrypt certificate for the single domain, writes `nginx/nginx-ssl.conf` and `docker-compose.prod.yml`, and restarts behind HTTPS with auto-renewal. All apps stay under the same domain via path prefixes.
 
-```env
-VITE_STRAPI_URL=https://api.coginternational.org
-VITE_PUBLIC_SITE_URL=https://coginternational.org
-VITE_ADMIN_SITE_URL=https://admin.coginternational.org
-VITE_GIVELIVELY_URL=https://...
+### Get code onto the server
+
+The recommended path is a **git repo** (the one this project lives in). Push your changes locally, then on the server:
+
+```bash
+git clone <repo-url> && cd <repo>
 ```
 
-## SSL / DNS
-
-Point apex and www to the public site host. Point `admin` and `api` subdomains. Enable Cloudflare SSL Full (strict).
+`.gitignore` excludes `node_modules`, `dist`, `.env` (and `.freebuff/`), so a clone is clean and Docker builds dependencies inside the containers — the server does not need Node/npm installed. After any code change: `git push` locally, then on the server `git pull && bash deploy.sh`.
 
 ## Post-deploy checklist
 
-- [ ] Strapi health `/_health`
-- [ ] Public homepage loads from API
-- [ ] Admin login works
+- [ ] Strapi health `/_health` (via nginx: `curl http://<IP>/_health`)
+- [ ] Public homepage loads and pulls from API
+- [ ] Admin portal loads at `/admin`
+- [ ] Strapi admin login at `/admin-strapi`
 - [ ] Form submissions create enquiry records
 - [ ] Media upload works
-- [ ] Preview draft flow works
-- [ ] robots.txt / sitemap live
 - [ ] No secrets in client bundles

@@ -58,7 +58,13 @@ export default function HomepageManagerPage() {
   const stored = loadSiteConfig().homepage
   const existingDraft = loadHomepageDraft()
   const data = existingDraft?.values ?? query.data ?? { ...mockHomepage, ...stored }
-  const form = useForm<HomepageRecord>({ values: data })
+  const safeData: HomepageRecord = {
+    ...mockHomepage,
+    ...data,
+    stats: Array.isArray(data.stats) && data.stats.length ? data.stats : mockHomepage.stats,
+    sections: Array.isArray(data.sections) && data.sections.length ? data.sections : mockHomepage.sections,
+  }
+  const form = useForm<HomepageRecord>({ values: safeData })
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [hasDraft, setHasDraft] = useState(Boolean(existingDraft))
   const [slides, setSlides] = useState<HeroSlide[]>(() => {
@@ -91,10 +97,25 @@ export default function HomepageManagerPage() {
           heroSlides: nextSlides,
           primaryCtaLabel: values.primaryCtaLabel,
           primaryCtaHref: values.primaryCtaHref,
+          missionTitle: values.missionTitle,
+          missionStatement: values.missionStatement,
+          missionScripture: values.missionScripture ?? '',
+          impactStats: (values.stats || []).map((s) => ({ id: s.label, value: s.value, label: s.label })),
+          sections: values.sections,
         },
       })
       localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
-      if (!isDemoMode()) await apiUpdateSingle('/homepage', payload)
+      if (!isDemoMode()) {
+        const strapiPayload = {
+          ...values,
+          missionHeading: values.missionTitle,
+          missionText: values.missionStatement,
+          missionScripture: values.missionScripture ?? '',
+        }
+        delete strapiPayload.missionTitle
+        delete strapiPayload.missionStatement
+        await apiUpdateSingle('/homepage', strapiPayload)
+      }
       return { values: payload, status }
     },
     onSuccess: (_data, variables) => {
@@ -203,12 +224,13 @@ export default function HomepageManagerPage() {
             <h3 className="mb-4 font-bold">Mission</h3>
             <Field label="Title"><input className="admin-input" {...form.register('missionTitle')} /></Field>
             <Field label="Statement"><textarea className="admin-input mt-3 min-h-28" {...form.register('missionStatement')} /></Field>
+            <Field label="Scripture"><input className="admin-input mt-3" {...form.register('missionScripture')} /></Field>
           </div>
 
           <div className="admin-card p-5">
             <h3 className="mb-4 font-bold">Impact stats</h3>
             <div className="grid gap-3 md:grid-cols-3">
-              {data.stats.map((_, i) => (
+              {safeData.stats.map((_, i) => (
                 <div key={i} className="rounded-xl border border-[var(--color-border)] p-3">
                   <input className="admin-input mb-2" {...form.register(`stats.${i}.value`)} />
                   <input className="admin-input" {...form.register(`stats.${i}.label`)} />

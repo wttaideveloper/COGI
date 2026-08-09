@@ -1,3 +1,3 @@
-﻿import { factories } from '@strapi/strapi';
+﻿import { coreRouterWithPublish } from '../../../utils/publish-actions';
 
-export default factories.createCoreRouter('api::program.program');
+export default coreRouterWithPublish('api::program.program', 'programs');

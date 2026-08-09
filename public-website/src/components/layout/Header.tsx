@@ -29,7 +29,7 @@ const fallbackNav: SiteNavItem[] = [
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   clsx(
     'rounded-md px-3 py-2 text-sm font-medium transition-colors',
-    isActive ? 'bg-teal-deep/10 text-teal-deep' : 'text-ink hover:bg-mist-dark hover:text-teal-deep',
+    isActive ? 'bg-teal-deep/10 text-current' : 'text-current hover:bg-mist-dark hover:text-current hover:opacity-80',
   )
 
 export function Header() {
@@ -49,9 +49,9 @@ export function Header() {
           {header.logoUrl ? (
             <img src={header.logoUrl} alt={header.logoAlt || 'COGI'} className="h-12 max-w-[220px] object-contain" />
           ) : (
-            <span className="flex flex-col">
-              <span className="font-display text-xl font-bold leading-tight text-teal-deep md:text-2xl">Companions of Grace</span>
-              <span className="text-xs font-medium text-ink-muted">International</span>
+            <span className="flex flex-col text-current">
+              <span className="font-display text-xl font-bold leading-tight md:text-2xl">{header.logoAlt || 'Companions of Grace'}</span>
+              <span className="text-xs font-medium opacity-70">International</span>
             </span>
           )}
         </Link>
@@ -70,7 +70,7 @@ export function Header() {
                 >
                   <button
                     type="button"
-                    className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium hover:bg-mist-dark hover:text-teal-deep"
+                    className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-current transition-colors hover:bg-mist-dark hover:opacity-80"
                     aria-expanded={open}
                     aria-haspopup="true"
                   >
@@ -100,7 +100,7 @@ export function Header() {
             )
           })}
 
-          <Link to="/search" className="rounded-md p-2 text-ink-muted hover:bg-mist-dark hover:text-teal-deep" aria-label="Search site">
+          <Link to="/search" className="rounded-md p-2 text-current opacity-80 hover:bg-mist-dark hover:opacity-100" aria-label="Search site">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
               <path d="M14 14l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -114,7 +114,7 @@ export function Header() {
 
         <button
           type="button"
-          className="rounded-md p-2 text-teal-deep lg:hidden"
+          className="rounded-md p-2 text-current lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-expanded={mobileOpen}
           aria-controls="mobile-menu"
@@ -133,7 +133,7 @@ export function Header() {
       </div>
 
       {mobileOpen ? (
-        <nav id="mobile-menu" className="border-t border-mist-dark bg-white px-4 py-4 lg:hidden" aria-label="Mobile navigation">
+        <nav id="mobile-menu" className="border-t border-current/10 bg-inherit px-4 py-4 lg:hidden" aria-label="Mobile navigation">
           <ul className="space-y-1">
             {items.map((item) => (
               <li key={item.id}>

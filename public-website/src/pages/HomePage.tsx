@@ -45,12 +45,22 @@ export function HomePage() {
   const heroImageAlt = site.homepage.heroImageAlt || homepage.hero.imageAlt
   const primaryCtaLabel = site.homepage.primaryCtaLabel || homepage.hero.primaryCta.label
   const primaryCtaHref = site.homepage.primaryCtaHref || homepage.hero.primaryCta.href
+  const missionTitle = site.homepage.missionTitle || homepage.mission.title
+  const missionStatement = site.homepage.missionStatement || homepage.mission.statement
+  const missionScripture = site.homepage.missionScripture || homepage.mission.scripture
   const heroSlides = (site.homepage.heroSlides?.length
     ? site.homepage.heroSlides
     : heroImageUrl
       ? [{ id: 'legacy', imageUrl: heroImageUrl, alt: heroImageAlt }]
       : []
   ).filter((slide) => Boolean(slide.imageUrl))
+  const impactStats = site.homepage.impactStats?.length ? site.homepage.impactStats : homepage.impactStats
+  const sectionEnabled = (id: string): boolean => {
+    const list = site.homepage.sections
+    if (!list?.length) return true
+    const found = list.find((s) => s.id === id)
+    return found ? found.enabled : true
+  }
 
   const fadeUp = reduced
     ? { initial: false as const }
@@ -61,6 +71,7 @@ export function HomePage() {
       <SEO description={heroIntro} />
 
       {/* Hero — full bleed slider */}
+      {sectionEnabled('hero') && (
       <section className="relative min-h-[85vh] overflow-hidden" aria-label="Welcome">
         <HeroSlider slides={heroSlides} />
         <div className="relative z-10 mx-auto flex min-h-[85vh] max-w-7xl flex-col justify-end px-4 pb-20 pt-32 md:pb-24">
@@ -80,21 +91,25 @@ export function HomePage() {
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Mission */}
+      {sectionEnabled('mission') && (
       <section className="bg-mist-gradient py-20">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <motion.div {...fadeUp}>
-            <SectionHeading title={homepage.mission.title} />
-            <p className="text-xl leading-relaxed text-ink">{homepage.mission.statement}</p>
+            <SectionHeading title={missionTitle} />
+            <p className="text-xl leading-relaxed text-ink">{missionStatement}</p>
             <blockquote className="mt-8 border-l-4 border-gold pl-6 text-left font-display text-lg italic text-teal-deep">
-              {homepage.mission.scripture}
+              {missionScripture}
             </blockquote>
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* Video */}
+      {sectionEnabled('video') && (
       <section className="py-20">
         <div className="mx-auto max-w-5xl px-4">
           <SectionHeading title={homepage.video.title} subtitle={homepage.video.description} />
@@ -110,8 +125,10 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Methods */}
+      {sectionEnabled('methods') && (
       <section className="bg-mist-gradient py-20">
         <div className="mx-auto max-w-7xl px-4">
           <SectionHeading title="Our Methods" subtitle="Enable, Train, and Support healthcare professionals for Kingdom engagement" />
@@ -129,13 +146,15 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Impact Stats */}
+      {sectionEnabled('impact') && (
       <section className="bg-teal-gradient py-16 text-white">
         <div className="mx-auto max-w-7xl px-4">
           <SectionHeading title="Our Impact" className="[&_h2]:text-white [&_p]:text-white/80" />
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {homepage.impactStats.map((stat) => (
+            {impactStats.map((stat) => (
               <div key={stat.id} className="text-center">
                 <p className="font-display text-5xl font-bold text-gold md:text-6xl">{stat.value}</p>
                 <p className="mt-2 text-lg font-semibold">{stat.label}</p>
@@ -145,8 +164,10 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Portfolio */}
+      {sectionEnabled('portfolio') && (
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4">
           <SectionHeading title="Our Portfolio" subtitle="Four ministry areas equipping healthcare professionals worldwide" />
@@ -163,8 +184,10 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Where We Serve */}
+      {sectionEnabled('map') && (
       <section className="bg-mist-gradient py-20">
         <div className="mx-auto max-w-7xl px-4">
           <SectionHeading title="Where We Serve" subtitle="Communities of Grace across continents" />
@@ -202,8 +225,10 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Stories Teaser */}
+      {sectionEnabled('stories') && (
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4">
           <SectionHeading title={homepage.storiesTeaser.title} subtitle={homepage.storiesTeaser.description} />
@@ -221,9 +246,10 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Featured Event */}
-      {featuredEvent && (
+      {featuredEvent && sectionEnabled('events') && (
         <section className="bg-teal-deep py-16 text-white">
           <div className="mx-auto max-w-4xl px-4 text-center">
             <p className="text-sm font-semibold uppercase tracking-wide text-gold">Featured Event</p>
@@ -236,14 +262,17 @@ export function HomePage() {
       )}
 
       {/* Newsletter */}
+      {sectionEnabled('newsletter') && (
       <section className="py-20">
         <div className="mx-auto max-w-xl px-4">
           <SectionHeading title={homepage.newsletter.title} subtitle={homepage.newsletter.description} />
           <Card><NewsletterForm /></Card>
         </div>
       </section>
+      )}
 
       {/* Donate CTA */}
+      {sectionEnabled('donate') && (
       <section className="bg-mist-gradient py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
           <h2 className="font-display text-3xl text-teal-deep">{homepage.donateCta.title}</h2>
@@ -251,6 +280,7 @@ export function HomePage() {
           <ButtonLink to="/donate" size="lg" className="mt-8">{homepage.donateCta.buttonLabel}</ButtonLink>
         </div>
       </section>
+      )}
     </>
   )
 }

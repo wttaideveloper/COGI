@@ -1,4 +1,4 @@
-import type { FooterSettings, HeaderSettings, HomepageRecord, NavItem, SeoSettings, ThemeSettings } from '@/types'
+import type { FooterSettings, HeaderSettings, HomepageRecord, HomepageSection, NavItem, SeoSettings, ThemeSettings } from '@/types'
 import { mockFooter, mockHeader, mockSeo, mockTheme, mockFooterNavigation } from '@/data/siteSetup'
 import { mockHomepage, mockNavigation } from '@/data/mock'
 
@@ -9,7 +9,10 @@ export type SiteConfig = {
   seo: SeoSettings
   headerNav: NavItem[]
   footerNav: NavItem[]
-  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref'>
+  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture'> & {
+    impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
+    sections?: HomepageSection[]
+  }
   updatedAt: string
 }
 
@@ -31,6 +34,11 @@ export function defaultSiteConfig(): SiteConfig {
       heroSlides: structuredClone(mockHomepage.heroSlides || []),
       primaryCtaLabel: mockHomepage.primaryCtaLabel,
       primaryCtaHref: mockHomepage.primaryCtaHref,
+      missionTitle: mockHomepage.missionTitle,
+      missionStatement: mockHomepage.missionStatement,
+      missionScripture: mockHomepage.missionScripture ?? '',
+      impactStats: (mockHomepage.stats || []).map((s) => ({ id: s.label, value: s.value, label: s.label })),
+      sections: structuredClone(mockHomepage.sections || []),
     },
     updatedAt: '',
   }

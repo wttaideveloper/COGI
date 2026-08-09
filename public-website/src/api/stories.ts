@@ -6,13 +6,15 @@ export async function getStories(): Promise<Story[]> {
   const data = await fetchFromStrapi<{ data: Story[] }>('/stories', {
     sort: 'featured:desc',
   })
-  return data?.data ?? fallbackStories
+  if (data === null) return fallbackStories
+  return data.data ?? []
 }
 
 export async function getStoryBySlug(slug: string): Promise<Story | undefined> {
   const data = await fetchFromStrapi<{ data: Story[] }>('/stories', {
     'filters[slug][$eq]': slug,
   })
-  if (data?.data?.[0]) return data.data[0]
-  return fallbackStories.find((s) => s.slug === slug)
+  if (data === null) return fallbackStories.find((s) => s.slug === slug)
+  if (data.data?.[0]) return data.data[0]
+  return undefined
 }

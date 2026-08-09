@@ -6,5 +6,6 @@ export async function getTestimonials(): Promise<Testimonial[]> {
   const data = await fetchFromStrapi<{ data: Testimonial[] }>('/testimonials', {
     sort: 'featured:desc',
   })
-  return data?.data ?? fallbackTestimonials
+  if (data === null) return fallbackTestimonials
+  return data.data ?? []
 }

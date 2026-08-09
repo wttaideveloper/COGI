@@ -135,13 +135,14 @@ export default function PageEditorPage() {
         },
         sections: page.pageType === 'link' ? [] : page.sections,
       }
+      const { id: _id, documentId: _documentId, createdAt: _createdAt, updatedAt: _updatedAt, ...body } = payload
       setPage((prev) => ({ ...prev, status }))
       if (isDemoMode()) {
         localStorage.setItem(`cogi_page_${payload.slug}`, JSON.stringify(payload))
         return payload
       }
-      if (isNew) return apiCreate('/pages', payload)
-      return apiUpdate('/pages', page.documentId || page.id || String(id), payload)
+      if (isNew) return apiCreate('/pages', body)
+      return apiUpdate('/pages', page.documentId || page.id || String(id), body)
     },
     onSuccess: (_data, status) => {
       qc.invalidateQueries({ queryKey: ['pages'] })

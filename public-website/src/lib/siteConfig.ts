@@ -53,6 +53,11 @@ export type SiteConfig = {
     heroSlides?: Array<{ id: string; imageUrl: string; alt?: string }>
     primaryCtaLabel: string
     primaryCtaHref: string
+    missionTitle?: string
+    missionStatement?: string
+    missionScripture?: string
+    impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
+    sections?: Array<{ id: string; label: string; enabled: boolean; order: number; summary: string }>
   }
   updatedAt?: string
 }
@@ -105,6 +110,29 @@ const defaults: SiteConfig = {
     ],
     primaryCtaLabel: 'Join the Movement',
     primaryCtaHref: '/get-involved',
+    missionTitle: 'Our Mission',
+    missionStatement:
+      'Inspire and enable transformation so healthcare professionals think, live, and work missionally — bringing the love of Christ to patients, colleagues, and communities around the world.',
+    missionScripture:
+      'And whatever you do, in word or deed, do everything in the name of the Lord Jesus, giving thanks to God the Father through him. — Colossians 3:17',
+    impactStats: [
+      { id: 'countries', value: '10+', label: 'Countries' },
+      { id: 'professionals', value: '500+', label: 'Healthcare Professionals' },
+      { id: 'programs', value: '30+', label: 'Programs Delivered' },
+      { id: 'communities', value: '∞', label: 'Communities of Grace' },
+    ],
+    sections: [
+      { id: 'hero', label: 'Hero', enabled: true, order: 1, summary: 'Primary homepage introduction and call to action.' },
+      { id: 'mission', label: 'Mission', enabled: true, order: 2, summary: 'Mission statement and scripture.' },
+      { id: 'methods', label: 'Methods', enabled: true, order: 3, summary: 'Enable, train, and support.' },
+      { id: 'impact', label: 'Impact Stats', enabled: true, order: 4, summary: 'Countries, professionals, programs.' },
+      { id: 'portfolio', label: 'Portfolio', enabled: true, order: 5, summary: 'Four ministry areas.' },
+      { id: 'map', label: 'Where We Serve', enabled: true, order: 6, summary: 'Countries served.' },
+      { id: 'stories', label: 'Featured Stories', enabled: true, order: 7, summary: 'Featured story teasers.' },
+      { id: 'events', label: 'Featured Event', enabled: true, order: 8, summary: 'Upcoming featured event.' },
+      { id: 'newsletter', label: 'Newsletter', enabled: true, order: 9, summary: 'Newsletter signup.' },
+      { id: 'donate', label: 'Donate CTA', enabled: true, order: 10, summary: 'Donate call to action.' },
+    ],
   },
 }
 

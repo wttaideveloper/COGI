@@ -1,3 +1,4 @@
-﻿import { factories } from '@strapi/strapi';
+﻿import { coreRouterWithPublish } from '../../../utils/publish-actions';
 
-export default factories.createCoreRouter('api::team-member.team-member');
+export default coreRouterWithPublish('api::team-member.team-member', 'team-members');
+
