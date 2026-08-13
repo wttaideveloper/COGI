@@ -57,6 +57,13 @@ const AUTH_ACTIONS = ['find', 'findOne', 'create', 'update', 'delete'] as const;
 
 const AUTH_PUBLISH_ACTIONS = ['publish', 'unpublish'] as const;
 
+const AUTH_UPLOAD_ACTIONS = [
+  'content-api.upload',
+  'content-api.destroy',
+  'content-api.find',
+  'content-api.findOne',
+] as const;
+
 const AUTH_PUBLISH_TYPES = [
   'api::site-config.site-config',
   'api::homepage.homepage',
@@ -122,6 +129,9 @@ async function ensureRolePermissions(
     for (const action of AUTH_PUBLISH_ACTIONS) {
       await ensurePermission(strapi, role.id, uid, action);
     }
+  }
+  for (const action of AUTH_UPLOAD_ACTIONS) {
+    await ensurePermission(strapi, role.id, 'plugin::upload', action);
   }
 }
 
