@@ -66,7 +66,7 @@ function siteConfigSyncPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), siteConfigSyncPlugin()],
-  base: '/',
+  base: '/admin/',
   resolve: {
     alias: {
       '@': path.resolve(rootDir, './src'),

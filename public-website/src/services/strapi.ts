@@ -18,7 +18,7 @@ export function isStrapiAvailable(): boolean {
 export async function fetchFromStrapi<T>(endpoint: string, params?: Record<string, unknown>): Promise<T | null> {
   try {
     const { data } = await strapiClient.get<T>(endpoint, {
-      params: { ...params, _t: Date.now() },
+      params: { ...params },
       headers: { 'Cache-Control': 'no-cache' },
     })
     return data
