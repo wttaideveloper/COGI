@@ -10,7 +10,7 @@ import RichTextEditor from '@/components/RichTextEditor'
 import { useAuth } from '@/contexts/AuthContext'
 import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomepage, mockLocations, mockMedia, mockNavigation, mockPages, mockPartners, mockPrograms, mockSettings, mockStats, mockStories, mockSubscribers, mockTeam, mockTestimonials, mockUsers } from '@/data/mock'
 import { mockFooterNavigation } from '@/data/siteSetup'
-import { loadSiteConfig, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
+import { hydrateSiteConfigFromStrapi, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { apiCreate, apiDelete, apiList, apiListAll, apiSingle, apiPublish, apiUnpublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
 import { getPreviewUrl } from '@/utils/preview'
@@ -324,12 +324,15 @@ export function NavigationPage() {
   const [footerMenu, setFooterMenu] = useState(mockFooterNavigation)
   const [headerItems, setHeaderItems] = useState(mockNavigation[0].items)
   const [footerItems, setFooterItems] = useState(mockFooterNavigation.items)
-  const [saved, setSaved] = useState(false)
+  const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
+  const [pending, setPending] = useState<'draft' | 'published' | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
-    const config = loadSiteConfig()
-    setHeaderItems(config.headerNav)
-    setFooterItems(config.footerNav)
+    hydrateSiteConfigFromStrapi().then((config) => {
+      setHeaderItems(config.headerNav)
+      setFooterItems(config.footerNav)
+    })
   }, [])
 
   const items = tab === 'header' ? headerItems : footerItems
@@ -337,20 +340,37 @@ export function NavigationPage() {
   const menu = tab === 'header' ? headerMenu : footerMenu
   const setMenu = tab === 'header' ? setHeaderMenu : setFooterMenu
 
-  async function saveMenu() {
+  async function saveMenu(status: 'draft' | 'published') {
     if (tab === 'header') setHeaderMenu({ ...headerMenu, items: headerItems })
     else setFooterMenu({ ...footerMenu, items: footerItems })
-    await saveSiteConfig({ headerNav: headerItems, footerNav: footerItems })
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 3000)
+    setPending(status)
+    setSaveError(null)
+    try {
+      await saveSiteConfig({ headerNav: headerItems, footerNav: footerItems }, status)
+      setSavedAs(status)
+      window.setTimeout(() => setSavedAs(null), 4000)
+    } catch (err) {
+      setSaveError(`Could not ${status === 'published' ? 'publish' : 'save'} to Strapi: ${getErrorMessage(err)}`)
+    } finally {
+      setPending(null)
+    }
   }
 
   return (
     <>
       <PageHeader
         title="Pages & menus"
-        description="Drag to reorder. Save to update the public website header and footer menus."
-        action={<button className="btn-primary" onClick={saveMenu}>Save {tab} menu</button>}
+        description="Drag to reorder. Save as draft in Strapi, then Publish live to update the public menus immediately."
+        action={
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className="btn-secondary" disabled={Boolean(pending)} onClick={() => saveMenu('draft')}>
+              {pending === 'draft' ? 'Saving draft…' : 'Save as draft'}
+            </button>
+            <button type="button" className="btn-primary" disabled={Boolean(pending)} onClick={() => saveMenu('published')}>
+              {pending === 'published' ? 'Publishing…' : 'Publish live'}
+            </button>
+          </div>
+        }
       />
       <div className="mb-4 flex flex-wrap gap-2">
         {([
@@ -376,7 +396,9 @@ export function NavigationPage() {
         </Field>
       </div>
       <MenuSwapper items={items} onChange={setItems} title={`${tab} menu`} />
-      {saved ? <p className="mt-4 text-sm text-emerald-700">{tab === 'header' ? 'Header' : 'Footer'} menu saved — refresh the public site to see it.</p> : null}
+      {saveError ? <p className="mt-4 text-sm font-semibold text-red-700">{saveError}</p> : null}
+      {savedAs === 'draft' ? <p className="mt-4 text-sm font-semibold text-amber-700">Draft saved in Strapi — not live until you Publish.</p> : null}
+      {savedAs === 'published' ? <p className="mt-4 text-sm font-semibold text-emerald-700">Published live — public menus update immediately.</p> : null}
       <div className="admin-card mt-6 p-4">
         <h3 className="mb-3 font-bold">Live {tab} preview</h3>
         <div className="flex flex-wrap gap-2">
@@ -429,6 +451,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
       qc.invalidateQueries({ queryKey: [moduleKey] })
       setSavedAs(variables.status)
       if (hasStatusField) form.setValue('status', variables.status)
+      if (variables.status === 'published') notifyPublished()
       window.setTimeout(() => {
         setSavedAs(null)
         if (variables.status === 'published') navigate(config.route)
@@ -441,7 +464,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
       <>
         <PageHeader title={`${params.id === 'new' ? 'Create' : 'Edit'} ${config.singular}`} description={config.description} action={<Link className="btn-secondary" to={config.route}>Back to list</Link>} />
         {savedAs === 'draft' ? <p className="mb-4 text-sm font-semibold text-amber-700">Draft saved — not live yet.</p> : null}
-        {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live.</p> : null}
+        {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live — the public website updates immediately.</p> : null}
         <form
           className="admin-card max-w-4xl space-y-4 p-5"
           onSubmit={(e) => {
@@ -571,7 +594,49 @@ export function MediaPage() {
 
 export function EnquiriesPage() { const [filter, setFilter] = ReactUseState('all'); const rows = mockEnquiries.filter((e) => filter === 'all' || e.status === filter); return <><PageHeader title="Enquiries" description="Filter, triage, add notes, update status, and export submissions." action={<button className="btn-secondary" onClick={() => exportCsv(mockEnquiries as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'type', label: 'Type' }, { key: 'status', label: 'Status' }], 'cogi-enquiries.csv')}>Export CSV</button>} /><div className="mb-4 max-w-xs"><select className="admin-input" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="all">All statuses</option>{['new','in_progress','resolved','spam'].map((s) => <option key={s} value={s}>{s}</option>)}</select></div><div className="grid gap-4">{rows.map((e) => <div key={e.id} className="admin-card p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-bold">{e.name} <span className="text-sm font-medium text-slate-500">{e.email}</span></h3><p className="mt-2 text-sm text-slate-700">{e.message}</p></div><StatusBadge value={e.status} /></div><div className="mt-4 grid gap-3 md:grid-cols-2"><select className="admin-input" defaultValue={e.status}>{['new','in_progress','resolved','spam'].map((s) => <option key={s} value={s}>{s}</option>)}</select><input className="admin-input" defaultValue={e.notes} placeholder="Internal notes" /></div></div>)}</div></> }
 export function NewsletterPage() { return <><PageHeader title="Newsletter Subscribers" description="Subscriber list with CSV export." action={<button className="btn-secondary" onClick={() => exportCsv(mockSubscribers as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }], 'cogi-newsletter.csv')}>Export CSV</button>} /><SimpleTable rows={mockSubscribers as unknown as AnyRecord[]} columns={[{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }, { key: 'createdAt', label: 'Created' }]} /></> }
-export function SettingsPage() { const form = useForm<SettingsRecord>({ values: mockSettings }); return <><PageHeader title="Global Settings" description="Organization identity, contact details, SEO defaults, and maintenance flag." /><form className="admin-card max-w-5xl space-y-4 p-5" onSubmit={form.handleSubmit(() => alert('Settings saved in demo mode.'))}>{(['organizationName','tagline','mission','vision','primaryEmail','primaryPhone','address'] as const).map((name) => <Field key={name} label={name}><input className="admin-input" {...form.register(name)} /></Field>)}<label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" {...form.register('maintenanceMode')} /> Maintenance mode</label><button className="btn-primary">Save settings</button></form></> }
+export function SettingsPage() {
+  const query = useQuery({ queryKey: ['global-setting'], queryFn: () => apiSingle<SettingsRecord>('/global-setting'), enabled: !isDemoMode() })
+  const form = useForm<SettingsRecord>({ values: query.data ?? mockSettings })
+  const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
+  const mutation = useMutation({
+    mutationFn: async (values: SettingsRecord) => {
+      if (isDemoMode()) {
+        localStorage.setItem('cogi_settings', JSON.stringify(values))
+        return values
+      }
+      await apiUpdateSingle('/global-setting', {
+        organizationName: values.organizationName,
+        tagline: values.tagline,
+        mission: values.mission,
+        vision: values.vision,
+        primaryEmail: values.primaryEmail,
+        phone: values.primaryPhone,
+        address: values.address,
+        maintenanceMode: values.maintenanceMode,
+      })
+      notifyPublished()
+      return values
+    },
+    onSuccess: () => {
+      setSavedAs('published')
+      window.setTimeout(() => setSavedAs(null), 4000)
+    },
+  })
+  return (
+    <>
+      <PageHeader title="Global Settings" description="Organization identity and contact details. Publish live to save in Strapi and update the public site." />
+      <form className="admin-card max-w-5xl space-y-4 p-5" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
+        {(['organizationName','tagline','mission','vision','primaryEmail','primaryPhone','address'] as const).map((name) => (
+          <Field key={name} label={name}><input className="admin-input" {...form.register(name)} /></Field>
+        ))}
+        <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" {...form.register('maintenanceMode')} /> Maintenance mode</label>
+        {mutation.error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p> : null}
+        {savedAs === 'published' ? <p className="text-sm font-semibold text-emerald-700">Published live — saved in Strapi.</p> : null}
+        <button className="btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Publishing…' : 'Publish live'}</button>
+      </form>
+    </>
+  )
+}
 export function UsersPage() { return <><PageHeader title="Users & Roles" description="Read-only Strapi users and role display." /><SimpleTable rows={mockUsers as unknown as AnyRecord[]} columns={[{ key: 'username', label: 'Username' }, { key: 'email', label: 'Email' }, { key: 'blocked', label: 'Blocked' }]} /></> }
 export function AuditPage() { const [type, setType] = ReactUseState('all'); const rows = (mockAudit as AuditRecord[]).filter((a) => type === 'all' || a.resourceType === type); return <><PageHeader title="Audit Log" description="Filterable record of admin activity." /><div className="mb-4 max-w-xs"><select className="admin-input" value={type} onChange={(e) => setType(e.target.value)}><option value="all">All resources</option>{Array.from(new Set(mockAudit.map((a) => a.resourceType))).map((s) => <option key={s}>{s}</option>)}</select></div><SimpleTable rows={rows as unknown as AnyRecord[]} columns={[{ key: 'actor', label: 'Actor' }, { key: 'action', label: 'Action' }, { key: 'resourceType', label: 'Resource' }, { key: 'ip', label: 'IP' }, { key: 'createdAt', label: 'Created' }]} /></> }
 export function ProfilePage() { const { user, changePassword } = useAuth(); const form = useForm({ resolver: zodResolver(z.object({ currentPassword: z.string().min(1), password: z.string().min(6), passwordConfirmation: z.string().min(6) })), defaultValues: { currentPassword: '', password: '', passwordConfirmation: '' } }); const mutation = useMutation({ mutationFn: changePassword }); return <><PageHeader title="Profile" description="View profile details and change password." /><div className="grid gap-6 lg:grid-cols-2"><div className="admin-card p-5"><h3 className="font-bold">Account</h3><dl className="mt-4 space-y-3 text-sm"><div><dt className="font-semibold text-slate-500">Name</dt><dd>{user?.firstname} {user?.lastname}</dd></div><div><dt className="font-semibold text-slate-500">Email</dt><dd>{user?.email}</dd></div><div><dt className="font-semibold text-slate-500">Role</dt><dd>{user?.role?.name}</dd></div></dl></div><form className="admin-card space-y-4 p-5" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}><h3 className="font-bold">Change password</h3>{(['currentPassword','password','passwordConfirmation'] as const).map((name) => <Field key={name} label={name} error={form.formState.errors[name]?.message}><input className="admin-input" type="password" {...form.register(name)} /></Field>)}<button className="btn-primary">Update password</button>{mutation.error && <p className="text-sm text-red-700">{getErrorMessage(mutation.error)}</p>}</form></div></> }

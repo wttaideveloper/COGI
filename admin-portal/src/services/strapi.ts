@@ -64,9 +64,22 @@ export async function apiCreate<T>(endpoint: string, body: T, status?: 'draft' |
 export async function apiUpdate<T>(endpoint: string, id: string, body: T, status?: 'draft' | 'published'): Promise<unknown> { const { data } = await strapiClient.put(`${endpoint}/${id}`, { data: body }, { params: status ? { status } : undefined }); return data }
 export async function apiPublish(endpoint: string, id: string): Promise<unknown> { const { data } = await strapiClient.post(`${endpoint}/${id}/actions/publish`); return data }
 export async function apiUnpublish(endpoint: string, id: string): Promise<unknown> { const { data } = await strapiClient.post(`${endpoint}/${id}/actions/unpublish`); return data }
+export async function apiPublishSingle(endpoint: string): Promise<unknown> { const { data } = await strapiClient.post(`${endpoint}/actions/publish`); return data }
+export async function apiUnpublishSingle(endpoint: string): Promise<unknown> { const { data } = await strapiClient.post(`${endpoint}/actions/unpublish`); return data }
 export async function apiDelete(endpoint: string, id: string): Promise<void> { await strapiClient.delete(`${endpoint}/${id}`) }
-export async function apiSingle<T extends object>(endpoint: string): Promise<T> { const { data } = await strapiClient.get(endpoint, { params: { populate: '*' } }); return unwrapItem<T>((data as { data: unknown }).data) }
-export async function apiUpdateSingle<T>(endpoint: string, body: T): Promise<unknown> { const { data } = await strapiClient.put(endpoint, { data: body }); return data }
+export async function apiSingle<T extends object>(endpoint: string, params: Record<string, unknown> = { populate: '*' }): Promise<T> { const { data } = await strapiClient.get(endpoint, { params }); return unwrapItem<T>((data as { data: unknown }).data) }
+export async function apiUpdateSingle<T>(endpoint: string, body: T, status?: 'draft' | 'published'): Promise<unknown> {
+  try {
+    const { data } = await strapiClient.put(endpoint, { data: body }, { params: status ? { status } : undefined })
+    return data
+  } catch (error) {
+    if (axios.isAxiosError(error) && (error.response?.status === 404 || error.response?.status === 405)) {
+      const { data } = await strapiClient.post(endpoint, { data: body }, { params: status ? { status } : undefined })
+      return data
+    }
+    throw error
+  }
+}
 export async function uploadMedia(file: File, alternativeText?: string): Promise<MediaFile> {
   const form = new FormData()
   form.append('files', file)

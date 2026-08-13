@@ -31,7 +31,7 @@ export async function getPageBySlug(slug: string): Promise<PublicPage | null> {
   const attrs = (raw.attributes ?? raw) as Record<string, unknown>
   const sectionsRaw = attrs.sections as { value?: PublicPageSection[] } | PublicPageSection[] | null | undefined
   const sections = Array.isArray(sectionsRaw) ? sectionsRaw : (sectionsRaw?.value ?? [])
-  const status = (attrs.status as string) ?? 'draft'
+  const status = (attrs.status as string) ?? ((attrs.publishedAt as string) ? 'published' : 'draft')
   const previewToken = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('preview') : null
   const isPreview = previewToken === 'draft'
   if (status !== 'published' && !isPreview) return null

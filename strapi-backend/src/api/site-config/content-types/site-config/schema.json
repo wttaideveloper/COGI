@@ -1,0 +1,20 @@
+{
+  "kind": "singleType",
+  "collectionName": "site_configs",
+  "info": {
+    "displayName": "Site Config",
+    "singularName": "site-config",
+    "pluralName": "site-configs",
+    "description": "Published public-website theme, header, footer, SEO, navigation, and homepage overlay"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "payload": {
+      "type": "json",
+      "required": true
+    }
+  }
+}

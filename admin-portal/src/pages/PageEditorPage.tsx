@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { mockPages } from '@/data/mock'
 import { PAGE_SECTION_OPTIONS, PAGE_TEMPLATES, createSection, sectionsFromTemplate, slugify, type PageSection, type PageSectionType, type PageTemplateId } from '@/data/pageTemplates'
-import { apiCreate, apiList, apiUpdate, getErrorMessage, isDemoMode } from '@/services/strapi'
+import { apiCreate, apiListAll, apiPublish, apiUnpublish, apiUpdate, getErrorMessage, isDemoMode } from '@/services/strapi'
+import { notifyPublished } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import type { PageRecord } from '@/types'
 
@@ -34,7 +35,7 @@ export default function PageEditorPage() {
 
   const query = useQuery({
     queryKey: ['pages'],
-    queryFn: () => apiList<PageRecord>('/pages'),
+    queryFn: () => apiListAll<PageRecord>('/pages'),
     enabled: !isDemoMode() && !isNew,
   })
 
@@ -141,12 +142,22 @@ export default function PageEditorPage() {
         localStorage.setItem(`cogi_page_${payload.slug}`, JSON.stringify(payload))
         return payload
       }
-      if (isNew) return apiCreate('/pages', body)
-      return apiUpdate('/pages', page.documentId || page.id || String(id), body)
+      if (isNew) {
+        const created = await apiCreate('/pages', body, 'draft')
+        const createdId = (created as { data?: { documentId?: string } })?.data?.documentId
+        if (createdId && status === 'published') await apiPublish('/pages', createdId)
+        return created
+      }
+      const documentId = page.documentId || page.id || String(id)
+      await apiUpdate('/pages', documentId, body, 'draft')
+      if (status === 'published') await apiPublish('/pages', documentId)
+      else await apiUnpublish('/pages', documentId)
+      return payload
     },
     onSuccess: (_data, status) => {
       qc.invalidateQueries({ queryKey: ['pages'] })
       setSavedAs(status)
+      if (status === 'published') notifyPublished()
       window.setTimeout(() => {
         setSavedAs(null)
         if (status === 'published') navigate('/pages')
@@ -227,7 +238,7 @@ export default function PageEditorPage() {
       </div>
 
       {savedAs === 'draft' ? <p className="mb-4 text-sm font-semibold text-amber-700">Draft saved — not live on the public site yet.</p> : null}
-      {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live — page is now public.</p> : null}
+      {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live — the public page updates immediately.</p> : null}
       {save.error ? <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(save.error)}</p> : null}
 
       <div className="mb-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-slate-600">

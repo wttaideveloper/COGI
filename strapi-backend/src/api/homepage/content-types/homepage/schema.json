@@ -22,6 +22,28 @@
       "repeatable": true,
       "component": "shared.hero-slide"
     },
+    "heroHeadline": {
+      "type": "string"
+    },
+    "heroIntro": {
+      "type": "text"
+    },
+    "heroCtaLabel": {
+      "type": "string"
+    },
+    "heroCtaHref": {
+      "type": "string"
+    },
+    "heroImageUrl": {
+      "type": "text"
+    },
+    "heroImageAlt": {
+      "type": "string"
+    },
+    "heroSlideList": {
+      "type": "json",
+      "description": "URL-based hero slides from the admin portal"
+    },
     "missionHeading": {
       "type": "string",
       "default": "Our Mission"

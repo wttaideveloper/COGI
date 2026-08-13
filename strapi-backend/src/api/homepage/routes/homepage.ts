@@ -1,3 +1,3 @@
-﻿import { factories } from '@strapi/strapi';
+﻿import { coreRouterWithSinglePublish } from '../../../utils/publish-actions';
 
-export default factories.createCoreRouter('api::homepage.homepage');
+export default coreRouterWithSinglePublish('api::homepage.homepage', 'homepage');

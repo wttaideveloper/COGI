@@ -6,18 +6,21 @@ export const strapiClient = axios.create({
   baseURL: `${STRAPI_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
   },
   timeout: 8000,
 })
 
 export function isStrapiAvailable(): boolean {
-  return Boolean(import.meta.env.VITE_STRAPI_URL)
+  return true
 }
 
 export async function fetchFromStrapi<T>(endpoint: string, params?: Record<string, unknown>): Promise<T | null> {
-  if (!isStrapiAvailable()) return null
   try {
-    const { data } = await strapiClient.get<T>(endpoint, { params })
+    const { data } = await strapiClient.get<T>(endpoint, {
+      params: { ...params, _t: Date.now() },
+      headers: { 'Cache-Control': 'no-cache' },
+    })
     return data
   } catch {
     return null

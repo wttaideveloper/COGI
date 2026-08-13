@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { colorPresets, fontOptions, headingFontOptions } from '@/data/siteSetup'
-import { defaultSiteConfig, loadSiteConfig, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
+import { defaultSiteConfig, hydrateSiteConfigFromStrapi, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
+import { getErrorMessage } from '@/services/strapi'
 import type { FooterSettings, HeaderSettings, SeoSettings, ThemeSettings } from '@/types'
 
 function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -36,23 +37,60 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
   )
 }
 
-function SaveBanner({ show, message }: { show: boolean; message?: string }) {
-  if (!show) return null
-  return <p className="mt-3 text-sm font-semibold text-emerald-700">{message || 'Saved — refresh the public site (http://localhost:5173) to see changes.'}</p>
+function SaveBanner({ savedAs, error }: { savedAs: 'draft' | 'published' | null; error?: string | null }) {
+  if (error) return <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>
+  if (savedAs === 'draft') return <p className="mt-3 text-sm font-semibold text-amber-700">Draft saved in Strapi — not live until you Publish.</p>
+  if (savedAs === 'published') return <p className="mt-3 text-sm font-semibold text-emerald-700">Published live — the public website updates immediately.</p>
+  return null
+}
+
+function PublishActions({
+  pending,
+  pendingStatus,
+  onSave,
+}: {
+  pending: boolean
+  pendingStatus: 'draft' | 'published' | null
+  onSave: (status: 'draft' | 'published') => void
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button type="button" className="btn-secondary" disabled={pending} onClick={() => onSave('draft')}>
+        {pending && pendingStatus === 'draft' ? 'Saving draft…' : 'Save as draft'}
+      </button>
+      <button type="button" className="btn-primary" disabled={pending} onClick={() => onSave('published')}>
+        {pending && pendingStatus === 'published' ? 'Publishing…' : 'Publish live'}
+      </button>
+    </div>
+  )
 }
 
 export function ThemePage() {
   const [theme, setTheme] = useState<ThemeSettings>(defaultSiteConfig().theme)
-  const [saved, setSaved] = useState(false)
+  const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
+  const [pending, setPending] = useState<'draft' | 'published' | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setTheme(loadSiteConfig().theme)
+    let active = true
+    hydrateSiteConfigFromStrapi().then((config) => {
+      if (active) setTheme(config.theme)
+    })
+    return () => { active = false }
   }, [])
 
-  async function save() {
-    await saveSiteConfig({ theme })
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 3000)
+  async function save(status: 'draft' | 'published') {
+    setPending(status)
+    setError(null)
+    try {
+      await saveSiteConfig({ theme }, status)
+      setSavedAs(status)
+      window.setTimeout(() => setSavedAs(null), 4000)
+    } catch (err) {
+      setError(`Could not ${status === 'published' ? 'publish' : 'save'} to Strapi: ${getErrorMessage(err)}`)
+    } finally {
+      setPending(null)
+    }
   }
 
   function patch(key: keyof ThemeSettings, value: string) {
@@ -61,7 +99,11 @@ export function ThemePage() {
 
   return (
     <>
-      <PageHeader title="Theme & branding" description="Colors and fonts applied to the public website after you save." action={<button className="btn-primary" onClick={save}>Save theme</button>} />
+      <PageHeader
+        title="Theme & branding"
+        description="Save a private draft in Strapi, then Publish live to update the public website immediately."
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+      />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
         <div className="space-y-4">
           <div className="admin-card p-5">
@@ -106,7 +148,7 @@ export function ThemePage() {
               </select>
             </Field>
           </div>
-          <SaveBanner show={saved} />
+          <SaveBanner savedAs={savedAs} error={error} />
         </div>
         <div className="admin-card overflow-hidden p-0">
           <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-slate-600">Live preview</div>
@@ -124,11 +166,17 @@ export function ThemePage() {
 
 export function HeaderEditorPage() {
   const [header, setHeader] = useState<HeaderSettings>(defaultSiteConfig().header)
-  const [saved, setSaved] = useState(false)
+  const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
+  const [pending, setPending] = useState<'draft' | 'published' | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
-    setHeader(loadSiteConfig().header)
+    let active = true
+    hydrateSiteConfigFromStrapi().then((config) => {
+      if (active) setHeader(config.header)
+    })
+    return () => { active = false }
   }, [])
 
   function patch<K extends keyof HeaderSettings>(key: K, value: HeaderSettings[K]) {
@@ -146,22 +194,35 @@ export function HeaderEditorPage() {
     }
   }
 
-  async function save() {
-    await saveSiteConfig({ header })
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 3000)
+  async function save(status: 'draft' | 'published') {
+    setPending(status)
+    setError(null)
+    try {
+      const next = await saveSiteConfig({ header }, status)
+      setHeader(next.header)
+      setSavedAs(status)
+      window.setTimeout(() => setSavedAs(null), 4000)
+    } catch (err) {
+      setError(`Could not ${status === 'published' ? 'publish' : 'save'} to Strapi: ${getErrorMessage(err)}`)
+    } finally {
+      setPending(null)
+    }
   }
 
   return (
     <>
-      <PageHeader title="Header & navigation bar" description="Logo, colors, and CTA. Changes appear on the public site after Save." action={<button className="btn-primary" onClick={save}>Save header</button>} />
+      <PageHeader
+        title="Header & navigation bar"
+        description="Save a private draft in Strapi, then Publish live to update the public header immediately."
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+      />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
         <div className="space-y-4">
           <div className="admin-card grid gap-4 p-5 md:grid-cols-2">
             <ColorField label="Background" value={header.backgroundColor} onChange={(v) => patch('backgroundColor', v)} />
             <ColorField label="Text color" value={header.textColor} onChange={(v) => patch('textColor', v)} />
             <div className="md:col-span-2">
-              <Field label="Upload header logo" hint="PNG, SVG, or JPG. Uploading updates the preview immediately — click Save header to publish to the website.">
+              <Field label="Upload header logo" hint="PNG, SVG, or JPG. Preview updates immediately — Publish live to send it to the website.">
                 <input
                   className="admin-input"
                   type="file"
@@ -193,7 +254,7 @@ export function HeaderEditorPage() {
               </div>
             ) : null}
           </div>
-          <SaveBanner show={saved} />
+          <SaveBanner savedAs={savedAs} error={error} />
         </div>
         <div className="admin-card overflow-hidden p-0">
           <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-slate-600">Header preview</div>
@@ -216,11 +277,17 @@ export function HeaderEditorPage() {
 
 export function FooterEditorPage() {
   const [footer, setFooter] = useState<FooterSettings>(defaultSiteConfig().footer)
-  const [saved, setSaved] = useState(false)
+  const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
+  const [pending, setPending] = useState<'draft' | 'published' | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
-    setFooter(loadSiteConfig().footer)
+    let active = true
+    hydrateSiteConfigFromStrapi().then((config) => {
+      if (active) setFooter(config.footer)
+    })
+    return () => { active = false }
   }, [])
 
   function patch<K extends keyof FooterSettings>(key: K, value: FooterSettings[K]) {
@@ -238,15 +305,28 @@ export function FooterEditorPage() {
     }
   }
 
-  async function save() {
-    await saveSiteConfig({ footer })
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 3000)
+  async function save(status: 'draft' | 'published') {
+    setPending(status)
+    setError(null)
+    try {
+      const next = await saveSiteConfig({ footer }, status)
+      setFooter(next.footer)
+      setSavedAs(status)
+      window.setTimeout(() => setSavedAs(null), 4000)
+    } catch (err) {
+      setError(`Could not ${status === 'published' ? 'publish' : 'save'} to Strapi: ${getErrorMessage(err)}`)
+    } finally {
+      setPending(null)
+    }
   }
 
   return (
     <>
-      <PageHeader title="Footer" description="Footer content and colors sync to the public website after Save." action={<button className="btn-primary" onClick={save}>Save footer</button>} />
+      <PageHeader
+        title="Footer"
+        description="Save a private draft in Strapi, then Publish live to update the public footer immediately."
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+      />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
         <div className="space-y-4">
           <div className="admin-card grid gap-4 p-5 md:grid-cols-2">
@@ -275,7 +355,7 @@ export function FooterEditorPage() {
               </>
             ) : null}
           </div>
-          <SaveBanner show={saved} />
+          <SaveBanner savedAs={savedAs} error={error} />
         </div>
         <div className="admin-card overflow-hidden p-0">
           <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-slate-600">Footer preview</div>
@@ -292,25 +372,43 @@ export function FooterEditorPage() {
 
 export function SeoEditorPage() {
   const [seo, setSeo] = useState<SeoSettings>(defaultSiteConfig().seo)
-  const [saved, setSaved] = useState(false)
+  const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
+  const [pending, setPending] = useState<'draft' | 'published' | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setSeo(loadSiteConfig().seo)
+    let active = true
+    hydrateSiteConfigFromStrapi().then((config) => {
+      if (active) setSeo(config.seo)
+    })
+    return () => { active = false }
   }, [])
 
   function patch(key: keyof SeoSettings, value: string) {
     setSeo((prev) => ({ ...prev, [key]: value }))
   }
 
-  async function save() {
-    await saveSiteConfig({ seo })
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 3000)
+  async function save(status: 'draft' | 'published') {
+    setPending(status)
+    setError(null)
+    try {
+      await saveSiteConfig({ seo }, status)
+      setSavedAs(status)
+      window.setTimeout(() => setSavedAs(null), 4000)
+    } catch (err) {
+      setError(`Could not ${status === 'published' ? 'publish' : 'save'} to Strapi: ${getErrorMessage(err)}`)
+    } finally {
+      setPending(null)
+    }
   }
 
   return (
     <>
-      <PageHeader title="SEO & social" description="Default meta tags used by the public website." action={<button className="btn-primary" onClick={save}>Save SEO</button>} />
+      <PageHeader
+        title="SEO & social"
+        description="Save a private draft in Strapi, then Publish live to update public meta tags immediately."
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+      />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
         <div className="admin-card space-y-4 p-5">
           <Field label="Meta title"><input className="admin-input" value={seo.metaTitle} onChange={(e) => patch('metaTitle', e.target.value)} /></Field>
@@ -318,7 +416,7 @@ export function SeoEditorPage() {
           <Field label="Keywords"><input className="admin-input" value={seo.keywords} onChange={(e) => patch('keywords', e.target.value)} /></Field>
           <Field label="Site URL"><input className="admin-input" value={seo.siteUrl} onChange={(e) => patch('siteUrl', e.target.value)} /></Field>
           <Field label="Open Graph image URL"><input className="admin-input" value={seo.ogImageUrl} onChange={(e) => patch('ogImageUrl', e.target.value)} /></Field>
-          <SaveBanner show={saved} />
+          <SaveBanner savedAs={savedAs} error={error} />
         </div>
         <div className="admin-card overflow-hidden p-0">
           <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-slate-600">Search preview</div>

@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { mockHomepage } from '@/data/mock'
-import { apiSingle, apiUpdateSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
-import { loadSiteConfig, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
+import { apiPublishSingle, apiSingle, apiUpdateSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
+import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import type { HeroSlide, HomepageRecord } from '@/types'
 
@@ -53,11 +53,31 @@ function loadHomepageDraft(): HomepageDraftPayload | null {
   }
 }
 
+function toHomepageStrapiPayload(values: HomepageRecord, slides: HeroSlide[]) {
+  const nextSlides = slides.filter((slide) => slide.imageUrl)
+  return {
+    heroHeadline: values.heroHeadline,
+    heroIntro: values.heroIntro,
+    heroCtaLabel: values.primaryCtaLabel,
+    heroCtaHref: values.primaryCtaHref,
+    heroImageUrl: nextSlides[0]?.imageUrl || values.heroImageUrl || '',
+    heroImageAlt: nextSlides[0]?.alt || values.heroImageAlt || '',
+    heroSlideList: nextSlides,
+    missionHeading: values.missionTitle,
+    missionText: values.missionStatement,
+    missionScripture: values.missionScripture ?? '',
+    impactStats: (values.stats || []).map((s) => ({ value: s.value, label: s.label })),
+    sectionVisibility: Object.fromEntries((values.sections || []).map((s) => [s.id, s.enabled])),
+    sectionOrder: [...(values.sections || [])].sort((a, b) => a.order - b.order).map((s) => s.id),
+  }
+}
+
 export default function HomepageManagerPage() {
   const query = useQuery({ queryKey: ['homepage'], queryFn: () => apiSingle<HomepageRecord>('/homepage'), enabled: !isDemoMode() })
   const stored = loadSiteConfig().homepage
   const existingDraft = loadHomepageDraft()
-  const data = existingDraft?.values ?? query.data ?? { ...mockHomepage, ...stored }
+  const [hydrated, setHydrated] = useState<HomepageRecord | null>(null)
+  const data = existingDraft?.values ?? hydrated ?? query.data ?? { ...mockHomepage, ...stored }
   const safeData: HomepageRecord = {
     ...mockHomepage,
     ...data,
@@ -77,18 +97,32 @@ export default function HomepageManagerPage() {
   const [draftUrl, setDraftUrl] = useState('')
   const [draftAlt, setDraftAlt] = useState('')
 
+  useEffect(() => {
+    let active = true
+    hydrateSiteConfigFromStrapi().then((config) => {
+      if (!active) return
+      const home = config.homepage
+      setHydrated({
+        ...mockHomepage,
+        ...home,
+        stats: home.impactStats?.length ? home.impactStats.map((s) => ({ value: s.value, label: s.label })) : mockHomepage.stats,
+        sections: home.sections?.length ? home.sections : mockHomepage.sections,
+        heroSlides: home.heroSlides,
+      })
+      if (!loadHomepageDraft()?.slides?.length && home.heroSlides?.length) setSlides(home.heroSlides)
+    })
+    return () => { active = false }
+  }, [])
+
   const mutation = useMutation({
     mutationFn: async ({ values, status }: { values: HomepageRecord; status: 'draft' | 'published' }) => {
       const nextSlides = slides.filter((slide) => slide.imageUrl)
       const payload = { ...values, heroSlides: nextSlides }
-      if (status === 'draft') {
-        localStorage.setItem(
-          HOMEPAGE_DRAFT_KEY,
-          JSON.stringify({ values: payload, slides: nextSlides, savedAt: new Date().toISOString() } satisfies HomepageDraftPayload),
-        )
-        return { values: payload, status }
-      }
-      await saveSiteConfig({
+      localStorage.setItem(
+        HOMEPAGE_DRAFT_KEY,
+        JSON.stringify({ values: payload, slides: nextSlides, savedAt: new Date().toISOString() } satisfies HomepageDraftPayload),
+      )
+      const saved = await saveSiteConfig({
         homepage: {
           heroHeadline: values.heroHeadline,
           heroIntro: values.heroIntro,
@@ -103,18 +137,18 @@ export default function HomepageManagerPage() {
           impactStats: (values.stats || []).map((s) => ({ id: s.label, value: s.value, label: s.label })),
           sections: values.sections,
         },
-      })
-      localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
+      }, status)
+      if (status === 'published') {
+        localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
+        setSlides(saved.homepage.heroSlides || nextSlides)
+      }
       if (!isDemoMode()) {
-        const strapiPayload = {
-          ...values,
-          missionHeading: values.missionTitle,
-          missionText: values.missionStatement,
-          missionScripture: values.missionScripture ?? '',
-        }
-        delete strapiPayload.missionTitle
-        delete strapiPayload.missionStatement
-        await apiUpdateSingle('/homepage', strapiPayload)
+        const strapiPayload = toHomepageStrapiPayload(
+          { ...values, heroImageUrl: saved.homepage.heroImageUrl, heroSlides: saved.homepage.heroSlides },
+          saved.homepage.heroSlides || nextSlides,
+        )
+        await apiUpdateSingle('/homepage', strapiPayload, 'draft')
+        if (status === 'published') await apiPublishSingle('/homepage')
       }
       return { values: payload, status }
     },
@@ -158,8 +192,9 @@ export default function HomepageManagerPage() {
       />
       <ErrorNotice error={query.error} />
       {hasDraft ? <p className="mb-4 text-sm font-semibold text-amber-700">Unpublished draft loaded — not live until you Publish.</p> : null}
-      {savedAs === 'draft' ? <p className="mb-4 text-sm font-semibold text-amber-700">Draft saved — not live on the public site yet.</p> : null}
-      {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live — refresh the public site to see changes.</p> : null}
+      {savedAs === 'draft' ? <p className="mb-4 text-sm font-semibold text-amber-700">Draft saved in Strapi — not live until you Publish.</p> : null}
+      {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live — the public homepage updates immediately.</p> : null}
+      {mutation.error ? <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p> : null}
       <form
         className="grid gap-6 xl:grid-cols-[1fr_360px]"
         onSubmit={(e) => {

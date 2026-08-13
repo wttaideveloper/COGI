@@ -3,6 +3,7 @@ import type { Core } from '@strapi/strapi';
 const PUBLIC_READ_TYPES = [
   'api::global-setting.global-setting',
   'api::homepage.homepage',
+  'api::site-config.site-config',
   'api::header-setting.header-setting',
   'api::footer-setting.footer-setting',
   'api::page.page',
@@ -30,6 +31,7 @@ const PUBLIC_CREATE_TYPES = [
 const AUTH_FULL_TYPES = [
   'api::global-setting.global-setting',
   'api::homepage.homepage',
+  'api::site-config.site-config',
   'api::header-setting.header-setting',
   'api::footer-setting.footer-setting',
   'api::page.page',
@@ -56,6 +58,8 @@ const AUTH_ACTIONS = ['find', 'findOne', 'create', 'update', 'delete'] as const;
 const AUTH_PUBLISH_ACTIONS = ['publish', 'unpublish'] as const;
 
 const AUTH_PUBLISH_TYPES = [
+  'api::site-config.site-config',
+  'api::homepage.homepage',
   'api::page.page',
   'api::program.program',
   'api::news-article.news-article',

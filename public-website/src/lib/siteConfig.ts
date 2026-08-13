@@ -1,3 +1,5 @@
+import { fetchFromStrapi } from '@/services/strapi'
+
 export type SiteNavItem = {
   id: string
   label: string
@@ -151,24 +153,41 @@ export function applyTheme(theme: SiteConfig['theme']) {
 }
 
 export async function fetchSiteConfig(): Promise<SiteConfig> {
+  const fromStrapi = await fetchSiteConfigFromStrapi()
+  if (fromStrapi) return fromStrapi
   try {
     const res = await fetch(`/site-config.json?t=${Date.now()}`, { cache: 'no-store' })
     if (!res.ok) return defaults
     const data = (await res.json()) as Partial<SiteConfig>
-    return {
-      ...defaults,
-      ...data,
-      theme: { ...defaults.theme, ...data.theme },
-      header: { ...defaults.header, ...data.header },
-      footer: { ...defaults.footer, ...data.footer },
-      seo: { ...defaults.seo, ...data.seo },
-      homepage: { ...defaults.homepage, ...data.homepage },
-      headerNav: data.headerNav?.length ? data.headerNav : defaults.headerNav,
-      footerNav: data.footerNav?.length ? data.footerNav : defaults.footerNav,
-    }
+    return mergeSiteConfig(data)
   } catch {
     return defaults
   }
+}
+
+function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
+  return {
+    ...defaults,
+    ...data,
+    theme: { ...defaults.theme, ...data.theme },
+    header: { ...defaults.header, ...data.header },
+    footer: { ...defaults.footer, ...data.footer },
+    seo: { ...defaults.seo, ...data.seo },
+    homepage: { ...defaults.homepage, ...data.homepage },
+    headerNav: data.headerNav?.length ? data.headerNav : defaults.headerNav,
+    footerNav: data.footerNav?.length ? data.footerNav : defaults.footerNav,
+  }
+}
+
+async function fetchSiteConfigFromStrapi(): Promise<SiteConfig | null> {
+  const data = await fetchFromStrapi<{ data?: Record<string, unknown> | null }>('/site-config')
+  const raw = data?.data
+  if (!raw || typeof raw !== 'object') return null
+  const attrs = (raw.attributes && typeof raw.attributes === 'object' ? raw.attributes : raw) as Record<string, unknown>
+  const payload = attrs.payload as Partial<SiteConfig> | undefined
+  if (!payload || typeof payload !== 'object') return null
+  if (!payload.theme && !payload.homepage && !payload.header) return null
+  return mergeSiteConfig(payload)
 }
 
 export { defaults as defaultSiteConfig }
