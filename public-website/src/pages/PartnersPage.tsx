@@ -2,14 +2,17 @@ import { useQuery } from '@tanstack/react-query'
 import { getPartners } from '@/api/partners'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card, Skeleton } from '@/components/ui/Card'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function PartnersPage() {
   const { data: partners, isLoading } = useQuery({ queryKey: ['partners'], queryFn: getPartners })
+  const { copy } = useSiteConfig()
+  const page = copy.partners
 
   return (
     <>
-      <SEO title="Our Partners" description="Organizations partnering with COGI" path="/about/partners" />
-      <PageHero title="Our Partners" subtitle="Collaborating to multiply missional healthcare impact" />
+      <SEO title={page.heroTitle} description={page.heroSubtitle} path="/about/partners" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-7xl px-4 py-16">
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-40" />)}</div>

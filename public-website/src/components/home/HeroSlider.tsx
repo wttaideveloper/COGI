@@ -53,8 +53,7 @@ export function HeroSlider({ slides, intervalMs = 6000, className, children }: P
           aria-hidden={index !== active}
         />
       ))}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_20%,rgba(201,162,39,0.15)_0%,transparent_50%),radial-gradient(ellipse_at_70%_80%,rgba(26,138,132,0.2)_0%,transparent_50%)]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-teal-deep/90 via-teal-deep/45 to-teal-deep/20" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/15" />
       {children}
       {valid.length > 1 ? (
         <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2" role="tablist" aria-label="Hero slides">

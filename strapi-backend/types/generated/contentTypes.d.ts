@@ -830,6 +830,13 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
       Schema.Attribute.Private;
     featuredEvents: Schema.Attribute.Relation<'oneToMany', 'api::event.event'>;
     featuredStories: Schema.Attribute.Relation<'oneToMany', 'api::story.story'>;
+    heroCtaHref: Schema.Attribute.String;
+    heroCtaLabel: Schema.Attribute.String;
+    heroHeadline: Schema.Attribute.String;
+    heroImageAlt: Schema.Attribute.String;
+    heroImageUrl: Schema.Attribute.Text;
+    heroIntro: Schema.Attribute.Text;
+    heroSlideList: Schema.Attribute.JSON;
     heroSlides: Schema.Attribute.Component<'shared.hero-slide', true>;
     impactStats: Schema.Attribute.Component<'shared.statistic', true>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1244,6 +1251,35 @@ export interface ApiRedirectRedirect extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.DefaultTo<'permanent_301'>;
     toPath: Schema.Attribute.String & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiSiteConfigSiteConfig extends Struct.SingleTypeSchema {
+  collectionName: 'site_configs';
+  info: {
+    description: 'Published public-website theme, header, footer, SEO, navigation, and homepage overlay';
+    displayName: 'Site Config';
+    pluralName: 'site-configs';
+    singularName: 'site-config';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::site-config.site-config'
+    > &
+      Schema.Attribute.Private;
+    payload: Schema.Attribute.JSON & Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1903,6 +1939,7 @@ declare module '@strapi/strapi' {
       'api::program.program': ApiProgramProgram;
       'api::publication.publication': ApiPublicationPublication;
       'api::redirect.redirect': ApiRedirectRedirect;
+      'api::site-config.site-config': ApiSiteConfigSiteConfig;
       'api::story.story': ApiStoryStory;
       'api::team-member.team-member': ApiTeamMemberTeamMember;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;

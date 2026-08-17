@@ -30,6 +30,7 @@ export interface HeroContent {
   primaryCta: { label: string; href: string }
   secondaryCta: { label: string; href: string }
   imageAlt: string
+  imageUrl?: string
 }
 
 export interface MethodCard {
@@ -152,6 +153,7 @@ export interface Story {
   program: string
   featured: boolean
   videoUrl?: string
+  imageUrl?: string
   content?: string
 }
 

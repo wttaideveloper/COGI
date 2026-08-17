@@ -87,11 +87,11 @@ export interface MediaFile extends BaseRecord { name: string; url: string; mime:
 export interface ProgramRecord extends BaseRecord { title: string; slug: string; summary: string; description: string; area: string; status: Status; order: number }
 export interface BlogRecord extends BaseRecord { title: string; slug: string; summary: string; body: string; author: string; category: string; status: Status; seo?: SeoFields }
 export interface EventRecord extends BaseRecord { title: string; slug: string; summary: string; description: string; startDate: string; endDate?: string; venue?: string; category?: string; status: Status }
-export interface StoryRecord extends BaseRecord { title: string; slug: string; summary: string; type: 'video' | 'written'; country?: string; program?: string; featured: boolean; status: Status }
+export interface StoryRecord extends BaseRecord { title: string; slug: string; summary: string; type: 'video' | 'written'; country?: string; program?: string; featured: boolean; status: Status; imageUrl?: string; videoUrl?: string }
 export interface TestimonialRecord extends BaseRecord { quote: string; author: string; mediaType: 'written' | 'video'; country?: string; program?: string; featured: boolean; status: Status }
-export interface TeamRecord extends BaseRecord { name: string; title: string; role: 'board' | 'global-team' | 'staff' | 'advisor'; region?: string; country?: string; bio: string; order: number; publicVisibility: boolean }
+export interface TeamRecord extends BaseRecord { name: string; title: string; role: 'board' | 'global-team' | 'staff' | 'advisor'; region?: string; country?: string; bio: string; order: number; publicVisibility: boolean; status?: Status }
 export interface PartnerRecord extends BaseRecord { name: string; description?: string; url?: string; region?: string; order: number; status: Status }
-export interface LocationRecord extends BaseRecord { country: string; region?: string; summary?: string; latitude?: number; longitude?: number; status: Status }
+export interface LocationRecord extends BaseRecord { country: string; region?: string; summary?: string; programs?: string; latitude?: number; longitude?: number; status: Status }
 export interface EnquiryRecord extends BaseRecord { name: string; email: string; type: string; message: string; status: EnquiryStatus; notes?: string; createdAt: string }
 export interface SubscriberRecord extends BaseRecord { name: string; email: string; whatsapp?: string; source?: string; consent: boolean; createdAt: string }
 export interface SettingsRecord { organizationName: string; tagline: string; mission: string; vision: string; primaryEmail: string; primaryPhone?: string; address?: string; maintenanceMode: boolean; seo?: SeoFields }

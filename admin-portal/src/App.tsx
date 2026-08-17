@@ -1,11 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import RequireAuth from '@/components/RequireAuth'
 import AdminLayout from '@/layouts/AdminLayout'
-import { AuditPage, DashboardPage, EnquiriesPage, ForgotPasswordPage, GenericContentPage, LoginPage, NavigationPage, NewsletterPage, ProfilePage, ResetPasswordPage, SettingsPage, UsersPage } from '@/pages/AdminPages'
+import { AuditPage, DashboardPage, EnquiriesPage, ForgotPasswordPage, GenericContentPage, LoginPage, NavigationPage, NewsletterPage, ProfilePage, ResetPasswordPage, SettingsPage } from '@/pages/AdminPages'
+import UsersPage from '@/pages/UsersPage'
 import HomepagePage from '@/pages/HomepageManagerPage'
 import MediaLibraryPage from '@/pages/MediaLibraryPage'
 import PageEditorPage from '@/pages/PageEditorPage'
 import { FooterEditorPage, HeaderEditorPage, SeoEditorPage, ThemePage } from '@/pages/SiteSetupPages'
+import WebsiteCopyPage from '@/pages/WebsiteCopyPage'
 import type { ModuleKey } from '@/types'
 
 const crudModules: ModuleKey[] = ['programs', 'blog', 'events', 'stories', 'testimonials', 'team', 'partners', 'locations']
@@ -25,6 +27,7 @@ export default function App() {
           <Route path="header" element={<HeaderEditorPage />} />
           <Route path="footer" element={<FooterEditorPage />} />
           <Route path="homepage" element={<HomepagePage />} />
+          <Route path="website-copy" element={<WebsiteCopyPage />} />
           <Route path="media" element={<MediaLibraryPage />} />
           <Route path="navigation" element={<NavigationPage />} />
           <Route path="pages" element={<GenericContentPage moduleKey="pages" />} />

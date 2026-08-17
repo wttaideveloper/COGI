@@ -1,4 +1,8 @@
 import { fetchFromStrapi } from '@/services/strapi'
+import { defaultSiteCopy, mergeSiteCopy, siteImages, type SiteCopy } from '@/data/siteCopy'
+
+export type { SiteCopy }
+export { siteImages }
 
 export type SiteNavItem = {
   id: string
@@ -61,6 +65,7 @@ export type SiteConfig = {
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
     sections?: Array<{ id: string; label: string; enabled: boolean; order: number; summary: string }>
   }
+  copy: SiteCopy
   updatedAt?: string
 }
 
@@ -79,63 +84,70 @@ const defaults: SiteConfig = {
     textColor: '#1A2E2D',
     logoUrl: '',
     logoAlt: 'Companions of Grace International',
-    ctaText: 'Donate',
+    ctaText: 'Give now',
     ctaLink: '/donate',
     sticky: true,
   },
   footer: {
-    backgroundColor: '#0A4D4A',
+    backgroundColor: '#161412',
     textColor: '#ffffff',
     logoUrl: '',
-    description: 'Equipping healthcare professionals for Kingdom engagement around the world.',
+    description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',
     copyright: '© Companions of Grace International. All rights reserved.',
     showSocial: true,
   },
   seo: {
-    metaTitle: 'Companions of Grace International',
-    metaDescription: 'Equipping healthcare professionals for Kingdom engagement through communities of grace.',
-    keywords: 'COGI, healthcare mission',
-    ogImageUrl: '',
+    metaTitle: 'COGI – Companions of Grace International',
+    metaDescription:
+      'Equipping healthcare professionals for Kingdom engagement through training, community, and missional healthcare programs worldwide.',
+    keywords: 'COGI, Companions of Grace, healthcare missions, missional healthcare, Christian healthcare',
+    ogImageUrl: siteImages.heroCrowd,
     siteUrl: 'https://coginternational.org',
   },
   headerNav: [],
   footerNav: [],
   homepage: {
     heroHeadline: 'Equipping Healthcare Professionals for Kingdom Engagement',
-    heroIntro: 'COGI cultivates communities of grace among healthcare professionals serving missionally around the world.',
-    heroImageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80',
-    heroImageAlt: 'Healthcare professionals collaborating in a clinic',
+    heroIntro:
+      'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
+    heroImageUrl: siteImages.heroCrowd,
+    heroImageAlt: 'Healthcare professionals gathered in worship and mission',
     heroSlides: [
-      { id: 's1', imageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80', alt: 'Healthcare professionals collaborating in a clinic' },
-      { id: 's2', imageUrl: 'https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1600&q=80', alt: 'Medical team serving together' },
-      { id: 's3', imageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=1600&q=80', alt: 'Community healthcare and care' },
+      { id: 's1', imageUrl: siteImages.heroCrowd, alt: 'A global gathering of believers on mission' },
+      { id: 's2', imageUrl: siteImages.heroHands, alt: 'Hands joined in prayer and partnership' },
+      { id: 's3', imageUrl: siteImages.kenya, alt: 'Ministry and training in East Africa' },
+      { id: 's4', imageUrl: siteImages.historicGathering, alt: 'A historic gathering of the fellowship' },
     ],
-    primaryCtaLabel: 'Join the Movement',
-    primaryCtaHref: '/get-involved',
+    primaryCtaLabel: 'Give now',
+    primaryCtaHref: '/donate',
     missionTitle: 'Our Mission',
     missionStatement:
-      'Inspire and enable transformation so healthcare professionals think, live, and work missionally — bringing the love of Christ to patients, colleagues, and communities around the world.',
-    missionScripture:
-      'And whatever you do, in word or deed, do everything in the name of the Lord Jesus, giving thanks to God the Father through him. — Colossians 3:17',
+      'Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God\'s love, and offer hope, healing, and wholeness through Jesus Christ.',
+    missionScripture: 'Colossians 3:17  ·  Romans 12:2',
     impactStats: [
-      { id: 'countries', value: '10+', label: 'Countries' },
-      { id: 'professionals', value: '500+', label: 'Healthcare Professionals' },
-      { id: 'programs', value: '30+', label: 'Programs Delivered' },
-      { id: 'communities', value: '∞', label: 'Communities of Grace' },
+      { id: 'countries', value: '10+', label: 'Countries engaged' },
+      { id: 'professionals', value: '500+', label: 'Healthcare professionals equipped' },
+      { id: 'programs', value: '30+', label: 'Programs, workshops & formation experiences' },
+      { id: 'communities', value: '∞', label: 'Growing Communities of Grace' },
     ],
     sections: [
       { id: 'hero', label: 'Hero', enabled: true, order: 1, summary: 'Primary homepage introduction and call to action.' },
-      { id: 'mission', label: 'Mission', enabled: true, order: 2, summary: 'Mission statement and scripture.' },
-      { id: 'methods', label: 'Methods', enabled: true, order: 3, summary: 'Enable, train, and support.' },
-      { id: 'impact', label: 'Impact Stats', enabled: true, order: 4, summary: 'Countries, professionals, programs.' },
-      { id: 'portfolio', label: 'Portfolio', enabled: true, order: 5, summary: 'Four ministry areas.' },
-      { id: 'map', label: 'Where We Serve', enabled: true, order: 6, summary: 'Countries served.' },
-      { id: 'stories', label: 'Featured Stories', enabled: true, order: 7, summary: 'Featured story teasers.' },
-      { id: 'events', label: 'Featured Event', enabled: true, order: 8, summary: 'Upcoming featured event.' },
-      { id: 'newsletter', label: 'Newsletter', enabled: true, order: 9, summary: 'Newsletter signup.' },
-      { id: 'donate', label: 'Donate CTA', enabled: true, order: 10, summary: 'Donate call to action.' },
+      { id: 'newsletterBanner', label: 'Newsletter banner', enabled: true, order: 2, summary: 'Lead story / newsletter callout.' },
+      { id: 'legacy', label: 'Legacy', enabled: true, order: 3, summary: 'Strong legacy, bold future.' },
+      { id: 'mission', label: 'Mission', enabled: true, order: 4, summary: 'Mission statement and scripture.' },
+      { id: 'video', label: 'Video', enabled: true, order: 5, summary: 'Introduction video / photo.' },
+      { id: 'methods', label: 'Methods', enabled: true, order: 6, summary: 'Enable, train, and support.' },
+      { id: 'impact', label: 'Impact Stats', enabled: true, order: 7, summary: 'Countries, professionals, programs.' },
+      { id: 'portfolio', label: 'Portfolio', enabled: true, order: 8, summary: 'Four ministry areas.' },
+      { id: 'map', label: 'Where We Serve', enabled: true, order: 9, summary: 'Countries served.' },
+      { id: 'stories', label: 'Featured Stories', enabled: true, order: 10, summary: 'Featured story teasers.' },
+      { id: 'events', label: 'Featured Event', enabled: true, order: 11, summary: 'Upcoming featured event.' },
+      { id: 'newsletter', label: 'Newsletter', enabled: true, order: 12, summary: 'Newsletter signup.' },
+      { id: 'donate', label: 'Donate CTA', enabled: true, order: 13, summary: 'Donate call to action.' },
+      { id: 'faith', label: 'Statement of faith', enabled: true, order: 14, summary: 'Closing faith statement.' },
     ],
   },
+  copy: defaultSiteCopy,
 }
 
 export function applyTheme(theme: SiteConfig['theme']) {
@@ -174,6 +186,7 @@ function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
     footer: { ...defaults.footer, ...data.footer },
     seo: { ...defaults.seo, ...data.seo },
     homepage: { ...defaults.homepage, ...data.homepage },
+    copy: mergeSiteCopy(data.copy),
     headerNav: data.headerNav?.length ? data.headerNav : defaults.headerNav,
     footerNav: data.footerNav?.length ? data.footerNav : defaults.footerNav,
   }

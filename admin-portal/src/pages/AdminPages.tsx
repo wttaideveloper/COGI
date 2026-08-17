@@ -8,13 +8,14 @@ import { z } from 'zod'
 import MenuSwapper from '@/components/MenuSwapper'
 import RichTextEditor from '@/components/RichTextEditor'
 import { useAuth } from '@/contexts/AuthContext'
-import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomepage, mockLocations, mockMedia, mockNavigation, mockPages, mockPartners, mockPrograms, mockSettings, mockStats, mockStories, mockSubscribers, mockTeam, mockTestimonials, mockUsers } from '@/data/mock'
+import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomepage, mockLocations, mockMedia, mockNavigation, mockPages, mockPartners, mockPrograms, mockSettings, mockStats, mockStories, mockSubscribers, mockTeam, mockTestimonials } from '@/data/mock'
 import { mockFooterNavigation } from '@/data/siteSetup'
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
+import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
 import { apiCreate, apiDelete, apiList, apiListAll, apiSingle, apiPublish, apiUnpublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
 import { getPreviewUrl } from '@/utils/preview'
-import type { AuditRecord, BaseRecord, FormField, HomepageRecord, MediaFile, ModuleConfig, ModuleKey, SettingsRecord } from '@/types'
+import type { AuditRecord, BaseRecord, EnquiryRecord, EnquiryStatus, FormField, HomepageRecord, MediaFile, ModuleConfig, ModuleKey, SettingsRecord } from '@/types'
 
 type AnyRecord = BaseRecord & Record<string, unknown>
 const statusOptions = [{ label: 'Draft', value: 'draft' }, { label: 'Published', value: 'published' }]
@@ -29,11 +30,11 @@ export const moduleConfigs: Record<string, ModuleConfig<AnyRecord>> = {
   programs: { key: 'programs', title: 'Programs', endpoint: '/programs', route: '/programs', singular: 'Program', description: 'CRUD for ministry programs and portfolio areas.', columns: [{ key: 'title', label: 'Title' }, { key: 'area', label: 'Area' }, { key: 'status', label: 'Status' }, { key: 'order', label: 'Order' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'area', label: 'Area', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }, { name: 'order', label: 'Order', type: 'number' }] },
   blog: { key: 'blog', title: 'Blog / News', endpoint: '/news-articles', route: '/blog', singular: 'Article', description: 'Publish news and resource articles with TipTap rich text.', columns: [{ key: 'title', label: 'Title' }, { key: 'category', label: 'Category' }, { key: 'author', label: 'Author' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'body', label: 'Body', type: 'richtext' }, { name: 'author', label: 'Author', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   events: { key: 'events', title: 'Events', endpoint: '/events', route: '/events', singular: 'Event', description: 'Manage event calendar listings and details.', columns: [{ key: 'title', label: 'Title' }, { key: 'startDate', label: 'Starts' }, { key: 'venue', label: 'Venue' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'startDate', label: 'Start date', type: 'date' }, { name: 'endDate', label: 'End date', type: 'date' }, { name: 'venue', label: 'Venue', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  stories: { key: 'stories', title: 'Stories', endpoint: '/stories', route: '/stories', singular: 'Story', description: 'Stories of transformation, including video and written entries.', columns: [{ key: 'title', label: 'Title' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'type', label: 'Type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  stories: { key: 'stories', title: 'Stories', endpoint: '/stories', route: '/stories', singular: 'Story', description: 'Stories of transformation, including video and written entries.', columns: [{ key: 'title', label: 'Title' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'type', label: 'Type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'imageUrl', label: 'Thumbnail URL', type: 'text' }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   testimonials: { key: 'testimonials', title: 'Testimonials', endpoint: '/testimonials', route: '/testimonials', singular: 'Testimonial', description: 'Written and video testimonials with filters.', columns: [{ key: 'author', label: 'Author' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'quote', label: 'Quote', type: 'textarea', required: true }, { name: 'author', label: 'Author', type: 'text', required: true }, { name: 'mediaType', label: 'Media type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   team: { key: 'team', title: 'Team Members', endpoint: '/team-members', route: '/team', singular: 'Team member', description: 'Board and global team profiles.', columns: [{ key: 'name', label: 'Name' }, { key: 'title', label: 'Title' }, { key: 'role', label: 'Role' }, { key: 'status', label: 'Status' }, { key: 'publicVisibility', label: 'Visible' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'title', label: 'Title', type: 'text' }, { name: 'role', label: 'Role', type: 'select', options: ['board', 'global-team', 'staff', 'advisor'].map((v) => ({ label: v, value: v })) }, { name: 'region', label: 'Region', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'bio', label: 'Bio', type: 'textarea' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'publicVisibility', label: 'Public visibility', type: 'select', options: yesNo }] },
   partners: { key: 'partners', title: 'Partners', endpoint: '/partners', route: '/partners', singular: 'Partner', description: 'Partner logos, links, regions, and ordering.', columns: [{ key: 'name', label: 'Name' }, { key: 'region', label: 'Region' }, { key: 'url', label: 'URL' }, { key: 'status', label: 'Status' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'url', label: 'URL', type: 'text' }, { name: 'region', label: 'Region', type: 'text' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  locations: { key: 'locations', title: 'Locations', endpoint: '/locations', route: '/locations', singular: 'Location', description: 'Country and region data for map and ministry footprint.', columns: [{ key: 'country', label: 'Country' }, { key: 'region', label: 'Region' }, { key: 'latitude', label: 'Lat' }, { key: 'longitude', label: 'Lng' }], fields: [{ name: 'country', label: 'Country', type: 'text', required: true }, { name: 'region', label: 'Region', type: 'text' }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'latitude', label: 'Latitude', type: 'number' }, { name: 'longitude', label: 'Longitude', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  locations: { key: 'locations', title: 'Locations', endpoint: '/locations', route: '/locations', singular: 'Location', description: 'Country pins for the Where we serve map. Latitude and longitude place each marker.', columns: [{ key: 'country', label: 'Country' }, { key: 'region', label: 'Region' }, { key: 'latitude', label: 'Lat' }, { key: 'longitude', label: 'Lng' }], fields: [{ name: 'country', label: 'Country', type: 'text', required: true }, { name: 'region', label: 'Region', type: 'text' }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'programs', label: 'Programs (comma-separated)', type: 'text' }, { name: 'latitude', label: 'Latitude', type: 'number' }, { name: 'longitude', label: 'Longitude', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
 }
 
 function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -47,7 +48,12 @@ function PageHeader({ title, description, action }: { title: string; description
     </div>
   )
 }
-function StatusBadge({ value }: { value: unknown }) { const text = String(value ?? ''); const color = text.includes('published') || text === 'resolved' || text === 'true' ? 'bg-emerald-50 text-emerald-700' : text === 'new' ? 'bg-blue-50 text-blue-700' : text === 'spam' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'; return <span className={`badge ${color}`}>{text || 'none'}</span> }
+function StatusBadge({ value }: { value: unknown }) {
+  const text = String(value ?? '')
+  const label = text === 'true' ? 'Yes' : text === 'false' ? 'No' : text.replace('_', ' ') || 'none'
+  const color = text.includes('published') || text === 'resolved' || text === 'true' ? 'bg-emerald-50 text-emerald-700' : text === 'new' ? 'bg-blue-50 text-blue-700' : text === 'spam' ? 'bg-red-50 text-red-700' : text === 'false' ? 'bg-slate-100 text-slate-700' : 'bg-amber-50 text-amber-700'
+  return <span className={`badge ${color}`}>{label}</span>
+}
 function ErrorNotice({ error }: { error: unknown }) { return error ? <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">Strapi request failed: {getErrorMessage(error)}. Showing local demo data so the UI remains usable.</div> : null }
 function schemaFor(fields: FormField<AnyRecord>[]) { const shape: Record<string, z.ZodTypeAny> = {}; for (const f of fields) shape[String(f.name)] = f.required ? z.coerce.string().min(1, `${f.label} is required`) : z.any().optional(); return z.object(shape).passthrough() }
 function normalizeForForm(record: AnyRecord | undefined, fields: FormField<AnyRecord>[]) { const value: Record<string, unknown> = {}; for (const field of fields) { const name = String(field.name); if (name === 'sectionsText' && record?.sections) value[name] = JSON.stringify(record.sections, null, 2); else if (name === 'itemsText' && record?.items) value[name] = (record.items as Array<{ label: string; href: string }>).map((i) => `${i.label} | ${i.href}`).join('\n'); else value[name] = record?.[name] ?? (field.type === 'number' ? 0 : field.type === 'select' ? field.options?.[0]?.value : '') } return value }
@@ -58,11 +64,11 @@ const schemaFieldMap: Record<string, Record<string, string>> = {
   '/programs': { title: 'title', slug: 'slug', summary: 'summary', description: 'body', area: 'area', order: 'order', featured: 'featured' },
   '/news-articles': { title: 'title', slug: 'slug', summary: 'summary', body: 'body', author: 'author', tags: 'tags', featured: 'featured' },
   '/events': { title: 'title', slug: 'slug', summary: 'summary', description: 'body', startDate: 'startDate', endDate: 'endDate', venue: 'venue', featured: 'featured' },
-  '/stories': { title: 'title', slug: 'slug', summary: 'summary', country: 'country', featured: 'featured' },
+  '/stories': { title: 'title', slug: 'slug', summary: 'summary', country: 'country', featured: 'featured', type: 'type', program: 'program', imageUrl: 'imageUrl', videoUrl: 'videoUrl' },
   '/testimonials': { quote: 'quote', author: 'author', mediaType: 'mediaType', country: 'country', featured: 'featured' },
   '/team-members': { name: 'name', title: 'title', role: 'role', region: 'region', bio: 'bio', order: 'order', publicVisibility: 'publicVisibility' },
   '/partners': { name: 'name', description: 'description', url: 'url', region: 'region', order: 'order' },
-  '/locations': { country: 'country', region: 'region', summary: 'summary', latitude: 'latitude', longitude: 'longitude' },
+  '/locations': { country: 'country', region: 'region', summary: 'summary', latitude: 'latitude', longitude: 'longitude', programs: 'programs' },
 }
 function buildPayload(endpoint: string, values: Record<string, unknown>, status: 'draft' | 'published') {
   const cleaned = cleanPayload(values)
@@ -80,7 +86,7 @@ export function LoginPage() {
   const { isAuthenticated, login } = useAuth(); const navigate = useNavigate(); const form = useForm({ resolver: zodResolver(z.object({ identifier: z.string().email(), password: z.string().min(1) })), defaultValues: { identifier: 'admin@cogi.local', password: 'admin123' } });
   const mutation = useMutation({ mutationFn: login, onSuccess: () => navigate('/dashboard') })
   if (isAuthenticated) return <Navigate to="/dashboard" replace />
-  return <AuthShell title="Welcome back" subtitle="Sign in to manage the COGI CMS. Demo credentials work offline."><form className="space-y-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}><Field label="Email" error={form.formState.errors.identifier?.message}><input className="admin-input" {...form.register('identifier')} /></Field><Field label="Password" error={form.formState.errors.password?.message}><input className="admin-input" type="password" {...form.register('password')} /></Field>{mutation.error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p>}<button className="btn-primary w-full" disabled={mutation.isPending}>Login</button><div className="flex justify-between text-sm"><Link className="font-semibold text-[var(--color-primary)]" to="/forgot-password">Forgot password?</Link><span className="text-slate-500">admin@cogi.local / admin123</span></div></form></AuthShell>
+  return <AuthShell title="Welcome back" subtitle="Sign in to manage the COGI website. Demo login works without Strapi."><form className="space-y-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}><Field label="Email" error={form.formState.errors.identifier?.message}><input className="admin-input" {...form.register('identifier')} /></Field><Field label="Password" error={form.formState.errors.password?.message}><input className="admin-input" type="password" {...form.register('password')} /></Field>{mutation.error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p>}<button className="btn-primary w-full" disabled={mutation.isPending}>{mutation.isPending ? 'Signing in…' : 'Sign in'}</button><div className="flex justify-between text-sm"><Link className="font-semibold text-[var(--color-primary)]" to="/forgot-password">Forgot password?</Link><span className="text-slate-500">admin@cogi.local / admin123</span></div></form></AuthShell>
 }
 export function ForgotPasswordPage() { const form = useForm({ resolver: zodResolver(z.object({ email: z.string().email() })), defaultValues: { email: '' } }); const [sent, setSent] = useStateMessage(); return <AuthShell title="Forgot password" subtitle="Request a reset email from Strapi."><form className="space-y-4" onSubmit={form.handleSubmit(() => setSent('If Strapi is available, a reset email was requested.'))}><Field label="Email" error={form.formState.errors.email?.message}><input className="admin-input" {...form.register('email')} /></Field><button className="btn-primary w-full">Send reset link</button>{sent && <p className="text-sm text-emerald-700">{sent}</p>}<Link className="text-sm font-semibold text-[var(--color-primary)]" to="/login">Back to login</Link></form></AuthShell> }
 export function ResetPasswordPage() { const form = useForm({ resolver: zodResolver(z.object({ code: z.string().min(1), password: z.string().min(6), passwordConfirmation: z.string().min(6) })), defaultValues: { code: '', password: '', passwordConfirmation: '' } }); const [sent, setSent] = useStateMessage(); return <AuthShell title="Reset password" subtitle="Paste the reset code from your email."><form className="space-y-4" onSubmit={form.handleSubmit(() => setSent('Password reset submitted.'))}>{['code','password','passwordConfirmation'].map((name) => <Field key={name} label={name} error={(form.formState.errors as Record<string, { message?: string }>)[name]?.message}><input className="admin-input" type={name.includes('password') ? 'password' : 'text'} {...form.register(name as 'code')} /></Field>)}<button className="btn-primary w-full">Reset password</button>{sent && <p className="text-sm text-emerald-700">{sent}</p>}</form></AuthShell> }
@@ -161,10 +167,12 @@ export function DashboardPage() {
           <div className="grid gap-2">
             <Link className="btn-secondary justify-start" to="/pages/new">Create page</Link>
             <Link className="btn-secondary justify-start" to="/homepage">Edit homepage hero</Link>
+            <Link className="btn-secondary justify-start" to="/website-copy">Website copy</Link>
             <Link className="btn-secondary justify-start" to="/theme">Theme & branding</Link>
             <Link className="btn-secondary justify-start" to="/header">Header editor</Link>
             <Link className="btn-secondary justify-start" to="/footer">Footer editor</Link>
             <Link className="btn-secondary justify-start" to="/navigation">Pages & menus (drag)</Link>
+            <Link className="btn-secondary justify-start" to="/users">Add admin user</Link>
             <Link className="btn-secondary justify-start" to="/media">Upload images</Link>
           </div>
           <div className="mt-5">
@@ -420,7 +428,9 @@ export function GenericContentPage({ moduleKey }: { moduleKey: ModuleKey }) {
 }
 
 function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; config: ModuleConfig<AnyRecord> }) {
-  const params = useParams(); const navigate = useNavigate(); const qc = useQueryClient(); const isEditing = Boolean(params.id); const localRows = moduleData[moduleKey] || []
+  const params = useParams(); const navigate = useNavigate(); const qc = useQueryClient(); const isEditing = Boolean(params.id)
+  const [localRows, setLocalRows] = useState(() => loadLocalRecords(moduleKey, moduleData[moduleKey] || []))
+  const [search, setSearch] = useState('')
   const query = useQuery({ queryKey: [moduleKey], queryFn: () => apiListAll<AnyRecord>(config.endpoint), enabled: !isDemoMode() })
   const rows = isDemoMode() || query.isError ? localRows : (query.data ?? [])
   const current = params.id === 'new' ? undefined : rows.find((row) => row.id === params.id || row.documentId === params.id)
@@ -428,12 +438,31 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
   const form = useForm<Record<string, unknown>>({ resolver: zodResolver(schemaFor(config.fields)), values: normalizeForForm(current, config.fields) })
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const hasStatusField = config.fields.some((field) => String(field.name) === 'status')
+  const visible = rows.filter((row) => {
+    const q = search.trim().toLowerCase()
+    if (!q) return true
+    return config.columns.some((col) => String(row[col.key] ?? '').toLowerCase().includes(q))
+  })
   const save = useMutation({
     mutationFn: async ({ values, status }: { values: Record<string, unknown>; status: 'draft' | 'published' }) => {
       const payload = buildPayload(config.endpoint, values, status)
-      if (isDemoMode()) {
-        localStorage.setItem(`cogi_${moduleKey}_${String(payload.slug || params.id || Date.now())}`, JSON.stringify(payload))
-        return payload
+      if (isDemoMode() || query.isError) {
+        const id = String(current?.id || current?.documentId || Date.now())
+        const record = {
+          ...current,
+          ...cleanPayload(values),
+          ...payload,
+          id,
+          documentId: id,
+          status,
+          updatedAt: new Date().toISOString().slice(0, 10),
+        } as AnyRecord
+        setLocalRows((prev) => {
+          const next = current ? prev.map((row) => (row.id === current.id || row.documentId === current.documentId ? record : row)) : [record, ...prev]
+          saveLocalRecords(moduleKey, next)
+          return next
+        })
+        return record
       }
       const id = current?.documentId || current?.id || String(params.id)
       if (params.id === 'new') {
@@ -447,18 +476,33 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
       else await apiUnpublish(config.endpoint, id)
       return {}
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       qc.invalidateQueries({ queryKey: [moduleKey] })
       setSavedAs(variables.status)
       if (hasStatusField) form.setValue('status', variables.status)
       if (variables.status === 'published') notifyPublished()
+      const createdId = data && typeof data === 'object' && 'id' in data ? String((data as AnyRecord).id) : ''
       window.setTimeout(() => {
         setSavedAs(null)
-        if (variables.status === 'published') navigate(config.route)
-      }, variables.status === 'published' ? 900 : 1600)
+        if (params.id === 'new' && createdId) navigate(`${config.route}/${createdId}`)
+        else if (variables.status === 'published') navigate(config.route)
+      }, variables.status === 'published' ? 900 : 1200)
     },
   })
-  const remove = useMutation({ mutationFn: (id: string) => isDemoMode() ? Promise.resolve() : apiDelete(config.endpoint, id), onSuccess: () => qc.invalidateQueries({ queryKey: [moduleKey] }) })
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      if (isDemoMode() || query.isError) {
+        setLocalRows((prev) => {
+          const next = prev.filter((row) => String(row.documentId || row.id) !== id)
+          saveLocalRecords(moduleKey, next)
+          return next
+        })
+        return
+      }
+      await apiDelete(config.endpoint, id)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: [moduleKey] }),
+  })
   if (isEditing) {
     return (
       <>
@@ -500,10 +544,70 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
       </>
     )
   }
-  return <><PageHeader title={config.title} description={config.description} action={<Link className="btn-primary" to={`${config.route}/new`}>Create {config.singular}</Link>} /><ErrorNotice error={query.error} />{rows.length === 0 ? <EmptyState label={config.title} /> : <div className="table-wrap"><table className="data-table"><thead><tr>{config.columns.map((c) => <th key={String(c.key)}>{c.label}</th>)}<th>Actions</th></tr></thead><tbody>{rows.map((row) => <tr key={row.id}>{config.columns.map((col) => <td key={String(col.key)}>{String(col.key).toLowerCase().includes('status') || typeof row[col.key] === 'boolean' ? <StatusBadge value={row[col.key]} /> : String(col.key).toLowerCase().includes('updated') || String(col.key).toLowerCase().includes('created') || dateFieldKeys.has(String(col.key)) ? formatDate(row[col.key]) : String(row[col.key] ?? '')}</td>)}<td><div className="flex gap-2"><Link className="btn-secondary px-3 py-1" to={`${config.route}/${row.documentId || row.id}`}>Edit</Link><button className="btn-danger px-3 py-1" onClick={() => remove.mutate(String(row.documentId || row.id))}>Delete</button></div></td></tr>)}</tbody></table></div>}</>
+  return (
+    <>
+      <PageHeader title={config.title} description={config.description} action={<Link className="btn-primary" to={`${config.route}/new`}>Create {config.singular}</Link>} />
+      <ErrorNotice error={query.error} />
+      <div className="admin-toolbar">
+        <input
+          className="admin-input admin-toolbar-search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={`Search ${config.title.toLowerCase()}…`}
+          aria-label={`Search ${config.title}`}
+        />
+        <p className="admin-toolbar-count">{visible.length} {visible.length === 1 ? config.singular.toLowerCase() : 'records'}</p>
+      </div>
+      {rows.length === 0 ? (
+        <EmptyState label={config.title} action={<Link className="btn-primary" to={`${config.route}/new`}>Create {config.singular}</Link>} />
+      ) : visible.length === 0 ? (
+        <div className="admin-card p-10 text-center">
+          <h3 className="text-lg font-bold">No matches</h3>
+          <p className="mt-2 text-sm text-slate-600">Try a different search.</p>
+        </div>
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>{config.columns.map((c) => <th key={String(c.key)}>{c.label}</th>)}<th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {visible.map((row) => (
+                <tr key={row.id}>
+                  {config.columns.map((col) => (
+                    <td key={String(col.key)}>
+                      {String(col.key).toLowerCase().includes('status') || typeof row[col.key] === 'boolean'
+                        ? <StatusBadge value={row[col.key]} />
+                        : String(col.key).toLowerCase().includes('updated') || String(col.key).toLowerCase().includes('created') || dateFieldKeys.has(String(col.key))
+                          ? formatDate(row[col.key])
+                          : String(row[col.key] ?? '')}
+                    </td>
+                  ))}
+                  <td>
+                    <div className="flex gap-2">
+                      <Link className="btn-secondary px-3 py-1" to={`${config.route}/${row.documentId || row.id}`}>Edit</Link>
+                      <button
+                        className="btn-danger px-3 py-1"
+                        onClick={() => {
+                          if (!window.confirm(`Delete this ${config.singular.toLowerCase()}?`)) return
+                          remove.mutate(String(row.documentId || row.id))
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  )
 }
 function FormControl({ field, form }: { field: FormField<AnyRecord>; form: ReturnType<typeof useForm<Record<string, unknown>>> }) { const name = String(field.name); const error = form.formState.errors[name]?.message; return <Field label={field.label} error={error}>{field.type === 'textarea' ? <textarea className="admin-input min-h-28" {...form.register(name)} /> : field.type === 'select' ? <select className="admin-input" {...form.register(name)}>{field.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select> : field.type === 'richtext' ? <Controller control={form.control} name={name} render={({ field }) => <RichTextEditor value={String(field.value || '')} onChange={field.onChange} />} /> : <input className="admin-input" type={field.type} {...form.register(name, field.type === 'number' ? { valueAsNumber: true } : undefined)} />}</Field> }
-function EmptyState({ label }: { label: string }) { return <div className="admin-card p-10 text-center"><h3 className="text-lg font-bold">No {label.toLowerCase()} yet</h3><p className="mt-2 text-sm text-slate-600">Create the first record, or check Strapi permissions and API availability.</p></div> }
+function EmptyState({ label, action }: { label: string; action?: ReactNode }) { return <div className="admin-card p-10 text-center"><h3 className="text-lg font-bold">No {label.toLowerCase()} yet</h3><p className="mt-2 text-sm text-slate-600">Create the first record to get started.</p>{action ? <div className="mt-4 flex justify-center">{action}</div> : null}</div> }
 
 export function MediaPage() {
   const queryClient = useQueryClient()
@@ -592,8 +696,91 @@ export function MediaPage() {
   )
 }
 
-export function EnquiriesPage() { const [filter, setFilter] = ReactUseState('all'); const rows = mockEnquiries.filter((e) => filter === 'all' || e.status === filter); return <><PageHeader title="Enquiries" description="Filter, triage, add notes, update status, and export submissions." action={<button className="btn-secondary" onClick={() => exportCsv(mockEnquiries as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'type', label: 'Type' }, { key: 'status', label: 'Status' }], 'cogi-enquiries.csv')}>Export CSV</button>} /><div className="mb-4 max-w-xs"><select className="admin-input" value={filter} onChange={(e) => setFilter(e.target.value)}><option value="all">All statuses</option>{['new','in_progress','resolved','spam'].map((s) => <option key={s} value={s}>{s}</option>)}</select></div><div className="grid gap-4">{rows.map((e) => <div key={e.id} className="admin-card p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-bold">{e.name} <span className="text-sm font-medium text-slate-500">{e.email}</span></h3><p className="mt-2 text-sm text-slate-700">{e.message}</p></div><StatusBadge value={e.status} /></div><div className="mt-4 grid gap-3 md:grid-cols-2"><select className="admin-input" defaultValue={e.status}>{['new','in_progress','resolved','spam'].map((s) => <option key={s} value={s}>{s}</option>)}</select><input className="admin-input" defaultValue={e.notes} placeholder="Internal notes" /></div></div>)}</div></> }
-export function NewsletterPage() { return <><PageHeader title="Newsletter Subscribers" description="Subscriber list with CSV export." action={<button className="btn-secondary" onClick={() => exportCsv(mockSubscribers as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }], 'cogi-newsletter.csv')}>Export CSV</button>} /><SimpleTable rows={mockSubscribers as unknown as AnyRecord[]} columns={[{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }, { key: 'createdAt', label: 'Created' }]} /></> }
+export function EnquiriesPage() {
+  const [rows, setRows] = useState(() => loadLocalRecords('enquiries', mockEnquiries))
+  const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
+  const [message, setMessage] = useState('')
+  const visible = rows.filter((item) => {
+    if (filter !== 'all' && item.status !== filter) return false
+    const q = search.trim().toLowerCase()
+    if (!q) return true
+    return [item.name, item.email, item.type, item.message, item.notes].join(' ').toLowerCase().includes(q)
+  })
+  function update(id: string, patch: Partial<EnquiryRecord>) {
+    setRows((prev) => {
+      const next = prev.map((item) => (item.id === id ? { ...item, ...patch } : item))
+      saveLocalRecords('enquiries', next)
+      return next
+    })
+    setMessage('Enquiry updated.')
+    window.setTimeout(() => setMessage(''), 2000)
+  }
+  return (
+    <>
+      <PageHeader
+        title="Enquiries"
+        description="Triage contact and get-involved messages, add notes, and export a CSV."
+        action={<button className="btn-secondary" onClick={() => exportCsv(visible as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'type', label: 'Type' }, { key: 'status', label: 'Status' }], 'cogi-enquiries.csv')}>Export CSV</button>}
+      />
+      {message ? <p className="admin-flash">{message}</p> : null}
+      <div className="admin-toolbar">
+        <input className="admin-input admin-toolbar-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name, email, or message…" aria-label="Search enquiries" />
+        <select className="admin-input max-w-xs" value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="all">All statuses</option>
+          {['new', 'in_progress', 'resolved', 'spam'].map((status) => <option key={status} value={status}>{status.replace('_', ' ')}</option>)}
+        </select>
+        <p className="admin-toolbar-count">{visible.length} {visible.length === 1 ? 'enquiry' : 'enquiries'}</p>
+      </div>
+      {visible.length === 0 ? (
+        <EmptyState label="enquiries" />
+      ) : (
+        <div className="grid gap-4">
+          {visible.map((item) => (
+            <div key={item.id} className="admin-card p-5">
+              <div className="enquiry-card-head">
+                <div>
+                  <h3 className="font-bold">{item.name} <span className="text-sm font-medium text-slate-500">{item.email}</span></h3>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">{item.type.replace('-', ' ')} · {formatDate(item.createdAt)}</p>
+                  <p className="mt-2 text-sm text-slate-700">{item.message}</p>
+                </div>
+                <StatusBadge value={item.status} />
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <select className="admin-input" value={item.status} onChange={(e) => update(item.id, { status: e.target.value as EnquiryStatus })}>
+                  {['new', 'in_progress', 'resolved', 'spam'].map((status) => <option key={status} value={status}>{status.replace('_', ' ')}</option>)}
+                </select>
+                <input className="admin-input" value={item.notes || ''} placeholder="Internal notes" onChange={(e) => update(item.id, { notes: e.target.value })} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
+export function NewsletterPage() {
+  const [search, setSearch] = useState('')
+  const rows = mockSubscribers.filter((item) => {
+    const q = search.trim().toLowerCase()
+    if (!q) return true
+    return [item.name, item.email, item.whatsapp, item.source].join(' ').toLowerCase().includes(q)
+  })
+  return (
+    <>
+      <PageHeader
+        title="Newsletter subscribers"
+        description="People who opted in for updates. Export the list for mailings."
+        action={<button className="btn-secondary" onClick={() => exportCsv(rows as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }], 'cogi-newsletter.csv')}>Export CSV</button>}
+      />
+      <div className="admin-toolbar">
+        <input className="admin-input admin-toolbar-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search subscribers…" aria-label="Search subscribers" />
+        <p className="admin-toolbar-count">{rows.length} {rows.length === 1 ? 'subscriber' : 'subscribers'}</p>
+      </div>
+      <SimpleTable rows={rows as unknown as AnyRecord[]} columns={[{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }, { key: 'createdAt', label: 'Joined' }]} />
+    </>
+  )
+}
 export function SettingsPage() {
   const query = useQuery({ queryKey: ['global-setting'], queryFn: () => apiSingle<SettingsRecord>('/global-setting'), enabled: !isDemoMode() })
   const form = useForm<SettingsRecord>({ values: query.data ?? mockSettings })
@@ -622,23 +809,90 @@ export function SettingsPage() {
       window.setTimeout(() => setSavedAs(null), 4000)
     },
   })
+  const labels: Record<string, string> = {
+    organizationName: 'Organization name',
+    tagline: 'Tagline',
+    mission: 'Mission',
+    vision: 'Vision',
+    primaryEmail: 'Primary email',
+    primaryPhone: 'Phone',
+    address: 'Address',
+  }
   return (
     <>
-      <PageHeader title="Global Settings" description="Organization identity and contact details. Publish live to save in Strapi and update the public site." />
+      <PageHeader title="Global settings" description="Organization identity and contact details shown across the public site." />
       <form className="admin-card max-w-5xl space-y-4 p-5" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
-        {(['organizationName','tagline','mission','vision','primaryEmail','primaryPhone','address'] as const).map((name) => (
-          <Field key={name} label={name}><input className="admin-input" {...form.register(name)} /></Field>
+        {(['organizationName', 'tagline', 'mission', 'vision', 'primaryEmail', 'primaryPhone', 'address'] as const).map((name) => (
+          <Field key={name} label={labels[name]}>
+            {name === 'mission' || name === 'vision' ? <textarea className="admin-input min-h-24" {...form.register(name)} /> : <input className="admin-input" {...form.register(name)} />}
+          </Field>
         ))}
         <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" {...form.register('maintenanceMode')} /> Maintenance mode</label>
         {mutation.error ? <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p> : null}
-        {savedAs === 'published' ? <p className="text-sm font-semibold text-emerald-700">Published live — saved in Strapi.</p> : null}
-        <button className="btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Publishing…' : 'Publish live'}</button>
+        {savedAs === 'published' ? <p className="text-sm font-semibold text-emerald-700">Saved.</p> : null}
+        <button className="btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save settings'}</button>
       </form>
     </>
   )
 }
-export function UsersPage() { return <><PageHeader title="Users & Roles" description="Read-only Strapi users and role display." /><SimpleTable rows={mockUsers as unknown as AnyRecord[]} columns={[{ key: 'username', label: 'Username' }, { key: 'email', label: 'Email' }, { key: 'blocked', label: 'Blocked' }]} /></> }
-export function AuditPage() { const [type, setType] = ReactUseState('all'); const rows = (mockAudit as AuditRecord[]).filter((a) => type === 'all' || a.resourceType === type); return <><PageHeader title="Audit Log" description="Filterable record of admin activity." /><div className="mb-4 max-w-xs"><select className="admin-input" value={type} onChange={(e) => setType(e.target.value)}><option value="all">All resources</option>{Array.from(new Set(mockAudit.map((a) => a.resourceType))).map((s) => <option key={s}>{s}</option>)}</select></div><SimpleTable rows={rows as unknown as AnyRecord[]} columns={[{ key: 'actor', label: 'Actor' }, { key: 'action', label: 'Action' }, { key: 'resourceType', label: 'Resource' }, { key: 'ip', label: 'IP' }, { key: 'createdAt', label: 'Created' }]} /></> }
-export function ProfilePage() { const { user, changePassword } = useAuth(); const form = useForm({ resolver: zodResolver(z.object({ currentPassword: z.string().min(1), password: z.string().min(6), passwordConfirmation: z.string().min(6) })), defaultValues: { currentPassword: '', password: '', passwordConfirmation: '' } }); const mutation = useMutation({ mutationFn: changePassword }); return <><PageHeader title="Profile" description="View profile details and change password." /><div className="grid gap-6 lg:grid-cols-2"><div className="admin-card p-5"><h3 className="font-bold">Account</h3><dl className="mt-4 space-y-3 text-sm"><div><dt className="font-semibold text-slate-500">Name</dt><dd>{user?.firstname} {user?.lastname}</dd></div><div><dt className="font-semibold text-slate-500">Email</dt><dd>{user?.email}</dd></div><div><dt className="font-semibold text-slate-500">Role</dt><dd>{user?.role?.name}</dd></div></dl></div><form className="admin-card space-y-4 p-5" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}><h3 className="font-bold">Change password</h3>{(['currentPassword','password','passwordConfirmation'] as const).map((name) => <Field key={name} label={name} error={form.formState.errors[name]?.message}><input className="admin-input" type="password" {...form.register(name)} /></Field>)}<button className="btn-primary">Update password</button>{mutation.error && <p className="text-sm text-red-700">{getErrorMessage(mutation.error)}</p>}</form></div></> }
+export function AuditPage() {
+  const [type, setType] = useState('all')
+  const [search, setSearch] = useState('')
+  const rows = (mockAudit as AuditRecord[]).filter((item) => {
+    if (type !== 'all' && item.resourceType !== type) return false
+    const q = search.trim().toLowerCase()
+    if (!q) return true
+    return [item.actor, item.action, item.resourceType, item.ip].join(' ').toLowerCase().includes(q)
+  })
+  return (
+    <>
+      <PageHeader title="Audit log" description="A record of sign-ins and publishing activity." />
+      <div className="admin-toolbar">
+        <input className="admin-input admin-toolbar-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search activity…" aria-label="Search audit log" />
+        <select className="admin-input max-w-xs" value={type} onChange={(e) => setType(e.target.value)}>
+          <option value="all">All resources</option>
+          {Array.from(new Set(mockAudit.map((item) => item.resourceType))).map((item) => <option key={item}>{item}</option>)}
+        </select>
+        <p className="admin-toolbar-count">{rows.length} {rows.length === 1 ? 'event' : 'events'}</p>
+      </div>
+      <SimpleTable rows={rows as unknown as AnyRecord[]} columns={[{ key: 'actor', label: 'Actor' }, { key: 'action', label: 'Action' }, { key: 'resourceType', label: 'Resource' }, { key: 'ip', label: 'IP' }, { key: 'createdAt', label: 'Created' }]} />
+    </>
+  )
+}
+export function ProfilePage() {
+  const { user, changePassword } = useAuth()
+  const form = useForm({
+    resolver: zodResolver(z.object({
+      currentPassword: z.string().min(1, 'Current password is required'),
+      password: z.string().min(6, 'New password must be at least 6 characters'),
+      passwordConfirmation: z.string().min(6, 'Confirm your new password'),
+    }).refine((values) => values.password === values.passwordConfirmation, { message: 'Passwords do not match', path: ['passwordConfirmation'] })),
+    defaultValues: { currentPassword: '', password: '', passwordConfirmation: '' },
+  })
+  const mutation = useMutation({ mutationFn: changePassword })
+  return (
+    <>
+      <PageHeader title="Profile" description="Your account details and password." />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="admin-card p-5">
+          <h3 className="font-bold">Account</h3>
+          <dl className="mt-4 space-y-3 text-sm">
+            <div><dt className="font-semibold text-slate-500">Name</dt><dd>{user?.firstname} {user?.lastname}</dd></div>
+            <div><dt className="font-semibold text-slate-500">Email</dt><dd>{user?.email}</dd></div>
+            <div><dt className="font-semibold text-slate-500">Role</dt><dd>{user?.role?.name}</dd></div>
+          </dl>
+        </div>
+        <form className="admin-card space-y-4 p-5" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
+          <h3 className="font-bold">Change password</h3>
+          <Field label="Current password" error={form.formState.errors.currentPassword?.message}><input className="admin-input" type="password" {...form.register('currentPassword')} /></Field>
+          <Field label="New password" error={form.formState.errors.password?.message}><input className="admin-input" type="password" {...form.register('password')} /></Field>
+          <Field label="Confirm new password" error={form.formState.errors.passwordConfirmation?.message}><input className="admin-input" type="password" {...form.register('passwordConfirmation')} /></Field>
+          <button className="btn-primary">Update password</button>
+          {mutation.isSuccess ? <p className="text-sm text-emerald-700">Password updated.</p> : null}
+          {mutation.error && <p className="text-sm text-red-700">{getErrorMessage(mutation.error)}</p>}
+        </form>
+      </div>
+    </>
+  )
+}
 function SimpleTable({ rows, columns }: { rows: AnyRecord[]; columns: Array<{ key: keyof AnyRecord; label: string }> }) { return <div className="table-wrap"><table className="data-table"><thead><tr>{columns.map((c) => <th key={String(c.key)}>{c.label}</th>)}</tr></thead><tbody>{rows.map((row) => <tr key={String(row.id)}>{columns.map((c) => <td key={String(c.key)}>{typeof row[c.key] === 'boolean' ? <StatusBadge value={row[c.key]} /> : String(c.key).toLowerCase().includes('created') || String(c.key).toLowerCase().includes('updated') || String(c.key).toLowerCase().includes('date') ? formatDate(row[c.key]) : String(row[c.key] ?? '')}</td>)}</tr>)}</tbody></table></div> }
-function ReactUseState(initial: string): [string, (value: string) => void] { return useState(initial) }

@@ -11,7 +11,7 @@ export const globalSettingData = {
   vision:
     'The Global Christian Healthcare Community actively on Mission for God, reflecting His love, witnessing Christ in word and deed, ushering in God\'s Kingdom.',
   mission:
-    'Inspire and enable transformation so healthcare professionals think, live, and work missionally.',
+    'Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God\'s love, and offer hope, healing, and wholeness through Jesus Christ.',
   scriptureReferences: 'Colossians 3:17 · Romans 12:2',
   social: {
     instagram: 'https://instagram.com/coginternational',
@@ -41,7 +41,7 @@ export const homepageData = {
       title: 'Welcome to Companions of Grace International',
       subtitle: 'Equipping Healthcare Professionals for Kingdom Engagement',
       description:
-        'A global fellowship cultivating Communities of Grace in healthcare — inspiring transformation so professionals think, live, and work missionally.',
+        'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
       cta: { label: 'Explore Our Programs', url: '/programs', variant: 'primary' },
     },
     {
@@ -54,7 +54,7 @@ export const homepageData = {
   ],
   missionHeading: 'Our Mission',
   missionText:
-    '<p>Inspire and enable transformation so healthcare professionals think, live, and work missionally — reflecting God\'s love and ushering in His Kingdom in every place they serve.</p>',
+    '<p>Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God\'s love, and offer hope, healing, and wholeness through Jesus Christ.</p>',
   missionScripture: 'Colossians 3:17 · Romans 12:2',
   videoUrl: '',
   videoHeading: 'Watch Our Story',
@@ -62,50 +62,50 @@ export const homepageData = {
     {
       title: 'Enable',
       description:
-        'Inspire healthcare professionals to perceive their work beyond their job — understanding the times and God\'s calling wherever He has placed them.',
+        'Enable healthcare professionals to become Christ-centered in life and vocation.',
       icon: 'enable',
     },
     {
       title: 'Train',
       description:
-        'Equip disciples through seminars, courses, and mentoring so they grow in faith, excel in their profession, and bless patients and communities.',
+        'Train healthcare professionals to develop a biblical missional perspective for healthcare.',
       icon: 'train',
     },
     {
       title: 'Support',
       description:
-        'Walk alongside healthcare workers in fellowship, encouragement, and community — resources and people for the often hard and lonely journey.',
+        'Support healthcare professionals through intentional companionship and mutual encouragement.',
       icon: 'support',
     },
   ],
   impactStats: [
-    { value: '10', suffix: '+', label: 'Countries' },
-    { value: '500', suffix: '+', label: 'Healthcare Professionals' },
-    { value: '30', suffix: '+', label: 'Programs' },
-    { value: '∞', label: 'Communities of Grace' },
+    { value: '10', suffix: '+', label: 'Countries engaged' },
+    { value: '500', suffix: '+', label: 'Healthcare professionals equipped' },
+    { value: '30', suffix: '+', label: 'Programs, workshops & formation experiences' },
+    { value: '∞', label: 'Growing Communities of Grace' },
   ],
   portfolioAreas: [
     {
-      title: 'Kingdom of God',
-      description: 'Seminar and Discovery Series on the Kingdom of God in healthcare.',
+      title: 'Kingdom of God Studies & Seminars',
+      description: 'Seminars and study platforms that help healthcare professionals develop a Kingdom perspective and cultivate Kingdom-shaped communities.',
       slug: 'kingdom-of-god',
       cta: { label: 'Learn More', url: '/programs/kingdom-of-god' },
     },
     {
-      title: 'Missional Training',
-      description: 'M-Trail, Missional Health Course, and mentoring for healthcare professionals.',
+      title: 'Missional Healthcare Training',
+      description: 'Formation experiences that prepare healthcare professionals for faithful participation in God\'s mission through healthcare.',
       slug: 'missional-training',
       cta: { label: 'Learn More', url: '/programs/missional-training' },
     },
     {
       title: 'Care for the Caregiver',
-      description: '8-module group training journey focused on caring for health workers.',
+      description: 'Equipping healthcare professionals to navigate the emotional, relational, and vocational demands of caregiving.',
       slug: 'care-for-the-caregiver',
       cta: { label: 'Learn More', url: '/programs/care-for-the-caregiver' },
     },
     {
       title: 'Missional Church & Healthcare',
-      description: 'One-Day Seminar and HEAL Week — integrating church and healthcare mission.',
+      description: 'Enabling church leaders and key healthcare professionals within the church to engage collaboratively in God\'s mission through healthcare.',
       slug: 'missional-church-healthcare',
       cta: { label: 'Learn More', url: '/programs/missional-church-healthcare' },
     },
@@ -145,10 +145,10 @@ export const homepageData = {
 
 export const programsData = [
   {
-    title: 'Kingdom of God',
+    title: 'Kingdom of God Studies & Seminars',
     slug: 'kingdom-of-god',
     summary:
-      'An introductory one-day seminar on the Kingdom of God with life application in the context of healthcare, plus Discovery Series for small groups.',
+      'Seminars and study platforms that help healthcare professionals develop a Kingdom perspective and cultivate Kingdom-shaped communities.',
     area: 'kingdom-of-god',
     order: 1,
     featured: true,
@@ -160,10 +160,10 @@ export const programsData = [
     cta: { label: 'Express Interest', url: '/contact?program=kingdom-of-god', variant: 'primary' },
   },
   {
-    title: 'Missional Training',
+    title: 'Missional Healthcare Training',
     slug: 'missional-training',
     summary:
-      'M-Trail missions taster, Missional Health Course, mentoring, and the future Institute of Missional Healthcare.',
+      'Formation experiences that prepare healthcare professionals for faithful participation in God\'s mission through healthcare.',
     area: 'missional-training',
     order: 2,
     featured: true,
@@ -177,10 +177,10 @@ export const programsData = [
     cta: { label: 'Express Interest', url: '/contact?program=missional-training', variant: 'primary' },
   },
   {
-    title: 'Care for the Caregiver (C4C)',
+    title: 'Care for the Caregiver',
     slug: 'care-for-the-caregiver',
     summary:
-      'An 8-module group training program focused on equipping Christian healthcare workers to care for themselves and one another.',
+      'Equipping healthcare professionals to navigate the emotional, relational, and vocational demands of caregiving.',
     area: 'care-for-caregiver',
     order: 3,
     featured: true,
@@ -194,7 +194,7 @@ export const programsData = [
     title: 'Missional Church & Healthcare',
     slug: 'missional-church-healthcare',
     summary:
-      'One-Day Seminar and HEAL Week — integrating missional church principles with healthcare practice (under development).',
+      'Enabling church leaders and key healthcare professionals within the church to engage collaboratively in God\'s mission through healthcare.',
     area: 'missional-church-healthcare',
     order: 4,
     featured: false,
@@ -322,17 +322,16 @@ export const testimonialsData = [
 ];
 
 export const locationsData = [
-  { country: 'India', region: 'South Asia', summary: 'Primary ministry hub including Duncan Hospital, Bihar.', latitude: 26.9784, longitude: 84.8528, featured: true },
-  { country: 'United States', region: 'North America', summary: 'Board leadership and North American healthcare community.', latitude: 40.7128, longitude: -74.006, featured: true },
-  { country: 'Nepal', region: 'South Asia', summary: 'Healthcare missions and training partnerships.', latitude: 28.3949, longitude: 84.124, featured: true },
-  { country: 'Kenya', region: 'East Africa', summary: 'Missional healthcare training and community engagement.', latitude: -0.0236, longitude: 37.9062, featured: true },
-  { country: 'Uganda', region: 'East Africa', summary: 'Healthcare professional fellowship and training.', latitude: 1.3733, longitude: 32.2903, featured: false },
-  { country: 'Philippines', region: 'Southeast Asia', summary: 'Medical missions and Kingdom of God seminars.', latitude: 12.8797, longitude: 121.774, featured: false },
-  { country: 'United Kingdom', region: 'Europe', summary: 'Healthcare professional community and support.', latitude: 55.3781, longitude: -3.436, featured: false },
-  { country: 'Australia', region: 'Oceania', summary: 'Missional healthcare networking.', latitude: -25.2744, longitude: 133.7751, featured: false },
-  { country: 'Canada', region: 'North America', summary: 'Training and fellowship for healthcare professionals.', latitude: 56.1304, longitude: -106.3468, featured: false },
-  { country: 'South Africa', region: 'Southern Africa', summary: 'Healthcare missions and community development.', latitude: -30.5595, longitude: 22.9375, featured: false },
-  { country: 'Nigeria', region: 'West Africa', summary: 'Missional training and church-healthcare partnerships.', latitude: 9.082, longitude: 8.6753, featured: false },
+  { country: 'United States', region: 'Americas & Africa', summary: 'Board leadership and North American healthcare fellowship.', latitude: 40.7128, longitude: -74.006, featured: true },
+  { country: 'Uganda', region: 'Americas & Africa', summary: 'Healthcare professional fellowship and formation experiences.', latitude: 1.3733, longitude: 32.2903, featured: false },
+  { country: 'Kenya', region: 'Americas & Africa', summary: 'Missional healthcare training and Communities of Grace.', latitude: -0.0236, longitude: 37.9062, featured: true },
+  { country: 'Rwanda', region: 'Americas & Africa', summary: 'Workshops and companionship among healthcare professionals.', latitude: -1.9403, longitude: 29.8739, featured: false },
+  { country: 'Tanzania', region: 'Americas & Africa', summary: 'Formation experiences and Kingdom engagement in healthcare.', latitude: -6.369, longitude: 34.8888, featured: false },
+  { country: 'India', region: 'Asia-Pacific', summary: 'Primary ministry hub including Duncan Hospital, Bihar, and Kingdom of God seminars.', latitude: 26.9784, longitude: 84.8528, featured: true },
+  { country: 'Philippines', region: 'Asia-Pacific', summary: 'Medical missions and Kingdom of God seminars.', latitude: 12.8797, longitude: 121.774, featured: false },
+  { country: 'Singapore', region: 'Asia-Pacific', summary: 'Regional gathering point for Asia-Pacific healthcare professionals.', latitude: 1.3521, longitude: 103.8198, featured: false },
+  { country: 'Australia', region: 'Asia-Pacific', summary: 'Missional healthcare networking and formation.', latitude: -25.2744, longitude: 133.7751, featured: false },
+  { country: 'New Zealand', region: 'Asia-Pacific', summary: 'Fellowship and training among healthcare professionals.', latitude: -40.9006, longitude: 174.886, featured: false },
 ];
 
 export const navigationMenusData = [

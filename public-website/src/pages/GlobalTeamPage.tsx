@@ -3,16 +3,19 @@ import { useQuery } from '@tanstack/react-query'
 import { getGlobalTeam } from '@/api/team'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function GlobalTeamPage() {
   const { data: team } = useQuery({ queryKey: ['globalTeam'], queryFn: getGlobalTeam })
   const regions = [...new Set(team?.map((m) => m.region).filter(Boolean) as string[])]
   const [expanded, setExpanded] = useState<string | null>(regions[0] ?? null)
+  const { copy } = useSiteConfig()
+  const page = copy.globalTeam
 
   return (
     <>
-      <SEO title="Global Team" description="COGI team members by region" path="/about/global-team" />
-      <PageHero title="Global Team" subtitle="Facilitators, mentors, and coordinators across our regions" />
+      <SEO title={page.heroTitle} description={page.heroSubtitle} path="/about/global-team" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-4xl px-4 py-16 space-y-4">
         {regions.map((region) => {
           const members = team?.filter((m) => m.region === region) ?? []

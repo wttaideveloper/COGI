@@ -4,14 +4,17 @@ import { getPrograms } from '@/api/programs'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card, Skeleton } from '@/components/ui/Card'
 import { ButtonLink } from '@/components/ui/Button'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function ProgramsPage() {
   const { data: programs, isLoading } = useQuery({ queryKey: ['programs'], queryFn: getPrograms })
+  const { copy } = useSiteConfig()
+  const page = copy.programs
 
   return (
     <>
-      <SEO title="Programs" description="COGI ministry programs for healthcare professionals" path="/programs" />
-      <PageHero title="Our Programs" subtitle="Four ministry areas equipping healthcare professionals for Kingdom engagement" />
+      <SEO title={page.heroTitle} description={page.heroSubtitle} path="/programs" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-7xl px-4 py-16">
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-56" />)}</div>
@@ -34,8 +37,8 @@ export function ProgramsPage() {
                   ))}
                 </ul>
                 <div className="mt-6 flex gap-3">
-                  <ButtonLink to={`/programs/${program.slug}`} size="sm">Learn More</ButtonLink>
-                  <ButtonLink to="/get-involved" variant="outline" size="sm">Express Interest</ButtonLink>
+                  <ButtonLink to={`/programs/${program.slug}`} size="sm">{page.learnMore}</ButtonLink>
+                  <ButtonLink to="/get-involved" variant="outline" size="sm">{page.expressInterest}</ButtonLink>
                 </div>
               </Card>
             ))}

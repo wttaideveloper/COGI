@@ -5,15 +5,18 @@ import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card, Skeleton } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import type { TeamMember } from '@/types'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function BoardPage() {
   const { data: members, isLoading } = useQuery({ queryKey: ['board'], queryFn: getBoardMembers })
   const [selected, setSelected] = useState<TeamMember | null>(null)
+  const { copy } = useSiteConfig()
+  const page = copy.board
 
   return (
     <>
-      <SEO title="Board Members" description="COGI leadership board" path="/about/board" />
-      <PageHero title="Board Members" subtitle="Leaders committed to equipping healthcare professionals for Kingdom engagement" />
+      <SEO title={page.heroTitle} description={page.heroSubtitle} path="/about/board" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-7xl px-4 py-16">
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-48" />)}</div>

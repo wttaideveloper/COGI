@@ -59,12 +59,24 @@ export function SectionHeading({
   return (
     <div className={cn(align === 'center' && 'text-center', 'mb-12', className)}>
       <h2 className="font-display text-3xl font-semibold text-teal-deep md:text-4xl">{title}</h2>
-      {subtitle && <p className="mx-auto mt-4 max-w-2xl text-lg text-ink-muted">{subtitle}</p>}
+      {subtitle && <p className="mx-auto mt-4 max-w-3xl text-lg text-ink-muted">{subtitle}</p>}
     </div>
   )
 }
 
-export function PageHero({ title, subtitle }: { title: string; subtitle?: string }) {
+export function PageHero({ title, subtitle, imageUrl }: { title: string; subtitle?: string; imageUrl?: string }) {
+  if (imageUrl) {
+    return (
+      <section className="relative min-h-[42vh] overflow-hidden md:min-h-[52vh]">
+        <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-teal-deep/70" />
+        <div className="relative z-10 mx-auto flex min-h-[42vh] max-w-4xl flex-col items-center justify-center px-4 py-16 text-center text-white md:min-h-[52vh] md:py-24">
+          <h1 className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
+          {subtitle && <p className="mt-4 text-lg text-white/90">{subtitle}</p>}
+        </div>
+      </section>
+    )
+  }
   return (
     <section className="bg-teal-gradient py-16 text-white md:py-24">
       <div className="mx-auto max-w-4xl px-4 text-center">

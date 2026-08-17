@@ -10,7 +10,7 @@ interface SEOProps {
 const fallbackSiteUrl = import.meta.env.VITE_PUBLIC_SITE_URL || 'https://coginternational.org'
 const fallbackTitle = 'Companions of Grace International'
 const fallbackDescription =
-  'Equipping Healthcare Professionals for Kingdom Engagement — a global fellowship cultivating Communities of Grace.'
+  'Equipping healthcare professionals for Kingdom engagement through training, community, and missional healthcare programs worldwide.'
 
 export function SEO({ title, description, path = '' }: SEOProps) {
   const site = useSiteConfig()

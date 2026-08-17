@@ -28,7 +28,7 @@ const fallbackNav: SiteNavItem[] = [
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   clsx(
-    'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+    'rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] transition-colors',
     isActive ? 'bg-teal-deep/10 text-current' : 'text-current hover:bg-mist-dark hover:text-current hover:opacity-80',
   )
 
@@ -41,17 +41,17 @@ export function Header() {
 
   return (
     <header
-      className={clsx('z-40 border-b border-mist-dark backdrop-blur-md', sticky ? 'sticky top-0' : 'relative')}
-      style={{ backgroundColor: header.backgroundColor || 'rgba(255,255,255,0.95)', color: header.textColor }}
+      className={clsx('z-40 border-b border-black/5 bg-white/95 backdrop-blur-md', sticky ? 'sticky top-0' : 'relative')}
+      style={{ backgroundColor: header.backgroundColor || '#ffffff', color: header.textColor || '#1A2E2D' }}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4">
         <Link to="/" className="flex min-w-0 items-center gap-3" aria-label="Companions of Grace International — Home">
           {header.logoUrl ? (
-            <img src={header.logoUrl} alt={header.logoAlt || 'COGI'} className="h-12 max-w-[220px] object-contain" />
+            <img src={header.logoUrl} alt={header.logoAlt || 'Companions of Grace International'} className="h-12 max-w-[220px] object-contain" />
           ) : (
             <span className="flex flex-col text-current">
-              <span className="font-display text-xl font-bold leading-tight md:text-2xl">{header.logoAlt || 'Companions of Grace'}</span>
-              <span className="text-xs font-medium opacity-70">International</span>
+              <span className="font-display text-xl font-bold leading-tight md:text-2xl">Companions of Grace</span>
+              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.38em] opacity-80">International</span>
             </span>
           )}
         </Link>
@@ -70,7 +70,7 @@ export function Header() {
                 >
                   <button
                     type="button"
-                    className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-current transition-colors hover:bg-mist-dark hover:opacity-80"
+                    className="flex items-center gap-1 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-current transition-colors hover:opacity-70"
                     aria-expanded={open}
                     aria-haspopup="true"
                   >
@@ -107,7 +107,7 @@ export function Header() {
             </svg>
           </Link>
 
-          <ButtonLink to={header.ctaLink || '/donate'} size="sm">
+          <ButtonLink to={header.ctaLink || '/donate'} size="sm" className="rounded-sm uppercase tracking-[0.2em]">
             {header.ctaText || 'Donate'}
           </ButtonLink>
         </nav>

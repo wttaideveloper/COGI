@@ -1,36 +1,52 @@
 import { fallbackFAQs } from '@/data/fallback'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 const giveLivelyUrl = import.meta.env.VITE_GIVELIVELY_URL || 'https://secure.givelively.org/donate/companions-of-grace-international'
 
 export function DonatePage() {
+  const { copy } = useSiteConfig()
+  const page = copy.donate
+
   return (
     <>
-      <SEO title="Donate" description="Support missional healthcare training worldwide" path="/donate" />
-      <PageHero title="Donate" subtitle="Partner financially to equip healthcare professionals for Kingdom engagement" />
+      <SEO title={page.heroTitle} description={page.intro} path="/donate" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-4xl px-4 py-16">
-        <Card className="mb-12 text-center">
-          <h2 className="font-display text-2xl text-teal-deep">Give via GiveLively</h2>
-          <p className="mt-4 text-ink-muted">
-            Your generosity supports seminars, training programs, and Communities of Grace across 10+ countries.
-            Choose one-time or recurring gifts through our secure donation platform.
-          </p>
-          <div className="mt-8 rounded-xl border-2 border-dashed border-mist-dark bg-mist/50 p-12">
-            <p className="text-ink-muted">GiveLively embed placeholder</p>
-            <p className="mt-2 text-sm text-ink-muted">Configure <code className="text-teal-deep">VITE_GIVELIVELY_URL</code> in your environment</p>
+        <p className="mb-10 text-lg leading-relaxed text-ink">{page.intro}</p>
+        <Card className="mb-10 overflow-hidden p-0">
+          {page.imageUrl ? <img src={page.imageUrl} alt="" className="h-64 w-full object-cover" /> : null}
+          <div className="p-6 text-center">
+            <h2 className="font-display text-2xl text-teal-deep">{page.giveTitle}</h2>
+            <p className="mt-4 text-ink-muted">{page.giveBody}</p>
             <a
               href={giveLivelyUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center justify-center rounded-md bg-gold px-8 py-4 text-lg font-semibold text-teal-deep hover:bg-gold-light"
             >
-              Donate Now
+              {page.giveCta}
             </a>
           </div>
         </Card>
 
-        <h2 className="font-display text-2xl text-teal-deep mb-6">Frequently Asked Questions</h2>
+        <div className="mb-12 grid gap-6 md:grid-cols-3">
+          <Card as="article">
+            <h3 className="font-display text-xl text-teal-deep">{page.mailTitle}</h3>
+            <p className="mt-3 text-sm text-ink-muted">{page.mailBody}</p>
+          </Card>
+          <Card as="article">
+            <h3 className="font-display text-xl text-teal-deep">{page.stockTitle}</h3>
+            <p className="mt-3 text-sm text-ink-muted">{page.stockBody}</p>
+          </Card>
+          <Card as="article">
+            <h3 className="font-display text-xl text-teal-deep">{page.legacyTitle}</h3>
+            <p className="mt-3 text-sm text-ink-muted">{page.legacyBody}</p>
+          </Card>
+        </div>
+
+        <h2 className="mb-6 font-display text-2xl text-teal-deep">{page.faqTitle}</h2>
         <div className="space-y-4">
           {fallbackFAQs.filter((f) => f.category === 'Donate' || f.category === 'Partnerships').map((faq) => (
             <Card key={faq.id} as="article">

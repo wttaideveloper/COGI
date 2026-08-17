@@ -29,6 +29,7 @@ function mapHomepage(raw: Record<string, unknown>): Homepage {
       title: (attrs.videoHeading as string) ?? fallbackHomepage.video.title,
       description: (attrs.videoDescription as string) ?? fallbackHomepage.video.description,
       thumbnailAlt: (attrs.videoThumbnailAlt as string) ?? fallbackHomepage.video.thumbnailAlt,
+      videoUrl: (attrs.videoUrl as string) ?? fallbackHomepage.video.videoUrl,
     },
     methods: (attrs.methods as Homepage['methods']) ?? fallbackHomepage.methods,
     impactStats: (attrs.impactStats as Homepage['impactStats']) ?? fallbackHomepage.impactStats,

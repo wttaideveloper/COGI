@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { searchSite } from '@/api/search'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams()
@@ -10,6 +11,8 @@ export function SearchPage() {
   const [results, setResults] = useState<Awaited<ReturnType<typeof searchSite>>>([])
   const [searched, setSearched] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { copy } = useSiteConfig()
+  const page = copy.search
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,8 +26,8 @@ export function SearchPage() {
 
   return (
     <>
-      <SEO title="Search" path="/search" />
-      <PageHero title="Search" subtitle="Find programs, articles, events, and pages" />
+      <SEO title={page.heroTitle} path="/search" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} />
       <div className="mx-auto max-w-3xl px-4 py-16">
         <form onSubmit={handleSearch} className="flex gap-3" role="search">
           <label htmlFor="search-input" className="sr-only">Search</label>
@@ -33,11 +36,11 @@ export function SearchPage() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search the site…"
+            placeholder={page.placeholder}
             className="flex-1 rounded-md border border-mist-dark px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gold"
           />
           <button type="submit" className="rounded-md bg-teal-deep px-6 py-3 font-semibold text-white hover:bg-teal-mid" disabled={loading}>
-            {loading ? 'Searching…' : 'Search'}
+            {loading ? 'Searching…' : page.button}
           </button>
         </form>
 

@@ -46,13 +46,16 @@ export function Footer() {
   const socialLinks = social.length ? social : settings?.socialLinks || []
 
   return (
-    <footer className="border-t border-mist-dark" style={{ backgroundColor: footer.backgroundColor, color: footer.textColor }}>
+    <footer className="bg-[#161412] text-[#EDE8DF]" style={{ backgroundColor: footer.backgroundColor || '#161412', color: footer.textColor || '#EDE8DF' }}>
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div>
           {footer.logoUrl ? (
-            <img src={footer.logoUrl} alt="COGI" className="mb-3 h-12 max-w-[200px] object-contain" />
+            <img src={footer.logoUrl} alt="Companions of Grace International" className="mb-3 h-12 max-w-[200px] object-contain" />
           ) : (
-            <h2 className="font-display text-2xl font-bold">Companions of Grace International</h2>
+            <div>
+              <h2 className="font-display text-2xl font-bold leading-tight">Companions of Grace</h2>
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.38em] opacity-80">International</p>
+            </div>
           )}
           <p className="mt-3 text-sm opacity-80">{footer.description || settings?.tagline}</p>
           <p className="mt-4 text-sm">
@@ -119,8 +122,17 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 text-sm opacity-70 md:flex-row">
-          <p>{footer.copyright || `© ${new Date().getFullYear()} Companions of Grace International. All rights reserved.`}</p>
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-center text-xs uppercase tracking-[0.16em] opacity-70 md:flex-row md:text-left">
+          <p className="normal-case tracking-normal opacity-100">{footer.copyright || `© ${new Date().getFullYear()} Companions of Grace International. All rights reserved.`}</p>
+          <p>
+            <Link to="/about" className="hover:text-gold">About</Link>
+            <span className="mx-2">|</span>
+            <Link to="/donate" className="hover:text-gold">Ways to give</Link>
+            <span className="mx-2">|</span>
+            <Link to="/about" className="hover:text-gold">Vision & mission</Link>
+            <span className="mx-2">|</span>
+            <Link to="/contact" className="hover:text-gold">Contact</Link>
+          </p>
         </div>
       </div>
     </footer>

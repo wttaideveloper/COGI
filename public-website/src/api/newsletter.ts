@@ -10,7 +10,7 @@ export async function submitNewsletter(data: NewsletterFormData): Promise<{ succ
   })
 
   if (result) {
-    return { success: true, message: 'Welcome to the COGI community! Check your inbox for a confirmation.' }
+    return { success: true, message: 'Welcome to the ADVANCE community! Check your inbox for a confirmation.' }
   }
 
   await new Promise((r) => setTimeout(r, 600))

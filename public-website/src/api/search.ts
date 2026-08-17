@@ -11,10 +11,10 @@ import type { SearchResult } from '@/types'
 
 const staticPages: SearchResult[] = [
   { id: 'about', type: 'page', title: 'About Us', summary: fallbackGlobalSettings.vision, url: '/about' },
-  { id: 'our-story', type: 'page', title: 'Our Story', summary: 'COGI timeline from 2019 to 2026', url: '/about/our-story' },
+  { id: 'our-story', type: 'page', title: 'Our Story', summary: 'A fellowship born from prayer, friendship, and Kingdom vision', url: '/about/our-story' },
   { id: 'beliefs', type: 'page', title: 'Our Beliefs', summary: 'Statement of faith', url: '/about/beliefs' },
-  { id: 'get-involved', type: 'page', title: 'Get Involved', summary: 'Pray, Participate, Partner', url: '/get-involved' },
-  { id: 'donate', type: 'page', title: 'Donate', summary: 'Support missional healthcare worldwide', url: '/donate' },
+  { id: 'get-involved', type: 'page', title: 'Get Involved', summary: 'Pray, participate, and partner with Communities of Grace', url: '/get-involved' },
+  { id: 'donate', type: 'page', title: 'Donate', summary: 'Partner with us to equip healthcare professionals for Kingdom engagement', url: '/donate' },
   { id: 'contact', type: 'page', title: 'Contact', summary: fallbackGlobalSettings.contactEmail, url: '/contact' },
 ]
 

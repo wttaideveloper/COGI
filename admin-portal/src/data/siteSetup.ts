@@ -61,20 +61,20 @@ export const mockTheme: ThemeSettings = {
 }
 
 export const mockHeader: HeaderSettings = {
-  backgroundColor: '#1B4D3E',
-  textColor: '#FFFFFF',
+  backgroundColor: '#ffffff',
+  textColor: '#1A2E2D',
   logoUrl: '/cogi-admin-logo.svg',
   logoAlt: 'Companions of Grace International',
-  ctaText: 'Donate',
+  ctaText: 'Give now',
   ctaLink: '/donate',
   sticky: true,
 }
 
 export const mockFooter: FooterSettings = {
-  backgroundColor: '#12362C',
+  backgroundColor: '#161412',
   textColor: '#E8F0EC',
   logoUrl: '/cogi-admin-logo.svg',
-  description: 'Equipping healthcare professionals for Kingdom engagement around the world.',
+  description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',
   copyright: '© Companions of Grace International. All rights reserved.',
   showSocial: true,
   facebookUrl: 'https://facebook.com',
@@ -83,10 +83,10 @@ export const mockFooter: FooterSettings = {
 }
 
 export const mockSeo: SeoSettings = {
-  metaTitle: 'Companions of Grace International',
-  metaDescription: 'Equipping healthcare professionals for Kingdom engagement through communities of grace.',
-  keywords: 'COGI, healthcare mission, Christian healthcare, grace communities',
-  ogImageUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80',
+  metaTitle: 'COGI – Companions of Grace International',
+  metaDescription: 'Equipping healthcare professionals for Kingdom engagement through training, community, and missional healthcare programs worldwide.',
+  keywords: 'COGI, Companions of Grace, healthcare missions, missional healthcare, Christian healthcare',
+  ogImageUrl: '/images/cogi-hero.png',
   siteUrl: 'https://coginternational.org',
 }
 
@@ -99,6 +99,6 @@ export const mockFooterNavigation: NavigationMenu = {
     { id: 'f2', label: 'Programs', href: '/programs', visible: true },
     { id: 'f3', label: 'Get Involved', href: '/get-involved', visible: true },
     { id: 'f4', label: 'Contact', href: '/contact', visible: true },
-    { id: 'f5', label: 'Privacy', href: '/privacy', visible: true },
+    { id: 'f5', label: 'Privacy', href: '/privacy-policy', visible: true },
   ],
 }

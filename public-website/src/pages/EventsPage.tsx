@@ -4,14 +4,17 @@ import { getEvents } from '@/api/events'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
 import { formatDate } from '@/lib/utils'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function EventsPage() {
   const { data: events } = useQuery({ queryKey: ['events'], queryFn: getEvents })
+  const { copy } = useSiteConfig()
+  const page = copy.events
 
   return (
     <>
-      <SEO title="Events" description="Upcoming COGI seminars, trainings, and gatherings" path="/events" />
-      <PageHero title="Events" subtitle="Seminars, trainings, and immersive experiences" />
+      <SEO title={page.heroTitle} description={page.heroSubtitle} path="/events" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-4xl px-4 py-16 space-y-6">
         {events?.map((event) => (
           <Card key={event.id} as="article">

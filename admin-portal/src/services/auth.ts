@@ -1,4 +1,5 @@
-import { clearJwt, getJwt, setDemoMode, setJwt, strapiAuthClient } from './strapi'
+import { authenticateLocalUser, setUserPassword } from './users'
+import { clearJwt, getJwt, isDemoMode, setDemoMode, setJwt, strapiAuthClient } from './strapi'
 import type { AuthUser, ChangePasswordPayload, LoginPayload } from '@/types'
 
 const USER_KEY = 'cogi_admin_user'
@@ -17,11 +18,12 @@ export async function login(payload: LoginPayload): Promise<AuthUser> {
     storeUser(data.user)
     return data.user
   } catch (error) {
-    if (payload.identifier.toLowerCase() === DEMO_EMAIL && payload.password === DEMO_PASSWORD) {
+    const local = authenticateLocalUser(payload.identifier, payload.password)
+    if (local) {
       setJwt('mock-jwt-cogi-admin')
       setDemoMode(true)
-      storeUser(demoUser)
-      return demoUser
+      storeUser(local)
+      return local
     }
     throw error
   }
@@ -29,4 +31,15 @@ export async function login(payload: LoginPayload): Promise<AuthUser> {
 export function logout(): void { clearJwt(); setDemoMode(false); localStorage.removeItem(USER_KEY) }
 export async function forgotPassword(email: string): Promise<void> { await strapiAuthClient.post('/api/auth/forgot-password', { email }) }
 export async function resetPassword(code: string, password: string, passwordConfirmation: string): Promise<void> { await strapiAuthClient.post('/api/auth/reset-password', { code, password, passwordConfirmation }) }
-export async function changePassword(payload: ChangePasswordPayload): Promise<void> { await strapiAuthClient.post('/api/auth/change-password', payload, { headers: { Authorization: `Bearer ${getJwt()}` } }) }
+export async function changePassword(payload: ChangePasswordPayload): Promise<void> {
+  if (isDemoMode()) {
+    const user = getStoredUser()
+    if (!user) throw new Error('Not signed in')
+    const current = authenticateLocalUser(user.email, payload.currentPassword)
+    if (!current) throw new Error('Current password is incorrect')
+    if (payload.password !== payload.passwordConfirmation) throw new Error('Passwords do not match')
+    setUserPassword(user.email, payload.password)
+    return
+  }
+  await strapiAuthClient.post('/api/auth/change-password', payload, { headers: { Authorization: `Bearer ${getJwt()}` } })
+}

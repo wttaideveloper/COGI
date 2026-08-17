@@ -4,14 +4,17 @@ import { getBlogPosts } from '@/api/blog'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card, Skeleton } from '@/components/ui/Card'
 import { formatDate } from '@/lib/utils'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function BlogPage() {
   const { data: posts, isLoading } = useQuery({ queryKey: ['blog'], queryFn: getBlogPosts })
+  const { copy } = useSiteConfig()
+  const page = copy.blog
 
   return (
     <>
-      <SEO title="Blog" description="Articles from Companions of Grace International" path="/resources/blog" />
-      <PageHero title="Blog" subtitle="Insights on missional healthcare, programs, and partnerships" />
+      <SEO title={page.heroTitle} description={page.heroSubtitle} path="/resources/blog" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-4xl px-4 py-16">
         {isLoading ? (
           <div className="space-y-6">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-32" />)}</div>
@@ -30,7 +33,9 @@ export function BlogPage() {
             ))}
           </div>
         )}
-        <p className="mt-12 text-center text-sm text-ink-muted">~50 articles from the legacy site are planned for migration.</p>
+        {page.migrationNote ? (
+          <p className="mt-12 text-center text-sm text-ink-muted">{page.migrationNote}</p>
+        ) : null}
       </div>
     </>
   )

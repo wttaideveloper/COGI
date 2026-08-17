@@ -3,24 +3,27 @@ import { getGlobalSettings } from '@/api/globalSettings'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
 import { ContactForm } from '@/components/forms/ContactForm'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function ContactPage() {
   const { data: settings } = useQuery({ queryKey: ['globalSettings'], queryFn: getGlobalSettings })
+  const { copy } = useSiteConfig()
+  const page = copy.contact
 
   return (
     <>
-      <SEO title="Contact" description="Get in touch with Companions of Grace International" path="/contact" />
-      <PageHero title="Contact Us" subtitle="We'd love to hear from you" />
+      <SEO title={page.heroTitle} description={page.heroSubtitle} path="/contact" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-5xl px-4 py-16 grid gap-12 lg:grid-cols-2">
         <Card>
-          <h2 className="font-display text-2xl text-teal-deep">Send a Message</h2>
+          <h2 className="font-display text-2xl text-teal-deep">{page.formTitle}</h2>
           <div className="mt-6">
             <ContactForm />
           </div>
         </Card>
         <div className="space-y-8">
           <Card>
-            <h2 className="font-display text-xl text-teal-deep">Contact Information</h2>
+            <h2 className="font-display text-xl text-teal-deep">{page.infoTitle}</h2>
             <dl className="mt-4 space-y-4">
               <div>
                 <dt className="text-sm font-semibold text-ink-muted">Email</dt>
@@ -35,7 +38,7 @@ export function ContactPage() {
             </dl>
           </Card>
           <Card>
-            <h2 className="font-display text-xl text-teal-deep">Connect on Social</h2>
+            <h2 className="font-display text-xl text-teal-deep">{page.socialTitle}</h2>
             <ul className="mt-4 space-y-2">
               {settings?.socialLinks.map((link) => (
                 <li key={link.platform}>
@@ -45,7 +48,7 @@ export function ContactPage() {
             </ul>
           </Card>
           <div className="rounded-xl bg-mist-dark p-8 text-center text-ink-muted" aria-label="Map placeholder">
-            <p className="text-sm">Office map — configurable via Global Settings in Strapi</p>
+            <p className="text-sm">{page.mapNote}</p>
           </div>
         </div>
       </div>

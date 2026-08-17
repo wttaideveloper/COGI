@@ -5,7 +5,7 @@ import { getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/servic
 import { readFileAsDataUrl } from '@/services/siteConfigStore'
 import type { MediaFile } from '@/types'
 
-const STORAGE_KEY = 'cogi_media_library'
+const STORAGE_KEY = 'cogi_media_library_doc1'
 
 function loadLocalMedia(): MediaFile[] {
   try {

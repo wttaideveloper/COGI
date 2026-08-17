@@ -6,8 +6,8 @@
   --color-teal-light: #1a8a84;
   --color-gold: #c9a227;
   --color-gold-light: #e0bc4a;
-  --color-mist: #f4f8f7;
-  --color-mist-dark: #e8f0ef;
+  --color-mist: #f6f3ee;
+  --color-mist-dark: #ebe6dc;
   --color-ink: #1a2e2d;
   --color-ink-muted: #4a6361;
   --font-display: "Cormorant Garamond", Georgia, serif;
@@ -43,7 +43,7 @@
     margin: 0;
     font-family: var(--font-body);
     color: var(--color-ink);
-    background: linear-gradient(180deg, var(--color-mist) 0%, #ffffff 40%, var(--color-mist-dark) 100%);
+    background: #f6f3ee;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }

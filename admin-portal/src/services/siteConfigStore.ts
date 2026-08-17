@@ -1,6 +1,7 @@
 import type { FooterSettings, HeaderSettings, HomepageRecord, HomepageSection, NavItem, SeoSettings, ThemeSettings } from '@/types'
 import { mockFooter, mockHeader, mockSeo, mockTheme, mockFooterNavigation } from '@/data/siteSetup'
 import { mockHomepage, mockNavigation } from '@/data/mock'
+import { defaultSiteCopy, mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiPublishSingle, apiSingle, apiUpdateSingle, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 
 export type SiteConfig = {
@@ -14,6 +15,7 @@ export type SiteConfig = {
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
     sections?: HomepageSection[]
   }
+  copy: SiteCopy
   updatedAt: string
 }
 
@@ -42,6 +44,7 @@ export function defaultSiteConfig(): SiteConfig {
       impactStats: (mockHomepage.stats || []).map((s) => ({ id: s.label, value: s.value, label: s.label })),
       sections: structuredClone(mockHomepage.sections || []),
     },
+    copy: structuredClone(defaultSiteCopy),
     updatedAt: '',
   }
 }
@@ -58,6 +61,7 @@ function mergeConfig(partial: Partial<SiteConfig>): SiteConfig {
     homepage: { ...base.homepage, ...partial.homepage },
     headerNav: partial.headerNav?.length ? partial.headerNav : base.headerNav,
     footerNav: partial.footerNav?.length ? partial.footerNav : base.footerNav,
+    copy: mergeSiteCopy(partial.copy),
     updatedAt: partial.updatedAt || base.updatedAt,
   }
 }

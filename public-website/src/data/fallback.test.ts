@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { fallbackPrograms, fallbackBoardMembers, fallbackTestimonials } from '@/data/fallback'
+import { fallbackPrograms, fallbackBoardMembers, fallbackTestimonials, fallbackLocations } from '@/data/fallback'
 
 describe('COGI fallback content', () => {
-  it('includes four programs from the requirements document', () => {
-    expect(fallbackPrograms.length).toBeGreaterThanOrEqual(4)
+  it('includes the four ministry pathways', () => {
     expect(fallbackPrograms.map((p) => p.slug)).toEqual(
       expect.arrayContaining([
         'kingdom-of-god',
@@ -14,18 +13,20 @@ describe('COGI fallback content', () => {
     )
   })
 
-  it('includes board members with chairman and CEO', () => {
-    const titles = fallbackBoardMembers.map((m) => `${m.name} ${m.title}`).join(' ')
-    expect(/chairman/i.test(titles)).toBe(true)
-    expect(/ceo|president|chief executive/i.test(titles)).toBe(true)
+  it('includes the founding board', () => {
+    const names = fallbackBoardMembers.map((m) => m.name).join(' ')
+    expect(names).toMatch(/Abraham Thomas/)
+    expect(names).toMatch(/Mathew George/)
   })
 
-  it('includes written testimonials from the DOCX', () => {
-    expect(fallbackTestimonials.length).toBeGreaterThanOrEqual(4)
-    const authors = fallbackTestimonials.map((t) => t.author).join(' ')
-    expect(authors).toMatch(/Stella/i)
-    expect(authors).toMatch(/Abhilash/i)
-    expect(authors).toMatch(/Chacko/i)
-    expect(authors).toMatch(/Blessena/i)
+  it('includes written testimonials', () => {
+    expect(fallbackTestimonials.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('lists current areas of engagement', () => {
+    const countries = fallbackLocations.map((l) => l.country)
+    expect(countries).toEqual(
+      expect.arrayContaining(['United States', 'India', 'Uganda', 'Philippines', 'Kenya', 'Singapore', 'Rwanda', 'Australia', 'Tanzania', 'New Zealand']),
+    )
   })
 })

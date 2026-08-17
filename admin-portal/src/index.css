@@ -555,6 +555,80 @@
     background: color-mix(in srgb, var(--color-mist) 70%, #fff);
   }
 
+  .admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .admin-toolbar-search { max-width: 28rem; }
+  .admin-toolbar-count {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-ink-muted);
+  }
+  .admin-flash {
+    margin: 0 0 1rem;
+    border-radius: 0.9rem;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 0.88rem;
+    font-weight: 700;
+    padding: 0.7rem 0.9rem;
+  }
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .user-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: var(--color-accent-soft);
+    color: #7a5d2e;
+    font-size: 0.72rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+  .admin-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(18, 54, 44, 0.45);
+    display: grid;
+    place-items: center;
+    padding: 1.25rem;
+  }
+  .admin-modal {
+    width: min(560px, 100%);
+    border-radius: 1.15rem;
+    background: #fff;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 24px 60px rgba(18, 54, 44, 0.18);
+    padding: 1.35rem;
+    max-height: min(90vh, 720px);
+    overflow: auto;
+  }
+  .admin-modal-close {
+    background: var(--color-mist) !important;
+    color: var(--color-ink) !important;
+    border-color: var(--color-border) !important;
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+  .enquiry-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
   @media (max-width: 960px) {
     .admin-shell,
     .admin-shell-collapsed { grid-template-columns: 1fr; }

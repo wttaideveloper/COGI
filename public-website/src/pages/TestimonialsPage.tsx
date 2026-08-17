@@ -4,18 +4,21 @@ import { getTestimonials } from '@/api/testimonials'
 import { getPrograms } from '@/api/programs'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function TestimonialsPage() {
   const { data: testimonials } = useQuery({ queryKey: ['testimonials'], queryFn: getTestimonials })
   const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms })
   const [programFilter, setProgramFilter] = useState('')
+  const { copy } = useSiteConfig()
+  const page = copy.testimonials
 
   const filtered = testimonials?.filter((t) => !programFilter || t.program === programFilter)
 
   return (
     <>
-      <SEO title="Testimonials" path="/resources/testimonials" />
-      <PageHero title="Testimonials" subtitle="Voices from the COGI global fellowship" />
+      <SEO title={page.heroTitle} path="/resources/testimonials" />
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-5xl px-4 py-16">
         <label className="mb-8 flex items-center gap-2 text-sm">
           Filter by program:

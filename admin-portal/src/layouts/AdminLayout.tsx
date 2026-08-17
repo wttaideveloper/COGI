@@ -52,6 +52,7 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
       { label: 'Header', to: '/header', hint: 'Logo & navigation bar' },
       { label: 'Footer', to: '/footer', hint: 'Footer content & colors' },
       { label: 'Pages & Menus', to: '/navigation', hint: 'Drag header & footer links' },
+      { label: 'Website Copy', to: '/website-copy', hint: 'All page headlines & photos' },
     ],
   },
   {

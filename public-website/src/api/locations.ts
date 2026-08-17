@@ -9,13 +9,17 @@ export async function getLocations(): Promise<Location[]> {
     sort: 'country:asc',
   })
   if (data === null) return fallbackLocations
-  return (data.data ?? []).map((l) => ({
-    id: String(l.id),
-    country: l.country,
-    region: l.region ?? '',
-    summary: l.summary ?? '',
-    programs: l.programs ?? [],
-    lat: l.lat ?? l.latitude,
-    lng: l.lng ?? l.longitude,
-  }))
+  const rows = (data.data ?? []).map((l) => {
+    const fallback = fallbackLocations.find((item) => item.country === l.country)
+    return {
+      id: String(l.id),
+      country: l.country,
+      region: l.region || fallback?.region || '',
+      summary: l.summary || fallback?.summary || '',
+      programs: l.programs?.length ? l.programs : fallback?.programs ?? [],
+      lat: l.lat ?? l.latitude ?? fallback?.lat,
+      lng: l.lng ?? l.longitude ?? fallback?.lng,
+    }
+  })
+  return rows.length ? rows : fallbackLocations
 }
