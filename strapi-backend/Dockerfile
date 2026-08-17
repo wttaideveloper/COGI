@@ -5,6 +5,7 @@ WORKDIR /opt/app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+ENV STRAPI_ADMIN_BACKEND_URL=/admin-strapi
 RUN npm run build
 
 # Stage 2: Production
@@ -21,6 +22,7 @@ COPY --from=build /opt/app/config ./config
 COPY --from=build /opt/app/src ./src
 COPY --from=build /opt/app/database ./database
 COPY --from=build /opt/app/scripts ./scripts
+COPY --from=build /opt/app/tsconfig.json ./tsconfig.json
 
 ENV NODE_ENV=production
 EXPOSE 1337
