@@ -23,11 +23,27 @@ export interface PageRecord extends BaseRecord {
   seo?: SeoFields
   sections?: Array<{ id: string; type: string; title: string; content: string; imageUrl?: string; buttonLabel?: string; buttonHref?: string }>
 }
-export interface HomepageSection { id: string; label: string; enabled: boolean; order: number; summary: string }
+export type HomepageBlockKind = 'built-in' | 'text' | 'split' | 'cta' | 'quote' | 'banner' | 'image'
+export interface HomepageSection {
+  id: string
+  label: string
+  enabled: boolean
+  order: number
+  summary: string
+  kind?: HomepageBlockKind
+  title?: string
+  content?: string
+  imageUrl?: string
+  imageAlt?: string
+  buttonLabel?: string
+  buttonHref?: string
+  eyebrow?: string
+}
 export interface HeroSlide { id: string; imageUrl: string; alt?: string }
 export interface HomepageRecord {
   heroHeadline: string
   heroIntro: string
+  heroHeadlineSize?: number
   heroImageUrl?: string
   heroImageAlt?: string
   heroSlides?: HeroSlide[]
@@ -53,6 +69,7 @@ export interface ThemeSettings {
   backgroundColor: string
   textColor: string
   accentColor: string
+  buttonHoverColor: string
   fontFamily: string
   headingFontFamily: string
 }

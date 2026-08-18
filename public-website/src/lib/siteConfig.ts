@@ -19,6 +19,7 @@ export type SiteConfig = {
     backgroundColor: string
     textColor: string
     accentColor: string
+    buttonHoverColor: string
     fontFamily: string
     headingFontFamily: string
   }
@@ -54,6 +55,7 @@ export type SiteConfig = {
   homepage: {
     heroHeadline: string
     heroIntro: string
+    heroHeadlineSize?: number
     heroImageUrl?: string
     heroImageAlt?: string
     heroSlides?: Array<{ id: string; imageUrl: string; alt?: string }>
@@ -63,7 +65,21 @@ export type SiteConfig = {
     missionStatement?: string
     missionScripture?: string
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
-    sections?: Array<{ id: string; label: string; enabled: boolean; order: number; summary: string }>
+    sections?: Array<{
+      id: string
+      label: string
+      enabled: boolean
+      order: number
+      summary: string
+      kind?: 'built-in' | 'text' | 'split' | 'cta' | 'quote' | 'banner' | 'image'
+      title?: string
+      content?: string
+      imageUrl?: string
+      imageAlt?: string
+      buttonLabel?: string
+      buttonHref?: string
+      eyebrow?: string
+    }>
   }
   copy: SiteCopy
   updatedAt?: string
@@ -76,6 +92,7 @@ const defaults: SiteConfig = {
     backgroundColor: '#F4F8F7',
     textColor: '#1A2E2D',
     accentColor: '#C9A227',
+    buttonHoverColor: '#E0BC4A',
     fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
     headingFontFamily: 'Cormorant Garamond, Georgia, serif',
   },
@@ -110,13 +127,11 @@ const defaults: SiteConfig = {
     heroHeadline: 'Equipping Healthcare Professionals for Kingdom Engagement',
     heroIntro:
       'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
+    heroHeadlineSize: 64,
     heroImageUrl: siteImages.heroCrowd,
     heroImageAlt: 'Healthcare professionals gathered in worship and mission',
     heroSlides: [
-      { id: 's1', imageUrl: siteImages.heroCrowd, alt: 'A global gathering of believers on mission' },
-      { id: 's2', imageUrl: siteImages.heroHands, alt: 'Hands joined in prayer and partnership' },
-      { id: 's3', imageUrl: siteImages.kenya, alt: 'Ministry and training in East Africa' },
-      { id: 's4', imageUrl: siteImages.historicGathering, alt: 'A historic gathering of the fellowship' },
+      { id: 'hero', imageUrl: siteImages.heroCrowd, alt: 'Healthcare professionals gathered in worship and mission' },
     ],
     primaryCtaLabel: 'Give now',
     primaryCtaHref: '/donate',
@@ -155,6 +170,7 @@ export function applyTheme(theme: SiteConfig['theme']) {
   root.style.setProperty('--color-teal-deep', theme.primaryColor)
   root.style.setProperty('--color-teal-mid', theme.secondaryColor)
   root.style.setProperty('--color-gold', theme.accentColor)
+  root.style.setProperty('--color-gold-light', theme.buttonHoverColor || theme.accentColor)
   root.style.setProperty('--color-mist', theme.backgroundColor)
   root.style.setProperty('--color-ink', theme.textColor)
   root.style.setProperty('--font-body', theme.fontFamily)
@@ -177,6 +193,20 @@ export async function fetchSiteConfig(): Promise<SiteConfig> {
   }
 }
 
+function mergeHomeSections(
+  incoming?: SiteConfig['homepage']['sections'],
+): NonNullable<SiteConfig['homepage']['sections']> {
+  const current = Array.isArray(incoming) ? incoming : []
+  const byId = new Map(current.map((section) => [section.id, section]))
+  const defaultsList = defaults.homepage.sections || []
+  const restored = defaultsList.map((builtin) => {
+    const existing = byId.get(builtin.id)
+    return existing ? { ...builtin, ...existing, id: builtin.id } : { ...builtin }
+  })
+  const customs = current.filter((section) => !defaultsList.some((item) => item.id === section.id))
+  return [...restored, ...customs].map((section, index) => ({ ...section, order: index + 1 }))
+}
+
 function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
   return {
     ...defaults,
@@ -185,7 +215,11 @@ function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
     header: { ...defaults.header, ...data.header },
     footer: { ...defaults.footer, ...data.footer },
     seo: { ...defaults.seo, ...data.seo },
-    homepage: { ...defaults.homepage, ...data.homepage },
+    homepage: {
+      ...defaults.homepage,
+      ...data.homepage,
+      sections: mergeHomeSections(data.homepage?.sections ?? defaults.homepage.sections),
+    },
     copy: mergeSiteCopy(data.copy),
     headerNav: data.headerNav?.length ? data.headerNav : defaults.headerNav,
     footerNav: data.footerNav?.length ? data.footerNav : defaults.footerNav,

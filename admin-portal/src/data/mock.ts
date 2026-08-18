@@ -10,13 +10,11 @@ export const mockActivity: ActivityItem[] = [
 export const mockHomepage: HomepageRecord = {
   heroHeadline: 'Equipping Healthcare Professionals for Kingdom Engagement',
   heroIntro: 'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
+  heroHeadlineSize: 64,
   heroImageUrl: siteImages.heroCrowd,
   heroImageAlt: 'People gathered in worship and mission',
   heroSlides: [
-    { id: 's1', imageUrl: siteImages.heroCrowd, alt: 'A global gathering of believers on mission' },
-    { id: 's2', imageUrl: siteImages.heroHands, alt: 'Hands joined in prayer and partnership' },
-    { id: 's3', imageUrl: siteImages.kenya, alt: 'Ministry and training in East Africa' },
-    { id: 's4', imageUrl: siteImages.historicGathering, alt: 'A historic gathering of the fellowship' },
+    { id: 'hero', imageUrl: siteImages.heroCrowd, alt: 'People gathered in worship and mission' },
   ],
   primaryCtaLabel: 'Give now',
   primaryCtaHref: '/donate',

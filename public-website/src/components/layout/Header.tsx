@@ -28,8 +28,8 @@ const fallbackNav: SiteNavItem[] = [
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   clsx(
-    'rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] transition-colors',
-    isActive ? 'bg-teal-deep/10 text-current' : 'text-current hover:bg-mist-dark hover:text-current hover:opacity-80',
+    'rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em]',
+    isActive ? 'text-current' : 'text-current',
   )
 
 export function Header() {
@@ -70,7 +70,7 @@ export function Header() {
                 >
                   <button
                     type="button"
-                    className="flex items-center gap-1 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-current transition-colors hover:opacity-70"
+                    className="flex items-center gap-1 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-current"
                     aria-expanded={open}
                     aria-haspopup="true"
                   >
@@ -83,7 +83,7 @@ export function Header() {
                     <ul className="absolute left-0 top-full min-w-[200px] rounded-lg border border-mist-dark bg-white py-2 shadow-lg" role="menu">
                       {children.map((child) => (
                         <li key={child.id} role="none">
-                          <NavLink to={child.href} className="block px-4 py-2 text-sm text-ink hover:bg-mist hover:text-teal-deep" role="menuitem">
+                          <NavLink to={child.href} className="block px-4 py-2 text-sm text-ink" role="menuitem">
                             {child.label}
                           </NavLink>
                         </li>
@@ -100,7 +100,7 @@ export function Header() {
             )
           })}
 
-          <Link to="/search" className="rounded-md p-2 text-current opacity-80 hover:bg-mist-dark hover:opacity-100" aria-label="Search site">
+          <Link to="/search" className="rounded-md p-2 text-current" aria-label="Search site">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
               <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="2" />
               <path d="M14 14l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

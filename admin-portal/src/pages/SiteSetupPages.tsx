@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { colorPresets, fontOptions, headingFontOptions } from '@/data/siteSetup'
-import { defaultSiteConfig, hydrateSiteConfigFromStrapi, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
+import { defaultSiteConfig, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
+import { LOGO_HINT, MediaUpload } from '@/components/MediaUpload'
 import type { FooterSettings, HeaderSettings, SeoSettings, ThemeSettings } from '@/types'
 
 function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -67,6 +68,8 @@ function PublishActions({
 
 export function ThemePage() {
   const [theme, setTheme] = useState<ThemeSettings>(defaultSiteConfig().theme)
+  const [logoUrl, setLogoUrl] = useState(defaultSiteConfig().header.logoUrl)
+  const [logoAlt, setLogoAlt] = useState(defaultSiteConfig().header.logoAlt)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -74,7 +77,11 @@ export function ThemePage() {
   useEffect(() => {
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
-      if (active) setTheme(config.theme)
+      if (active) {
+        setTheme({ ...config.theme, buttonHoverColor: config.theme.buttonHoverColor || '#D4B88A' })
+        setLogoUrl(config.header.logoUrl)
+        setLogoAlt(config.header.logoAlt)
+      }
     })
     return () => { active = false }
   }, [])
@@ -83,7 +90,10 @@ export function ThemePage() {
     setPending(status)
     setError(null)
     try {
-      await saveSiteConfig({ theme }, status)
+      await saveSiteConfig({
+        theme,
+        header: { ...loadSiteConfig().header, logoUrl, logoAlt },
+      }, status)
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {
@@ -116,6 +126,7 @@ export function ThemePage() {
                   backgroundColor: preset.backgroundColor,
                   textColor: preset.textColor,
                   accentColor: preset.accentColor,
+                  buttonHoverColor: preset.buttonHoverColor,
                   fontFamily: preset.fontFamily,
                   headingFontFamily: preset.headingFontFamily,
                 })}>
@@ -134,7 +145,32 @@ export function ThemePage() {
             <ColorField label="Secondary" value={theme.secondaryColor} onChange={(v) => patch('secondaryColor', v)} />
             <ColorField label="Page background" value={theme.backgroundColor} onChange={(v) => patch('backgroundColor', v)} />
             <ColorField label="Body text" value={theme.textColor} onChange={(v) => patch('textColor', v)} />
-            <ColorField label="Accent" value={theme.accentColor} onChange={(v) => patch('accentColor', v)} />
+            <ColorField label="Accent / button" value={theme.accentColor} onChange={(v) => patch('accentColor', v)} />
+            <ColorField label="Button hover" value={theme.buttonHoverColor || theme.accentColor} onChange={(v) => patch('buttonHoverColor', v)} />
+          </div>
+          <div className="admin-card p-5">
+            <h3 className="font-bold text-[var(--color-primary)]">Site logo</h3>
+            <p className="mt-1 text-sm text-slate-600">Upload the header logo. Publish live to show it on the public site.</p>
+            <div className="mt-4 grid gap-4">
+              <MediaUpload
+                kind="image"
+                label="Upload logo"
+                hint={LOGO_HINT}
+                allowSvg
+                maxBytes={2 * 1024 * 1024}
+                recommendedBytes={500 * 1024}
+                value={logoUrl}
+                onLoaded={(url, file) => {
+                  setLogoUrl(url)
+                  setLogoAlt((prev) => prev || file.name.replace(/\.[^.]+$/, ''))
+                }}
+                onClear={() => setLogoUrl('')}
+                noun="logo"
+              />
+              <Field label="Logo alt text">
+                <input className="admin-input" value={logoAlt} onChange={(e) => setLogoAlt(e.target.value)} />
+              </Field>
+            </div>
           </div>
           <div className="admin-card grid gap-4 p-5 md:grid-cols-2">
             <Field label="Body font">
@@ -156,7 +192,15 @@ export function ThemePage() {
             <div className="mb-4 h-2 rounded-full" style={{ background: theme.secondaryColor }} />
             <p className="m-0 text-sm">Body text preview — communities of grace among healthcare professionals.</p>
             <h3 className="mt-3 mb-0 text-xl font-bold" style={{ fontFamily: theme.headingFontFamily, color: theme.secondaryColor }}>Heading preview</h3>
-            <span className="mt-4 inline-flex rounded-lg px-3 py-2 text-sm font-bold text-white" style={{ background: theme.primaryColor }}>Primary button</span>
+            {logoUrl ? <img src={logoUrl} alt="" className="mt-4 h-10 max-w-[160px] object-contain" /> : null}
+            <span
+              className="mt-4 inline-flex rounded-lg px-3 py-2 text-sm font-bold text-white"
+              style={{ background: theme.accentColor }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = theme.buttonHoverColor || theme.accentColor }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = theme.accentColor }}
+            >
+              Button (hover me)
+            </span>
           </div>
         </div>
       </div>
@@ -169,7 +213,6 @@ export function HeaderEditorPage() {
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -181,17 +224,6 @@ export function HeaderEditorPage() {
 
   function patch<K extends keyof HeaderSettings>(key: K, value: HeaderSettings[K]) {
     setHeader((prev) => ({ ...prev, [key]: value }))
-  }
-
-  async function onLogoFile(file: File | undefined) {
-    if (!file) return
-    setUploading(true)
-    try {
-      const dataUrl = await readFileAsDataUrl(file)
-      setHeader((prev) => ({ ...prev, logoUrl: dataUrl, logoAlt: prev.logoAlt || file.name }))
-    } finally {
-      setUploading(false)
-    }
   }
 
   async function save(status: 'draft' | 'published') {
@@ -222,19 +254,24 @@ export function HeaderEditorPage() {
             <ColorField label="Background" value={header.backgroundColor} onChange={(v) => patch('backgroundColor', v)} />
             <ColorField label="Text color" value={header.textColor} onChange={(v) => patch('textColor', v)} />
             <div className="md:col-span-2">
-              <Field label="Upload header logo" hint="PNG, SVG, or JPG. Preview updates immediately — Publish live to send it to the website.">
-                <input
-                  className="admin-input"
-                  type="file"
-                  accept="image/*,.svg"
-                  onChange={(e) => onLogoFile(e.target.files?.[0])}
-                />
-              </Field>
-              {uploading ? <p className="mt-2 text-sm text-slate-500">Reading image…</p> : null}
+              <MediaUpload
+                kind="image"
+                label="Upload header logo"
+                hint={`${LOGO_HINT}. Preview updates immediately — publish live to send it to the website.`}
+                allowSvg
+                maxBytes={2 * 1024 * 1024}
+                recommendedBytes={500 * 1024}
+                value={header.logoUrl}
+                onLoaded={(url, file) => setHeader((prev) => ({ ...prev, logoUrl: url, logoAlt: prev.logoAlt || file.name.replace(/\.[^.]+$/, '') }))}
+                onClear={() => patch('logoUrl', '')}
+                noun="logo"
+                extra={(
+                  <Field label="Or paste a logo URL">
+                    <input className="admin-input" value={header.logoUrl.startsWith('data:') ? '' : header.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} placeholder="https://…" />
+                  </Field>
+                )}
+              />
             </div>
-            <Field label="Logo URL (optional)">
-              <input className="admin-input" value={header.logoUrl.startsWith('data:') ? '' : header.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} placeholder="Or paste an image URL" />
-            </Field>
             <Field label="Logo alt text">
               <input className="admin-input" value={header.logoAlt} onChange={(e) => patch('logoAlt', e.target.value)} />
             </Field>
@@ -248,11 +285,6 @@ export function HeaderEditorPage() {
               <input type="checkbox" checked={header.sticky} onChange={(e) => patch('sticky', e.target.checked)} />
               Sticky header on scroll
             </label>
-            {header.logoUrl ? (
-              <div className="md:col-span-2">
-                <button type="button" className="btn-secondary" onClick={() => patch('logoUrl', '')}>Remove logo</button>
-              </div>
-            ) : null}
           </div>
           <SaveBanner savedAs={savedAs} error={error} />
         </div>
@@ -280,7 +312,6 @@ export function FooterEditorPage() {
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -292,17 +323,6 @@ export function FooterEditorPage() {
 
   function patch<K extends keyof FooterSettings>(key: K, value: FooterSettings[K]) {
     setFooter((prev) => ({ ...prev, [key]: value }))
-  }
-
-  async function onLogoFile(file: File | undefined) {
-    if (!file) return
-    setUploading(true)
-    try {
-      const dataUrl = await readFileAsDataUrl(file)
-      setFooter((prev) => ({ ...prev, logoUrl: dataUrl }))
-    } finally {
-      setUploading(false)
-    }
   }
 
   async function save(status: 'draft' | 'published') {
@@ -333,12 +353,24 @@ export function FooterEditorPage() {
             <ColorField label="Background" value={footer.backgroundColor} onChange={(v) => patch('backgroundColor', v)} />
             <ColorField label="Text color" value={footer.textColor} onChange={(v) => patch('textColor', v)} />
             <div className="md:col-span-2">
-              <Field label="Upload footer logo">
-                <input className="admin-input" type="file" accept="image/*,.svg" onChange={(e) => onLogoFile(e.target.files?.[0])} />
-              </Field>
-              {uploading ? <p className="mt-2 text-sm text-slate-500">Reading image…</p> : null}
+              <MediaUpload
+                kind="image"
+                label="Upload footer logo"
+                hint={LOGO_HINT}
+                allowSvg
+                maxBytes={2 * 1024 * 1024}
+                recommendedBytes={500 * 1024}
+                value={footer.logoUrl}
+                onLoaded={(url) => patch('logoUrl', url)}
+                onClear={() => patch('logoUrl', '')}
+                noun="logo"
+                extra={(
+                  <Field label="Or paste a logo URL">
+                    <input className="admin-input" value={footer.logoUrl.startsWith('data:') ? '' : footer.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} />
+                  </Field>
+                )}
+              />
             </div>
-            <Field label="Logo URL"><input className="admin-input" value={footer.logoUrl.startsWith('data:') ? '' : footer.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} /></Field>
             <Field label="Copyright"><input className="admin-input" value={footer.copyright} onChange={(e) => patch('copyright', e.target.value)} /></Field>
             <div className="md:col-span-2">
               <Field label="Description"><textarea className="admin-input min-h-24" value={footer.description} onChange={(e) => patch('description', e.target.value)} /></Field>

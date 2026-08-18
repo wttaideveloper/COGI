@@ -1,47 +1,54 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { mockHomepage } from '@/data/mock'
+import { CUSTOM_BLOCK_OPTIONS, createHomepageBlock, ensureBuiltinSections, isCustomSection, SECTION_HINTS } from '@/data/homepageBlocks'
+import { mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiPublishSingle, apiSingle, apiUpdateSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
-import type { HeroSlide, HomepageRecord } from '@/types'
-
-function PageHeader({ title, description, action }: { title: string; description?: string; action?: React.ReactNode }) {
-  return (
-    <div className="mb-2 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">{title}</h2>
-        {description ? <p className="mt-1 max-w-3xl text-sm text-slate-600">{description}</p> : null}
-      </div>
-      {action}
-    </div>
-  )
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="admin-label">{label}</span>
-      {children}
-    </label>
-  )
-}
-
-function ErrorNotice({ error }: { error: unknown }) {
-  return error ? (
-    <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-      Strapi request failed: {getErrorMessage(error)}. Showing local demo data so the UI remains usable.
-    </div>
-  ) : null
-}
+import { MediaUpload, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
+import type { HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
 
 const HOMEPAGE_DRAFT_KEY = 'cogi_homepage_draft'
 
+type HeroMeta = { name: string; size: number; width?: number; height?: number }
 type HomepageDraftPayload = {
   values: HomepageRecord
-  slides: HeroSlide[]
+  copy: SiteCopy['homepage']
   savedAt: string
+}
+
+type EditorTab = {
+  id: string
+  label: string
+  hint: string
+}
+
+function Field({
+  label,
+  children,
+  hint,
+  count,
+  over,
+}: {
+  label: string
+  children: ReactNode
+  hint?: string
+  count?: string
+  over?: boolean
+}) {
+  return (
+    <label className="hp-field">
+      <span className="hp-field-head">
+        <span className="admin-label">{label}</span>
+        {count ? <span className={over ? 'hp-count hp-count-over' : 'hp-count'}>{count}</span> : null}
+      </span>
+      {children}
+      {hint ? <span className="hp-hint">{hint}</span> : null}
+    </label>
+  )
 }
 
 function loadHomepageDraft(): HomepageDraftPayload | null {
@@ -53,49 +60,41 @@ function loadHomepageDraft(): HomepageDraftPayload | null {
   }
 }
 
-function toHomepageStrapiPayload(values: HomepageRecord, slides: HeroSlide[]) {
-  const nextSlides = slides.filter((slide) => slide.imageUrl)
-  return {
-    heroHeadline: values.heroHeadline,
-    heroIntro: values.heroIntro,
-    heroCtaLabel: values.primaryCtaLabel,
-    heroCtaHref: values.primaryCtaHref,
-    heroImageUrl: nextSlides[0]?.imageUrl || values.heroImageUrl || '',
-    heroImageAlt: nextSlides[0]?.alt || values.heroImageAlt || '',
-    heroSlideList: nextSlides,
-    missionHeading: values.missionTitle,
-    missionText: values.missionStatement,
-    missionScripture: values.missionScripture ?? '',
-    impactStats: (values.stats || []).map((s) => ({ value: s.value, label: s.label })),
-    sectionVisibility: Object.fromEntries((values.sections || []).map((s) => [s.id, s.enabled])),
-    sectionOrder: [...(values.sections || [])].sort((a, b) => a.order - b.order).map((s) => s.id),
-  }
+function readImageMeta(file: File, dataUrl: string): Promise<HeroMeta> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => resolve({ name: file.name, size: file.size, width: img.naturalWidth, height: img.naturalHeight })
+    img.onerror = () => resolve({ name: file.name, size: file.size })
+    img.src = dataUrl
+  })
 }
 
 export default function HomepageManagerPage() {
   const query = useQuery({ queryKey: ['homepage'], queryFn: () => apiSingle<HomepageRecord>('/homepage'), enabled: !isDemoMode() })
-  const stored = loadSiteConfig().homepage
+  const stored = loadSiteConfig()
   const existingDraft = loadHomepageDraft()
   const [hydrated, setHydrated] = useState<HomepageRecord | null>(null)
-  const data = existingDraft?.values ?? hydrated ?? query.data ?? { ...mockHomepage, ...stored }
+  const data = existingDraft?.values ?? hydrated ?? query.data ?? { ...mockHomepage, ...stored.homepage }
   const safeData: HomepageRecord = {
     ...mockHomepage,
     ...data,
+    heroHeadlineSize: data.heroHeadlineSize ?? mockHomepage.heroHeadlineSize ?? 64,
     stats: Array.isArray(data.stats) && data.stats.length ? data.stats : mockHomepage.stats,
-    sections: Array.isArray(data.sections) && data.sections.length ? data.sections : mockHomepage.sections,
+    sections: ensureBuiltinSections(Array.isArray(data.sections) ? data.sections : mockHomepage.sections),
   }
   const form = useForm<HomepageRecord>({ values: safeData })
+  const [copyHome, setCopyHome] = useState<SiteCopy['homepage']>(() =>
+    existingDraft?.copy ?? mergeSiteCopy(stored.copy).homepage,
+  )
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [hasDraft, setHasDraft] = useState(Boolean(existingDraft))
-  const [slides, setSlides] = useState<HeroSlide[]>(() => {
-    if (existingDraft?.slides?.length) return existingDraft.slides
-    if (stored.heroSlides?.length) return stored.heroSlides
-    if (mockHomepage.heroSlides?.length) return mockHomepage.heroSlides
-    if (stored.heroImageUrl) return [{ id: 'legacy', imageUrl: stored.heroImageUrl, alt: stored.heroImageAlt }]
-    return []
-  })
-  const [draftUrl, setDraftUrl] = useState('')
-  const [draftAlt, setDraftAlt] = useState('')
+  const [heroMeta, setHeroMeta] = useState<HeroMeta | null>(null)
+  const [heroUrlInput, setHeroUrlInput] = useState('')
+  const [heroUploadError, setHeroUploadError] = useState('')
+  const [activeTab, setActiveTab] = useState('hero')
+  const [dragOver, setDragOver] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [sectionQuery, setSectionQuery] = useState('')
 
   useEffect(() => {
     let active = true
@@ -105,49 +104,63 @@ export default function HomepageManagerPage() {
       setHydrated({
         ...mockHomepage,
         ...home,
+        heroHeadlineSize: home.heroHeadlineSize ?? 64,
         stats: home.impactStats?.length ? home.impactStats.map((s) => ({ value: s.value, label: s.label })) : mockHomepage.stats,
-        sections: home.sections?.length ? home.sections : mockHomepage.sections,
+        sections: ensureBuiltinSections(home.sections?.length ? home.sections : mockHomepage.sections),
         heroSlides: home.heroSlides,
       })
-      if (!loadHomepageDraft()?.slides?.length && home.heroSlides?.length) setSlides(home.heroSlides)
+      if (!loadHomepageDraft()?.copy) setCopyHome(mergeSiteCopy(config.copy).homepage)
     })
     return () => { active = false }
   }, [])
 
   const mutation = useMutation({
     mutationFn: async ({ values, status }: { values: HomepageRecord; status: 'draft' | 'published' }) => {
-      const nextSlides = slides.filter((slide) => slide.imageUrl)
-      const payload = { ...values, heroSlides: nextSlides }
+      const imageUrl = values.heroImageUrl || ''
+      const payload: HomepageRecord = {
+        ...values,
+        heroHeadlineSize: Number(values.heroHeadlineSize) || 64,
+        heroSlides: imageUrl ? [{ id: 'hero', imageUrl, alt: values.heroImageAlt || 'Hero image' }] : [],
+      }
       localStorage.setItem(
         HOMEPAGE_DRAFT_KEY,
-        JSON.stringify({ values: payload, slides: nextSlides, savedAt: new Date().toISOString() } satisfies HomepageDraftPayload),
+        JSON.stringify({ values: payload, copy: copyHome, savedAt: new Date().toISOString() } satisfies HomepageDraftPayload),
       )
+      const currentCopy = loadSiteConfig().copy
       const saved = await saveSiteConfig({
         homepage: {
-          heroHeadline: values.heroHeadline,
-          heroIntro: values.heroIntro,
-          heroImageUrl: nextSlides[0]?.imageUrl || values.heroImageUrl,
-          heroImageAlt: nextSlides[0]?.alt || values.heroImageAlt,
-          heroSlides: nextSlides,
-          primaryCtaLabel: values.primaryCtaLabel,
-          primaryCtaHref: values.primaryCtaHref,
-          missionTitle: values.missionTitle,
-          missionStatement: values.missionStatement,
-          missionScripture: values.missionScripture ?? '',
-          impactStats: (values.stats || []).map((s) => ({ id: s.label, value: s.value, label: s.label })),
-          sections: values.sections,
+          heroHeadline: payload.heroHeadline,
+          heroIntro: payload.heroIntro,
+          heroHeadlineSize: payload.heroHeadlineSize,
+          heroImageUrl: payload.heroImageUrl,
+          heroImageAlt: payload.heroImageAlt,
+          heroSlides: payload.heroSlides,
+          primaryCtaLabel: payload.primaryCtaLabel,
+          primaryCtaHref: payload.primaryCtaHref,
+          missionTitle: payload.missionTitle,
+          missionStatement: payload.missionStatement,
+          missionScripture: payload.missionScripture ?? '',
+          impactStats: (payload.stats || []).map((s) => ({ id: s.label, value: s.value, label: s.label })),
+          sections: ensureBuiltinSections(payload.sections),
         },
+        copy: { ...currentCopy, homepage: copyHome },
       }, status)
-      if (status === 'published') {
-        localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
-        setSlides(saved.homepage.heroSlides || nextSlides)
-      }
+      if (status === 'published') localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
       if (!isDemoMode()) {
-        const strapiPayload = toHomepageStrapiPayload(
-          { ...values, heroImageUrl: saved.homepage.heroImageUrl, heroSlides: saved.homepage.heroSlides },
-          saved.homepage.heroSlides || nextSlides,
-        )
-        await apiUpdateSingle('/homepage', strapiPayload, 'draft')
+        await apiUpdateSingle('/homepage', {
+          heroHeadline: payload.heroHeadline,
+          heroIntro: payload.heroIntro,
+          heroCtaLabel: payload.primaryCtaLabel,
+          heroCtaHref: payload.primaryCtaHref,
+          heroImageUrl: saved.homepage.heroImageUrl || '',
+          heroImageAlt: payload.heroImageAlt || '',
+          missionHeading: payload.missionTitle,
+          missionText: payload.missionStatement,
+          missionScripture: payload.missionScripture ?? '',
+          impactStats: (payload.stats || []).map((s) => ({ value: s.value, label: s.label })),
+          sectionVisibility: Object.fromEntries((payload.sections || []).map((s) => [s.id, s.enabled])),
+          sectionOrder: [...(payload.sections || [])].sort((a, b) => a.order - b.order).map((s) => s.id),
+        }, 'draft')
         if (status === 'published') await apiPublishSingle('/homepage')
       }
       return { values: payload, status }
@@ -159,168 +172,622 @@ export default function HomepageManagerPage() {
     },
   })
 
-  async function addSlideFromFile(file: File | undefined) {
+  async function onHeroFile(file: File | undefined) {
     if (!file) return
+    const check = validateMediaFile(file, 'image')
+    if (check.error) {
+      setHeroUploadError(check.error)
+      return
+    }
+    setHeroUploadError('')
     const url = await readFileAsDataUrl(file)
-    setSlides((prev) => [...prev, { id: `slide-${Date.now()}`, imageUrl: url, alt: file.name }])
+    form.setValue('heroImageUrl', url, { shouldDirty: true })
+    form.setValue('heroImageAlt', file.name.replace(/\.[^.]+$/, ''), { shouldDirty: true })
+    setHeroMeta(await readImageMeta(file, url))
   }
 
-  function addSlideFromUrl() {
-    if (!draftUrl.trim()) return
-    setSlides((prev) => [...prev, { id: `slide-${Date.now()}`, imageUrl: draftUrl.trim(), alt: draftAlt.trim() || 'Hero slide' }])
-    setDraftUrl('')
-    setDraftAlt('')
+  function applyHeroUrl() {
+    if (!heroUrlInput.trim()) return
+    form.setValue('heroImageUrl', heroUrlInput.trim(), { shouldDirty: true })
+    setHeroMeta(null)
+    setHeroUrlInput('')
   }
 
-  function moveSlide(index: number, direction: -1 | 1) {
-    const target = index + direction
-    if (target < 0 || target >= slides.length) return
-    const next = [...slides]
-    const [row] = next.splice(index, 1)
-    next.splice(target, 0, row)
-    setSlides(next)
+  function patchCopy<K extends keyof SiteCopy['homepage']>(key: K, value: SiteCopy['homepage'][K]) {
+    setCopyHome((prev) => ({ ...prev, [key]: value }))
+  }
+
+  function save(status: 'draft' | 'published') {
+    form.handleSubmit((v) => mutation.mutate({ values: v, status }))()
   }
 
   const sections = form.watch('sections') || []
+  const heroImageUrl = form.watch('heroImageUrl')
+  const headlineSize = Number(form.watch('heroHeadlineSize') || 64)
+  const headline = form.watch('heroHeadline') || ''
+  const intro = form.watch('heroIntro') || ''
+  const primaryCta = form.watch('primaryCtaLabel') || 'Give now'
+  const sortedSections = useMemo(
+    () => [...sections].sort((a, b) => a.order - b.order),
+    [sections],
+  )
+  const navTabs: EditorTab[] = sortedSections.map((section) => ({
+    id: section.id,
+    label: section.label,
+    hint: SECTION_HINTS[section.id] || section.summary || 'Custom section',
+  }))
+  const tabIndex = Math.max(0, navTabs.findIndex((tab) => tab.id === activeTab))
+  const currentTab = navTabs.find((tab) => tab.id === activeTab) ?? navTabs[0] ?? { id: 'hero', label: 'Hero banner', hint: '' }
+  const activeSection = sortedSections.find((section) => section.id === activeTab)
+  const customEditing = Boolean(activeSection && isCustomSection(activeSection))
+  const visibleCount = sortedSections.filter((s) => s.enabled).length
+  const draftOpen = hasDraft && savedAs !== 'published'
+  const filteredSections = useMemo(() => {
+    const q = sectionQuery.trim().toLowerCase()
+    if (!q) return sortedSections
+    return sortedSections.filter((section) => {
+      const hint = SECTION_HINTS[section.id] || section.summary || ''
+      return section.label.toLowerCase().includes(q) || hint.toLowerCase().includes(q)
+    })
+  }, [sortedSections, sectionQuery])
+
+  function setSectionEnabled(id: string, enabled: boolean) {
+    form.setValue(
+      'sections',
+      sections.map((s) => (s.id === id ? { ...s, enabled } : s)),
+      { shouldDirty: true },
+    )
+  }
+
+  function moveSection(id: string, dir: -1 | 1) {
+    const ordered = [...sections].sort((a, b) => a.order - b.order)
+    const i = ordered.findIndex((s) => s.id === id)
+    const j = i + dir
+    if (i < 0 || j < 0 || j >= ordered.length) return
+    const a = ordered[i]
+    const b = ordered[j]
+    form.setValue(
+      'sections',
+      sections.map((s) => {
+        if (s.id === a.id) return { ...s, order: b.order }
+        if (s.id === b.id) return { ...s, order: a.order }
+        return s
+      }),
+      { shouldDirty: true },
+    )
+  }
+
+  function patchSection(id: string, patch: Partial<HomepageSection>) {
+    form.setValue(
+      'sections',
+      sections.map((s) => (s.id === id ? { ...s, ...patch } : s)),
+      { shouldDirty: true },
+    )
+  }
+
+  function addSection(kind: Exclude<HomepageBlockKind, 'built-in'>) {
+    const nextOrder = Math.max(0, ...sections.map((s) => s.order)) + 1
+    const block = createHomepageBlock(kind, nextOrder)
+    form.setValue('sections', [...sections, block], { shouldDirty: true })
+    setActiveTab(block.id)
+    setPickerOpen(false)
+  }
+
+  function removeSection(id: string) {
+    const target = sections.find((s) => s.id === id)
+    if (!target || !isCustomSection(target)) return
+    if (!window.confirm(`Remove “${target.label}” from the homepage?`)) return
+    form.setValue('sections', sections.filter((s) => s.id !== id), { shouldDirty: true })
+    if (activeTab === id) setActiveTab('hero')
+  }
 
   return (
-    <>
-      <PageHeader
-        title="Homepage Manager"
-        description="Edit hero slider images, copy, and CTAs. Draft privately, then publish live to the public site."
-        action={<a className="btn-secondary" href={getPreviewUrl('/')} target="_blank" rel="noreferrer">Preview</a>}
-      />
-      <ErrorNotice error={query.error} />
-      {hasDraft ? <p className="mb-4 text-sm font-semibold text-amber-700">Unpublished draft loaded — not live until you Publish.</p> : null}
-      {savedAs === 'draft' ? <p className="mb-4 text-sm font-semibold text-amber-700">Draft saved in Strapi — not live until you Publish.</p> : null}
-      {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live — the public homepage updates immediately.</p> : null}
-      {mutation.error ? <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p> : null}
-      <form
-        className="grid gap-6 xl:grid-cols-[1fr_360px]"
-        onSubmit={(e) => {
-          e.preventDefault()
-          form.handleSubmit((v) => mutation.mutate({ values: v, status: 'draft' }))()
-        }}
-      >
-        <div className="space-y-6">
-          <div className="admin-card p-5">
-            <h3 className="mb-4 font-bold">Hero content</h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Headline"><input className="admin-input" {...form.register('heroHeadline')} /></Field>
-              <Field label="Primary CTA label"><input className="admin-input" {...form.register('primaryCtaLabel')} /></Field>
-              <Field label="Primary CTA href"><input className="admin-input" {...form.register('primaryCtaHref')} /></Field>
-              <div className="md:col-span-2"><Field label="Intro"><textarea className="admin-input min-h-28" {...form.register('heroIntro')} /></Field></div>
-            </div>
-          </div>
-
-          <div className="admin-card p-5">
-            <h3 className="mb-1 font-bold">Hero image slider</h3>
-            <p className="mb-4 text-sm text-slate-600">Add multiple images for the homepage hero carousel. Reorder with ↑ / ↓.</p>
-            <div className="space-y-3">
-              {slides.map((slide, index) => (
-                <div key={slide.id} className="grid gap-3 rounded-xl border border-[var(--color-border)] p-3 md:grid-cols-[120px_1fr_auto]">
-                  <img src={slide.imageUrl} alt={slide.alt || ''} className="h-20 w-full rounded-lg object-cover" />
-                  <div className="grid gap-2">
-                    <input
-                      className="admin-input"
-                      value={slide.alt || ''}
-                      onChange={(e) => setSlides((prev) => prev.map((row) => (row.id === slide.id ? { ...row, alt: e.target.value } : row)))}
-                      placeholder="Alt text"
-                    />
-                    <input
-                      className="admin-input"
-                      value={slide.imageUrl.startsWith('data:') ? '(uploaded image)' : slide.imageUrl}
-                      onChange={(e) => setSlides((prev) => prev.map((row) => (row.id === slide.id ? { ...row, imageUrl: e.target.value } : row)))}
-                      disabled={slide.imageUrl.startsWith('data:')}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <button type="button" className="btn-secondary px-2 py-1" onClick={() => moveSlide(index, -1)} disabled={index === 0}>↑</button>
-                    <button type="button" className="btn-secondary px-2 py-1" onClick={() => moveSlide(index, 1)} disabled={index === slides.length - 1}>↓</button>
-                    <button type="button" className="btn-danger px-2 py-1" onClick={() => setSlides((prev) => prev.filter((row) => row.id !== slide.id))}>Remove</button>
-                  </div>
-                </div>
-              ))}
-              {!slides.length ? <p className="text-sm text-slate-500">No slides yet — upload or paste an image URL below.</p> : null}
-            </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto]">
-              <Field label="Image URL"><input className="admin-input" value={draftUrl} onChange={(e) => setDraftUrl(e.target.value)} placeholder="https://..." /></Field>
-              <Field label="Alt text"><input className="admin-input" value={draftAlt} onChange={(e) => setDraftAlt(e.target.value)} placeholder="Describe the image" /></Field>
-              <button type="button" className="btn-secondary self-end" onClick={addSlideFromUrl}>Add URL slide</button>
-            </div>
-            <div className="mt-3">
-              <Field label="Upload slide image">
-                <input className="admin-input" type="file" accept="image/*" onChange={(e) => addSlideFromFile(e.target.files?.[0])} />
-              </Field>
-            </div>
-          </div>
-
-          <div className="admin-card p-5">
-            <h3 className="mb-4 font-bold">Mission</h3>
-            <Field label="Title"><input className="admin-input" {...form.register('missionTitle')} /></Field>
-            <Field label="Statement"><textarea className="admin-input mt-3 min-h-28" {...form.register('missionStatement')} /></Field>
-            <Field label="Scripture"><input className="admin-input mt-3" {...form.register('missionScripture')} /></Field>
-          </div>
-
-          <div className="admin-card p-5">
-            <h3 className="mb-4 font-bold">Impact stats</h3>
-            <div className="grid gap-3 md:grid-cols-3">
-              {safeData.stats.map((_, i) => (
-                <div key={i} className="rounded-xl border border-[var(--color-border)] p-3">
-                  <input className="admin-input mb-2" {...form.register(`stats.${i}.value`)} />
-                  <input className="admin-input" {...form.register(`stats.${i}.label`)} />
-                </div>
-              ))}
-            </div>
-          </div>
+    <div className="hp-page">
+      <div className="hp-toolbar">
+        <div className="hp-toolbar-copy">
+          <p className={draftOpen ? 'hp-status hp-status-draft' : 'hp-status hp-status-live'}>
+            <i className="hp-status-dot" />
+            {draftOpen ? 'Unpublished draft' : 'Live homepage'}
+          </p>
+          <p>Choose a section above, edit it, then publish when visitors should see it.</p>
         </div>
+        <div className="hp-toolbar-actions">
+          <a className="btn-secondary" href={getPreviewUrl('/')} target="_blank" rel="noreferrer">Preview</a>
+          <button type="button" className="btn-secondary" disabled={mutation.isPending} onClick={() => save('draft')}>
+            {mutation.isPending && mutation.variables?.status === 'draft' ? 'Saving…' : 'Save draft'}
+          </button>
+          <button type="button" className="btn-primary" disabled={mutation.isPending} onClick={() => save('published')}>
+            {mutation.isPending && mutation.variables?.status === 'published' ? 'Publishing…' : 'Publish live'}
+          </button>
+        </div>
+      </div>
 
-        <div className="admin-card p-5">
-          <h3 className="mb-4 font-bold">Sections</h3>
-          <div className="space-y-3">
-            {sections.map((section, i) => (
-              <div key={section.id} className="rounded-xl border border-[var(--color-border)] p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold">{section.label}</div>
-                    <div className="text-xs text-slate-500">Order {section.order}</div>
-                  </div>
-                  <input type="checkbox" {...form.register(`sections.${i}.enabled`)} />
-                </div>
-                <p className="mt-2 text-sm text-slate-600">{section.summary}</p>
-                <input type="number" className="admin-input mt-2" {...form.register(`sections.${i}.order`, { valueAsNumber: true })} />
-              </div>
-            ))}
+      {query.error ? (
+        <p className="hp-flash hp-flash-warn">Could not reach Strapi: {getErrorMessage(query.error)}. Local content is shown so you can keep editing.</p>
+      ) : null}
+      {draftOpen && savedAs !== 'draft' ? (
+        <p className="hp-flash hp-flash-warn">This draft is not live yet. Publish when you want visitors to see it.</p>
+      ) : null}
+      {savedAs === 'draft' ? <p className="hp-flash hp-flash-warn">Draft saved. Publish when you are ready.</p> : null}
+      {savedAs === 'published' ? <p className="hp-flash hp-flash-ok">Published. The public homepage updates immediately.</p> : null}
+      {mutation.error ? <p className="hp-flash hp-flash-err">{getErrorMessage(mutation.error)}</p> : null}
+
+      <div className="hp-workspace">
+        <nav className="hp-strip" aria-label="Homepage sections">
+          <div className="hp-strip-head">
+            <div>
+              <p className="hp-rail-label">Page sections</p>
+              <p className="hp-side-count">{visibleCount} of {sortedSections.length} on the live page · scroll sideways to see all</p>
+            </div>
+            <div className="hp-strip-tools">
+              <input
+                className="admin-input"
+                value={sectionQuery}
+                onChange={(e) => setSectionQuery(e.target.value)}
+                placeholder="Find a section…"
+                aria-label="Find a section"
+              />
+              <button type="button" className="btn-primary" onClick={() => setPickerOpen(true)}>Add</button>
+            </div>
           </div>
-          {slides[0] ? (
-            <div className="mt-5 overflow-hidden rounded-xl border border-[var(--color-border)]">
-              <img src={slides[0].imageUrl} alt={slides[0].alt || 'Preview'} className="max-h-48 w-full object-cover" />
-              <p className="p-2 text-center text-xs text-slate-500">{slides.length} slide{slides.length === 1 ? '' : 's'} in slider</p>
+          <div className="hp-strip-track">
+            {filteredSections.map((section) => {
+              const i = sortedSections.findIndex((item) => item.id === section.id)
+              return (
+                <div
+                  key={section.id}
+                  className={[
+                    'hp-chip-card',
+                    section.id === activeTab ? 'hp-chip-card-active' : '',
+                    section.enabled ? '' : 'hp-chip-card-off',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => setActiveTab(section.id)}
+                >
+                  <span className="hp-nav-num">{i + 1}</span>
+                  <div className="hp-chip-copy">
+                    <span className="hp-chip-title">{section.label}</span>
+                    <span className="hp-chip-hint">{section.enabled ? (SECTION_HINTS[section.id] || section.summary || 'Custom section') : 'Hidden'}</span>
+                    <div className="hp-chip-foot">
+                      <button type="button" className="btn-secondary px-2 py-1 text-xs" disabled={i === 0} aria-label={`Move ${section.label} left`} onClick={(e) => { e.stopPropagation(); moveSection(section.id, -1) }}>←</button>
+                      <button type="button" className="btn-secondary px-2 py-1 text-xs" disabled={i === sortedSections.length - 1} aria-label={`Move ${section.label} right`} onClick={(e) => { e.stopPropagation(); moveSection(section.id, 1) }}>→</button>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className={section.enabled ? 'admin-switch admin-switch-on' : 'admin-switch'}
+                    aria-pressed={section.enabled}
+                    aria-label={`${section.enabled ? 'Hide' : 'Show'} ${section.label}`}
+                    onClick={(e) => { e.stopPropagation(); setSectionEnabled(section.id, !section.enabled) }}
+                  />
+                </div>
+              )
+            })}
+            <button type="button" className="hp-chip-add" onClick={() => setPickerOpen(true)}>
+              + Add a new section
+            </button>
+          </div>
+          {!filteredSections.length ? <p className="hp-hint">No sections match that search.</p> : null}
+        </nav>
+
+        <section className="hp-editor">
+          <div className="hp-editor-head">
+            <div>
+              <p className="hp-step">Section {tabIndex + 1} of {navTabs.length || 1}</p>
+              <h3>{currentTab.label}</h3>
+              <p>{currentTab.hint}</p>
+            </div>
+            <div className="hp-pager">
+              {customEditing ? (
+                <button type="button" className="hp-danger" onClick={() => removeSection(activeTab)}>Remove section</button>
+              ) : null}
+              <button type="button" className="btn-secondary" disabled={tabIndex <= 0} onClick={() => setActiveTab(navTabs[tabIndex - 1].id)}>
+                Previous
+              </button>
+              <button type="button" className="btn-secondary" disabled={tabIndex >= navTabs.length - 1} onClick={() => setActiveTab(navTabs[tabIndex + 1].id)}>
+                Next
+              </button>
+            </div>
+          </div>
+
+          {activeTab === 'hero' ? (
+            <div className="hp-hero">
+              <div className="hp-fields">
+                <Field label="Headline" hint="This sits over the photo. Keep it short." count={`${headline.length}/80`} over={headline.length > 80}>
+                  <input className="admin-input" {...form.register('heroHeadline')} />
+                </Field>
+                <Field label="Headline size" hint="Large screens use this size. Phones stay smaller automatically.">
+                  <div className="hp-size">
+                    <input className="hp-range" type="range" min={32} max={96} step={2} {...form.register('heroHeadlineSize', { valueAsNumber: true })} />
+                    <output>{headlineSize}px</output>
+                  </div>
+                </Field>
+                <Field label="Intro paragraph" count={`${intro.length}/280`} over={intro.length > 280}>
+                  <textarea className="admin-input min-h-28" {...form.register('heroIntro')} />
+                </Field>
+                <div className="hp-grid-2">
+                  <Field label="Main button" hint="Example: Give now">
+                    <input className="admin-input" {...form.register('primaryCtaLabel')} />
+                  </Field>
+                  <Field label="Main button link" hint="Example: /donate">
+                    <input className="admin-input" {...form.register('primaryCtaHref')} />
+                  </Field>
+                  <Field label="Second button">
+                    <input className="admin-input" value={copyHome.secondaryCtaLabel} onChange={(e) => patchCopy('secondaryCtaLabel', e.target.value)} />
+                  </Field>
+                  <Field label="Second button link">
+                    <input className="admin-input" value={copyHome.secondaryCtaHref} onChange={(e) => patchCopy('secondaryCtaHref', e.target.value)} />
+                  </Field>
+                </div>
+                <Field label="Photo description" hint="Read aloud for visitors who cannot see the image.">
+                  <input className="admin-input" {...form.register('heroImageAlt')} />
+                </Field>
+              </div>
+
+              <div className="hp-fields">
+                <div
+                  className="hp-preview"
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    setDragOver(false)
+                    onHeroFile(e.dataTransfer.files?.[0])
+                  }}
+                  style={dragOver ? { outline: '2px solid var(--color-sage)', outlineOffset: 2 } : undefined}
+                >
+                  {heroImageUrl ? (
+                    <img src={heroImageUrl} alt="" />
+                  ) : (
+                    <div className="hp-preview-empty">Hero preview</div>
+                  )}
+                  <div className="hp-preview-scrim" />
+                  <div className="hp-preview-copy">
+                    <h4 style={{ fontSize: `${Math.max(14, Math.round(headlineSize * 0.45))}px` }}>{headline || 'Headline'}</h4>
+                    <p className="line-clamp-2">{intro || 'Intro text appears here.'}</p>
+                    <div className="hp-preview-ctas">
+                      <span className="hp-preview-primary">{primaryCta}</span>
+                      <span className="hp-preview-secondary">{copyHome.secondaryCtaLabel}</span>
+                    </div>
+                  </div>
+                </div>
+                <MediaUpload
+                  kind="image"
+                  label="Hero photo"
+                  value={heroImageUrl}
+                  onLoaded={async (url, file) => {
+                    setHeroUploadError('')
+                    form.setValue('heroImageUrl', url, { shouldDirty: true })
+                    form.setValue('heroImageAlt', file.name.replace(/\.[^.]+$/, ''), { shouldDirty: true })
+                    setHeroMeta(await readImageMeta(file, url))
+                  }}
+                  onClear={() => { form.setValue('heroImageUrl', ''); setHeroMeta(null); setHeroUploadError('') }}
+                  extra={(
+                    <div className="hp-url-row">
+                      <input className="admin-input" value={heroUrlInput} onChange={(e) => setHeroUrlInput(e.target.value)} placeholder="Or paste a photo URL" />
+                      <button type="button" className="btn-secondary" onClick={applyHeroUrl}>Use URL</button>
+                    </div>
+                  )}
+                />
+                {heroUploadError ? <p className="hp-upload-error" role="alert">{heroUploadError}</p> : null}
+                {heroMeta ? (
+                  <div className="hp-meta">
+                    <span className="hp-chip">{heroMeta.name}</span>
+                    <span className="hp-chip">{formatFileSize(heroMeta.size)}</span>
+                    {heroMeta.width && heroMeta.height ? <span className="hp-chip">{heroMeta.width} × {heroMeta.height} px</span> : null}
+                  </div>
+                ) : null}
+              </div>
             </div>
           ) : null}
-          <div className="mt-5 space-y-2">
-            <p className="text-sm text-slate-600">
-              Use <strong>Save as draft</strong> while editing, then <strong>Publish live</strong> when ready.
-            </p>
-            <button
-              type="button"
-              className="btn-secondary w-full"
-              disabled={mutation.isPending}
-              onClick={() => form.handleSubmit((v) => mutation.mutate({ values: v, status: 'draft' }))()}
-            >
-              {mutation.isPending && mutation.variables?.status === 'draft' ? 'Saving draft…' : 'Save as draft'}
-            </button>
-            <button
-              type="button"
-              className="btn-primary w-full"
-              disabled={mutation.isPending}
-              onClick={() => form.handleSubmit((v) => mutation.mutate({ values: v, status: 'published' }))()}
-            >
-              {mutation.isPending && mutation.variables?.status === 'published' ? 'Publishing…' : 'Publish live'}
-            </button>
+
+          {activeTab === 'newsletterBanner' ? (
+            <div className="hp-editor-split">
+              <div className="hp-fields">
+                <Field label="Small label" hint="Shown above the title.">
+                  <input className="admin-input" value={copyHome.eyebrow} onChange={(e) => patchCopy('eyebrow', e.target.value)} />
+                </Field>
+                <Field label="Title">
+                  <input className="admin-input" value={copyHome.newsletterBannerTitle} onChange={(e) => patchCopy('newsletterBannerTitle', e.target.value)} />
+                </Field>
+                <Field label="Body">
+                  <textarea className="admin-input min-h-24" value={copyHome.newsletterBannerBody} onChange={(e) => patchCopy('newsletterBannerBody', e.target.value)} />
+                </Field>
+                <Field label="Button text" hint="Opens the Stories page.">
+                  <input className="admin-input" value={copyHome.newsletterBannerCta} onChange={(e) => patchCopy('newsletterBannerCta', e.target.value)} />
+                </Field>
+              </div>
+              <div>
+                <p className="hp-preview-label">Visitor preview</p>
+                <div className="hp-canvas hp-canvas-gold">
+                  <p className="hp-kicker">{copyHome.eyebrow || 'Small label'}</p>
+                  <h4>{copyHome.newsletterBannerTitle || 'Title'}</h4>
+                  <p>{copyHome.newsletterBannerBody || 'Body text appears here.'}</p>
+                  <span className="hp-canvas-btn">{copyHome.newsletterBannerCta || 'Button'}</span>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'legacy' ? (
+            <div className="hp-editor-split">
+              <div className="hp-fields">
+                <Field label="Title">
+                  <input className="admin-input" value={copyHome.legacyTitle} onChange={(e) => patchCopy('legacyTitle', e.target.value)} />
+                </Field>
+                <Field label="Body">
+                  <textarea className="admin-input min-h-32" value={copyHome.legacyBody} onChange={(e) => patchCopy('legacyBody', e.target.value)} />
+                </Field>
+              </div>
+              <div>
+                <p className="hp-preview-label">Visitor preview</p>
+                <div className="hp-canvas hp-canvas-dark">
+                  <h4>{copyHome.legacyTitle || 'Title'}</h4>
+                  <p>{copyHome.legacyBody || 'Body text appears here.'}</p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'video' ? (
+            <div className="hp-hero">
+              <div className="hp-fields">
+                <Field label="Title">
+                  <input className="admin-input" value={copyHome.videoTitle} onChange={(e) => patchCopy('videoTitle', e.target.value)} />
+                </Field>
+                <Field label="Description">
+                  <textarea className="admin-input min-h-24" value={copyHome.videoDescription} onChange={(e) => patchCopy('videoDescription', e.target.value)} />
+                </Field>
+                <MediaUpload
+                  kind="image"
+                  label="Thumbnail photo"
+                  value={copyHome.videoImageUrl}
+                  onLoaded={(url) => patchCopy('videoImageUrl', url)}
+                  onClear={() => patchCopy('videoImageUrl', '')}
+                />
+                <MediaUpload
+                  kind="video"
+                  label="Video file"
+                  value={copyHome.videoUrl?.startsWith('data:video') ? copyHome.videoUrl : ''}
+                  onLoaded={(url) => patchCopy('videoUrl', url)}
+                  onClear={() => patchCopy('videoUrl', '')}
+                  extra={(
+                    <Field label="Or paste a video link" hint="YouTube, Vimeo, or a direct MP4 URL.">
+                      <input
+                        className="admin-input"
+                        value={copyHome.videoUrl?.startsWith('data:') ? '' : copyHome.videoUrl}
+                        onChange={(e) => patchCopy('videoUrl', e.target.value)}
+                        placeholder="https://www.youtube.com/watch?v=…"
+                      />
+                    </Field>
+                  )}
+                />
+              </div>
+              <div>
+                <p className="hp-preview-label">Thumbnail preview</p>
+                {copyHome.videoImageUrl ? (
+                  <img src={copyHome.videoImageUrl} alt="" className="hp-thumb" style={{ height: 220 }} />
+                ) : (
+                  <div className="hp-preview-empty" style={{ borderRadius: '1rem', background: 'var(--color-mist)', color: 'var(--color-ink-muted)' }}>No thumbnail yet</div>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'mission' ? (
+            <div className="hp-editor-split">
+              <div className="hp-fields">
+                <Field label="Title">
+                  <input className="admin-input" {...form.register('missionTitle')} />
+                </Field>
+                <Field label="Mission statement">
+                  <textarea className="admin-input min-h-32" {...form.register('missionStatement')} />
+                </Field>
+                <Field label="Scripture" hint="Optional. Shown under the statement.">
+                  <input className="admin-input" {...form.register('missionScripture')} />
+                </Field>
+              </div>
+              <div>
+                <p className="hp-preview-label">Visitor preview</p>
+                <div className="hp-canvas hp-canvas-mist">
+                  <p className="hp-kicker">{form.watch('missionTitle') || 'Title'}</p>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 600 }}>{form.watch('missionStatement') || 'Mission statement'}</h4>
+                  <p>{form.watch('missionScripture') || ''}</p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'methods' ? (
+            <div className="hp-fields">
+              <Field label="Title">
+                <input className="admin-input" value={copyHome.methodsTitle} onChange={(e) => patchCopy('methodsTitle', e.target.value)} />
+              </Field>
+              <Field label="Subtitle">
+                <input className="admin-input" value={copyHome.methodsSubtitle} onChange={(e) => patchCopy('methodsSubtitle', e.target.value)} />
+              </Field>
+              <div className="hp-note">The three method cards come from Programs. Change headings here; edit card content in Programs.</div>
+            </div>
+          ) : null}
+
+          {activeTab === 'impact' ? (
+            <div className="hp-fields">
+              <Field label="Title">
+                <input className="admin-input" value={copyHome.impactTitle} onChange={(e) => patchCopy('impactTitle', e.target.value)} />
+              </Field>
+              <Field label="Intro">
+                <textarea className="admin-input min-h-24" value={copyHome.impactIntro} onChange={(e) => patchCopy('impactIntro', e.target.value)} />
+              </Field>
+              <div className="hp-grid-2">
+                {safeData.stats.map((_, i) => (
+                  <div key={i} className="hp-stat-card">
+                    <Field label="Number">
+                      <input className="admin-input" {...form.register(`stats.${i}.value`)} placeholder="500+" />
+                    </Field>
+                    <Field label="What it measures">
+                      <input className="admin-input" {...form.register(`stats.${i}.label`)} placeholder="Professionals equipped" />
+                    </Field>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'portfolio' ? (
+            <div className="hp-fields">
+              <Field label="Title">
+                <input className="admin-input" value={copyHome.portfolioTitle} onChange={(e) => patchCopy('portfolioTitle', e.target.value)} />
+              </Field>
+              <Field label="Subtitle">
+                <textarea className="admin-input min-h-24" value={copyHome.portfolioSubtitle} onChange={(e) => patchCopy('portfolioSubtitle', e.target.value)} />
+              </Field>
+              <div className="hp-note">
+                Portfolio cards list your programs.
+                <div className="hp-note-actions">
+                  <Link className="btn-secondary" to="/programs">Edit programs</Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'map' ? (
+            <div className="hp-fields">
+              <Field label="Title">
+                <input className="admin-input" value={copyHome.mapTitle} onChange={(e) => patchCopy('mapTitle', e.target.value)} />
+              </Field>
+              <Field label="Subtitle">
+                <textarea className="admin-input min-h-24" value={copyHome.mapSubtitle} onChange={(e) => patchCopy('mapSubtitle', e.target.value)} />
+              </Field>
+              <div className="hp-note">
+                Country pins are edited in Locations. Map colors follow Theme & Branding. Clicking a nation on the public site shows its name.
+                <div className="hp-note-actions">
+                  <Link className="btn-secondary" to="/locations">Edit locations</Link>
+                  <Link className="btn-secondary" to="/theme">Edit map colors</Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'stories' ? (
+            <div className="hp-fields">
+              <Field label="Title">
+                <input className="admin-input" value={copyHome.storiesTitle} onChange={(e) => patchCopy('storiesTitle', e.target.value)} />
+              </Field>
+              <Field label="Subtitle">
+                <input className="admin-input" value={copyHome.storiesSubtitle} onChange={(e) => patchCopy('storiesSubtitle', e.target.value)} />
+              </Field>
+              <div className="hp-grid-2">
+                <Field label="Watch stories button">
+                  <input className="admin-input" value={copyHome.watchStoriesCta} onChange={(e) => patchCopy('watchStoriesCta', e.target.value)} />
+                </Field>
+                <Field label="Read stories button">
+                  <input className="admin-input" value={copyHome.readStoriesCta} onChange={(e) => patchCopy('readStoriesCta', e.target.value)} />
+                </Field>
+              </div>
+              <div className="hp-note">
+                Choose which stories appear in the Stories module.
+                <div className="hp-note-actions">
+                  <Link className="btn-secondary" to="/stories">Edit stories</Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === 'faith' ? (
+            <div className="hp-fields">
+              <Field label="Title">
+                <input className="admin-input" value={copyHome.faithTitle} onChange={(e) => patchCopy('faithTitle', e.target.value)} />
+              </Field>
+              <Field label="Statement">
+                <textarea className="admin-input min-h-36" value={copyHome.faithStatement} onChange={(e) => patchCopy('faithStatement', e.target.value)} />
+              </Field>
+            </div>
+          ) : null}
+
+          {activeTab === 'events' ? (
+            <div className="hp-note">
+              This block shows the next featured event from the Events module.
+              <div className="hp-note-actions"><Link className="btn-secondary" to="/events">Edit events</Link></div>
+            </div>
+          ) : null}
+          {activeTab === 'newsletter' ? (
+            <div className="hp-note">
+              This block shows the newsletter signup form. Subscriber lists are in Newsletter.
+              <div className="hp-note-actions"><Link className="btn-secondary" to="/newsletter">Open newsletter</Link></div>
+            </div>
+          ) : null}
+          {activeTab === 'donate' ? (
+            <div className="hp-note">
+              This block invites people to give. Edit donate page copy in Website Copy or the Donate page.
+              <div className="hp-note-actions"><Link className="btn-secondary" to="/website-copy">Edit website copy</Link></div>
+            </div>
+          ) : null}
+
+          {customEditing && activeSection ? (
+            <div className="hp-fields">
+              <Field label="Section name" hint="Shown in this admin list. Visitors see the title below.">
+                <input className="admin-input" value={activeSection.label} onChange={(e) => patchSection(activeSection.id, { label: e.target.value })} />
+              </Field>
+              {activeSection.kind === 'banner' || activeSection.kind === 'cta' ? (
+                <Field label="Small label above the title">
+                  <input className="admin-input" value={activeSection.eyebrow || ''} onChange={(e) => patchSection(activeSection.id, { eyebrow: e.target.value })} />
+                </Field>
+              ) : null}
+              <Field label="Title">
+                <input className="admin-input" value={activeSection.title || ''} onChange={(e) => patchSection(activeSection.id, { title: e.target.value })} />
+              </Field>
+              <Field label={activeSection.kind === 'quote' ? 'Quote' : 'Body'}>
+                <textarea className="admin-input min-h-28" value={activeSection.content || ''} onChange={(e) => patchSection(activeSection.id, { content: e.target.value })} />
+              </Field>
+              {['split', 'banner', 'image'].includes(activeSection.kind || '') ? (
+                <>
+                  <MediaUpload
+                    kind="image"
+                    label="Photo"
+                    value={activeSection.imageUrl}
+                    onLoaded={(url, file) => patchSection(activeSection.id, { imageUrl: url, imageAlt: activeSection.imageAlt || file.name.replace(/\.[^.]+$/, '') })}
+                    onClear={() => patchSection(activeSection.id, { imageUrl: '' })}
+                  />
+                  <Field label="Photo description">
+                    <input className="admin-input" value={activeSection.imageAlt || ''} onChange={(e) => patchSection(activeSection.id, { imageAlt: e.target.value })} />
+                  </Field>
+                </>
+              ) : null}
+              {activeSection.kind === 'cta' || activeSection.kind === 'banner' ? (
+                <div className="hp-grid-2">
+                  <Field label="Button text">
+                    <input className="admin-input" value={activeSection.buttonLabel || ''} onChange={(e) => patchSection(activeSection.id, { buttonLabel: e.target.value })} />
+                  </Field>
+                  <Field label="Button link">
+                    <input className="admin-input" value={activeSection.buttonHref || ''} onChange={(e) => patchSection(activeSection.id, { buttonHref: e.target.value })} />
+                  </Field>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </section>
+      </div>
+
+      {pickerOpen ? (
+        <div className="admin-modal-backdrop" onClick={() => setPickerOpen(false)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="add-section-title">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h3 id="add-section-title" className="text-lg font-extrabold text-[var(--color-primary)]">Add a homepage section</h3>
+                <p className="mt-1 text-sm text-slate-600">Choose a layout, then edit the words and photo. Publish to show it on the live site.</p>
+              </div>
+              <button type="button" className="admin-icon-btn admin-modal-close" onClick={() => setPickerOpen(false)} aria-label="Close">×</button>
+            </div>
+            <div className="hp-picker">
+              {CUSTOM_BLOCK_OPTIONS.map((option) => (
+                <button key={option.kind} type="button" className="hp-picker-card" onClick={() => addSection(option.kind)}>
+                  <strong>{option.label}</strong>
+                  <span>{option.summary}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </form>
-    </>
+      ) : null}
+    </div>
   )
 }

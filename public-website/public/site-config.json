@@ -5,6 +5,7 @@
     "backgroundColor": "#FAF6F1",
     "textColor": "#2A2118",
     "accentColor": "#D4A017",
+    "buttonHoverColor": "#E8B82A",
     "fontFamily": "Lato, Arial, sans-serif",
     "headingFontFamily": "Playfair Display, Georgia, serif"
   },
@@ -145,28 +146,19 @@
   ],
   "homepage": {
     "heroHeadline": "Equipping Healthcare Professionals for Kingdom Engagement",
-    "heroIntro": "COGI cultivates communities of grace among healthcare professionals serving missionally around the world.",
-    "heroImageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
-    "heroImageAlt": "Healthcare professionals collaborating in a clinic",
+    "heroIntro": "We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.",
+    "heroHeadlineSize": 64,
+    "heroImageUrl": "/images/cogi-hero.png",
+    "heroImageAlt": "People gathered in worship and mission",
     "heroSlides": [
       {
-        "id": "s1",
-        "imageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
-        "alt": "Healthcare professionals collaborating in a clinic"
-      },
-      {
-        "id": "s2",
-        "imageUrl": "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1600&q=80",
-        "alt": "Medical team serving together"
-      },
-      {
-        "id": "s3",
-        "imageUrl": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=1600&q=80",
-        "alt": "Community healthcare and care"
+        "id": "hero",
+        "imageUrl": "/images/cogi-hero.png",
+        "alt": "People gathered in worship and mission"
       }
     ],
-    "primaryCtaLabel": "Join the Movement",
-    "primaryCtaHref": "/get-involved",
+    "primaryCtaLabel": "Give now",
+    "primaryCtaHref": "/donate",
     "missionTitle": "Our Mission",
     "missionStatement": "Inspire and enable transformation so healthcare professionals think, live, and work missionally.",
     "missionScripture": "",
@@ -193,34 +185,20 @@
       }
     ],
     "sections": [
-      {
-        "id": "hero",
-        "label": "Hero",
-        "enabled": true,
-        "order": 1,
-        "summary": "Primary homepage introduction and call to action."
-      },
-      {
-        "id": "mission",
-        "label": "Mission",
-        "enabled": true,
-        "order": 2,
-        "summary": "Mission statement and scripture."
-      },
-      {
-        "id": "methods",
-        "label": "Methods",
-        "enabled": true,
-        "order": 3,
-        "summary": "Enable, train, and support."
-      },
-      {
-        "id": "impact",
-        "label": "Impact Stats",
-        "enabled": true,
-        "order": 4,
-        "summary": "Countries, professionals, programs."
-      }
+      { "id": "hero", "label": "Hero", "enabled": true, "order": 1, "summary": "Primary homepage introduction and call to action." },
+      { "id": "newsletterBanner", "label": "Gold banner", "enabled": true, "order": 2, "summary": "Lead story / newsletter callout." },
+      { "id": "legacy", "label": "Legacy", "enabled": true, "order": 3, "summary": "Strong legacy, bold future." },
+      { "id": "mission", "label": "Mission", "enabled": true, "order": 4, "summary": "Mission statement and scripture." },
+      { "id": "video", "label": "Video", "enabled": true, "order": 5, "summary": "Introduction video / photo." },
+      { "id": "methods", "label": "Methods", "enabled": true, "order": 6, "summary": "Enable, train, and support." },
+      { "id": "impact", "label": "Impact Stats", "enabled": true, "order": 7, "summary": "Countries, professionals, programs." },
+      { "id": "portfolio", "label": "Portfolio", "enabled": true, "order": 8, "summary": "Four ministry areas." },
+      { "id": "map", "label": "Where we serve", "enabled": true, "order": 9, "summary": "Countries served." },
+      { "id": "stories", "label": "Featured Stories", "enabled": true, "order": 10, "summary": "Featured story teasers." },
+      { "id": "events", "label": "Featured Event", "enabled": true, "order": 11, "summary": "Upcoming featured event." },
+      { "id": "newsletter", "label": "Newsletter", "enabled": true, "order": 12, "summary": "Newsletter signup." },
+      { "id": "donate", "label": "Donate CTA", "enabled": true, "order": 13, "summary": "Donate call to action." },
+      { "id": "faith", "label": "Statement of faith", "enabled": true, "order": 14, "summary": "Closing faith statement." }
     ]
   },
   "copy": {

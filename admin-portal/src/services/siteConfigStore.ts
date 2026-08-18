@@ -1,6 +1,7 @@
 import type { FooterSettings, HeaderSettings, HomepageRecord, HomepageSection, NavItem, SeoSettings, ThemeSettings } from '@/types'
 import { mockFooter, mockHeader, mockSeo, mockTheme, mockFooterNavigation } from '@/data/siteSetup'
 import { mockHomepage, mockNavigation } from '@/data/mock'
+import { ensureBuiltinSections } from '@/data/homepageBlocks'
 import { defaultSiteCopy, mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiPublishSingle, apiSingle, apiUpdateSingle, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 
@@ -11,7 +12,7 @@ export type SiteConfig = {
   seo: SeoSettings
   headerNav: NavItem[]
   footerNav: NavItem[]
-  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture'> & {
+  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroHeadlineSize' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture'> & {
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
     sections?: HomepageSection[]
   }
@@ -33,6 +34,7 @@ export function defaultSiteConfig(): SiteConfig {
     homepage: {
       heroHeadline: mockHomepage.heroHeadline,
       heroIntro: mockHomepage.heroIntro,
+      heroHeadlineSize: mockHomepage.heroHeadlineSize ?? 64,
       heroImageUrl: mockHomepage.heroImageUrl,
       heroImageAlt: mockHomepage.heroImageAlt,
       heroSlides: structuredClone(mockHomepage.heroSlides || []),
@@ -58,7 +60,11 @@ function mergeConfig(partial: Partial<SiteConfig>): SiteConfig {
     header: { ...base.header, ...partial.header },
     footer: { ...base.footer, ...partial.footer },
     seo: { ...base.seo, ...partial.seo },
-    homepage: { ...base.homepage, ...partial.homepage },
+    homepage: {
+      ...base.homepage,
+      ...partial.homepage,
+      sections: ensureBuiltinSections(partial.homepage?.sections ?? base.homepage.sections),
+    },
     headerNav: partial.headerNav?.length ? partial.headerNav : base.headerNav,
     footerNav: partial.footerNav?.length ? partial.footerNav : base.footerNav,
     copy: mergeSiteCopy(partial.copy),
@@ -128,6 +134,16 @@ async function prepareConfigForStrapi(config: SiteConfig): Promise<SiteConfig> {
       next.homepage.heroSlides.map(async (slide, index) => ({
         ...slide,
         imageUrl: await ensureRemoteUrl(slide.imageUrl, slide.alt || `Hero slide ${index + 1}`),
+      })),
+    )
+  }
+  if (next.homepage.sections?.length) {
+    next.homepage.sections = await Promise.all(
+      next.homepage.sections.map(async (section) => ({
+        ...section,
+        imageUrl: section.imageUrl
+          ? await ensureRemoteUrl(section.imageUrl, section.imageAlt || section.label || 'Homepage section image')
+          : section.imageUrl,
       })),
     )
   }

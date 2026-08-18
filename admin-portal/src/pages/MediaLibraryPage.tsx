@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query'
 import { mockMedia } from '@/data/mock'
 import { getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 import { readFileAsDataUrl } from '@/services/siteConfigStore'
+import { IMAGE_HINT, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
 import type { MediaFile } from '@/types'
 
 const STORAGE_KEY = 'cogi_media_library_doc1'
@@ -104,8 +105,18 @@ export default function MediaLibraryPage() {
   })
 
   function onPickFiles(list: FileList | null) {
-    const count = list ? Array.from(list).filter((f) => f.size > 0).length : 0
-    setSelectedCount(count)
+    const files = list ? Array.from(list).filter((f) => f.size > 0) : []
+    setSelectedCount(files.length)
+    const firstBad = files.map((file) => ({ file, check: validateMediaFile(file, 'image', { allowSvg: true }) })).find((row) => row.check.error)
+    if (firstBad?.check.error) {
+      setError(`${firstBad.file.name}: ${firstBad.check.error}`)
+      return
+    }
+    const firstWarn = files.map((file) => ({ file, check: validateMediaFile(file, 'image', { allowSvg: true }) })).find((row) => row.check.warning)
+    setError('')
+    if (firstWarn?.check.warning) {
+      setMessage(`${firstWarn.file.name}: ${firstWarn.check.warning}`)
+    }
   }
 
   function onUpload(e: React.FormEvent) {
@@ -113,6 +124,12 @@ export default function MediaLibraryPage() {
     const list = fileInputRef.current?.files ? Array.from(fileInputRef.current.files).filter((f) => f.size > 0) : []
     if (!list.length) {
       setError('Choose one or more image files first.')
+      return
+    }
+    const blocked = list.find((file) => validateMediaFile(file, 'image', { allowSvg: true }).error)
+    if (blocked) {
+      const check = validateMediaFile(blocked, 'image', { allowSvg: true })
+      setError(`${blocked.name}: ${check.error}`)
       return
     }
     setError('')
@@ -160,15 +177,25 @@ export default function MediaLibraryPage() {
       <form className="admin-card mb-6 grid gap-4 p-5 md:grid-cols-[1.4fr_1fr_auto]" onSubmit={onUpload}>
         <label className="block">
           <span className="admin-label">Images (multi-select)</span>
+          <button
+            type="button"
+            className="btn-primary mt-1"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Choose photos
+          </button>
           <input
             ref={fileInputRef}
-            className="admin-input"
+            className="sr-only"
             type="file"
-            accept="image/*,.svg"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,.svg"
             multiple
             onChange={(e) => onPickFiles(e.target.files)}
           />
-          <span className="mt-1 block text-xs text-slate-500">
+          <span className="mt-2 block text-xs text-slate-500">
+            {IMAGE_HINT.replace('landscape · ', '')}. SVG is also allowed here.
+          </span>
+          <span className="mt-1 block text-xs font-semibold text-slate-600">
             {selectedCount ? `${selectedCount} file${selectedCount === 1 ? '' : 's'} selected` : 'No file chosen yet'}
           </span>
         </label>
@@ -213,7 +240,7 @@ export default function MediaLibraryPage() {
                 </div>
                 <div className="space-y-2 p-4">
                   <div className="truncate font-semibold" title={file.name}>{file.name}</div>
-                  <p className="text-xs text-slate-500">{file.mime || 'image'} · {Math.max(1, Math.round((file.size || 0) / 1024))} KB</p>
+                  <p className="text-xs text-slate-500">{file.mime || 'image'} · {formatFileSize(file.size || 0)}</p>
                   <label className="block">
                     <span className="admin-label">Alt text</span>
                     <input
