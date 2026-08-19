@@ -9,9 +9,21 @@ import { apiPublishSingle, apiSingle, apiUpdateSingle, getErrorMessage, isDemoMo
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import { MediaUpload, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
-import type { HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
+import type { HeroHeadlineCase, HeroSlide, HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
 
 const HOMEPAGE_DRAFT_KEY = 'cogi_homepage_draft'
+
+const HERO_CASE_OPTIONS: Array<{ id: HeroHeadlineCase; label: string; hint: string }> = [
+  { id: 'as-typed', label: 'As typed', hint: 'Keep the letters you typed' },
+  { id: 'uppercase', label: 'UPPERCASE', hint: 'ALL CAPS' },
+  { id: 'lowercase', label: 'lowercase', hint: 'all small letters' },
+]
+
+function heroTextTransform(value: HeroHeadlineCase | undefined): 'none' | 'uppercase' | 'lowercase' {
+  if (value === 'lowercase') return 'lowercase'
+  if (value === 'as-typed') return 'none'
+  return 'uppercase'
+}
 
 type HeroMeta = { name: string; size: number; width?: number; height?: number }
 type HomepageDraftPayload = {
@@ -79,6 +91,17 @@ export default function HomepageManagerPage() {
     ...mockHomepage,
     ...data,
     heroHeadlineSize: data.heroHeadlineSize ?? mockHomepage.heroHeadlineSize ?? 64,
+    heroHeadlineCase: data.heroHeadlineCase ?? mockHomepage.heroHeadlineCase ?? 'uppercase',
+    heroSlideDuration: data.heroSlideDuration ?? mockHomepage.heroSlideDuration ?? 6,
+    heroSlides: (Array.isArray(data.heroSlides) && data.heroSlides.length
+      ? data.heroSlides
+      : data.heroImageUrl
+        ? [{ id: 'hero', imageUrl: data.heroImageUrl, alt: data.heroImageAlt || 'Hero image' }]
+        : mockHomepage.heroSlides),
+    mapOceanColor: data.mapOceanColor ?? mockHomepage.mapOceanColor,
+    mapLandColor: data.mapLandColor ?? mockHomepage.mapLandColor,
+    mapPinColor: data.mapPinColor ?? mockHomepage.mapPinColor,
+    mapActiveColor: data.mapActiveColor ?? mockHomepage.mapActiveColor,
     stats: Array.isArray(data.stats) && data.stats.length ? data.stats : mockHomepage.stats,
     sections: ensureBuiltinSections(Array.isArray(data.sections) ? data.sections : mockHomepage.sections),
   }
@@ -91,6 +114,7 @@ export default function HomepageManagerPage() {
   const [heroMeta, setHeroMeta] = useState<HeroMeta | null>(null)
   const [heroUrlInput, setHeroUrlInput] = useState('')
   const [heroUploadError, setHeroUploadError] = useState('')
+  const [activeSlide, setActiveSlide] = useState(0)
   const [activeTab, setActiveTab] = useState('hero')
   const [dragOver, setDragOver] = useState(false)
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -105,6 +129,12 @@ export default function HomepageManagerPage() {
         ...mockHomepage,
         ...home,
         heroHeadlineSize: home.heroHeadlineSize ?? 64,
+        heroHeadlineCase: home.heroHeadlineCase ?? 'uppercase',
+        heroSlideDuration: home.heroSlideDuration ?? 6,
+        mapOceanColor: home.mapOceanColor,
+        mapLandColor: home.mapLandColor,
+        mapPinColor: home.mapPinColor,
+        mapActiveColor: home.mapActiveColor,
         stats: home.impactStats?.length ? home.impactStats.map((s) => ({ value: s.value, label: s.label })) : mockHomepage.stats,
         sections: ensureBuiltinSections(home.sections?.length ? home.sections : mockHomepage.sections),
         heroSlides: home.heroSlides,
@@ -116,11 +146,16 @@ export default function HomepageManagerPage() {
 
   const mutation = useMutation({
     mutationFn: async ({ values, status }: { values: HomepageRecord; status: 'draft' | 'published' }) => {
-      const imageUrl = values.heroImageUrl || ''
+      const slides = (values.heroSlides || []).filter((slide) => Boolean(slide.imageUrl))
+      const first = slides[0]
       const payload: HomepageRecord = {
         ...values,
         heroHeadlineSize: Number(values.heroHeadlineSize) || 64,
-        heroSlides: imageUrl ? [{ id: 'hero', imageUrl, alt: values.heroImageAlt || 'Hero image' }] : [],
+        heroHeadlineCase: values.heroHeadlineCase || 'uppercase',
+        heroSlideDuration: Number(values.heroSlideDuration) || 6,
+        heroImageUrl: first?.imageUrl || values.heroImageUrl || '',
+        heroImageAlt: first?.alt || values.heroImageAlt || '',
+        heroSlides: slides,
       }
       localStorage.setItem(
         HOMEPAGE_DRAFT_KEY,
@@ -132,8 +167,14 @@ export default function HomepageManagerPage() {
           heroHeadline: payload.heroHeadline,
           heroIntro: payload.heroIntro,
           heroHeadlineSize: payload.heroHeadlineSize,
+          heroHeadlineCase: payload.heroHeadlineCase,
           heroImageUrl: payload.heroImageUrl,
           heroImageAlt: payload.heroImageAlt,
+          heroSlideDuration: payload.heroSlideDuration,
+          mapOceanColor: payload.mapOceanColor,
+          mapLandColor: payload.mapLandColor,
+          mapPinColor: payload.mapPinColor,
+          mapActiveColor: payload.mapActiveColor,
           heroSlides: payload.heroSlides,
           primaryCtaLabel: payload.primaryCtaLabel,
           primaryCtaHref: payload.primaryCtaHref,
@@ -172,7 +213,7 @@ export default function HomepageManagerPage() {
     },
   })
 
-  async function onHeroFile(file: File | undefined) {
+  async function onHeroFile(file: File | undefined, replaceIndex?: number) {
     if (!file) return
     const check = validateMediaFile(file, 'image')
     if (check.error) {
@@ -181,15 +222,52 @@ export default function HomepageManagerPage() {
     }
     setHeroUploadError('')
     const url = await readFileAsDataUrl(file)
-    form.setValue('heroImageUrl', url, { shouldDirty: true })
-    form.setValue('heroImageAlt', file.name.replace(/\.[^.]+$/, ''), { shouldDirty: true })
+    const alt = file.name.replace(/\.[^.]+$/, '')
+    const nextSlide: HeroSlide = { id: `hero-${Date.now()}`, imageUrl: url, alt }
+    const current = currentSlides()
+    const next = replaceIndex != null && current[replaceIndex]
+      ? current.map((slide, index) => (index === replaceIndex ? { ...slide, imageUrl: url, alt: slide.alt || alt } : slide))
+      : [...current, nextSlide]
+    setHeroSlides(next)
+    setActiveSlide(replaceIndex != null ? replaceIndex : next.length - 1)
     setHeroMeta(await readImageMeta(file, url))
+  }
+
+  function currentSlides(): HeroSlide[] {
+    const slides = (form.getValues('heroSlides') || []).filter((slide) => Boolean(slide.imageUrl))
+    if (slides.length) return slides
+    const url = form.getValues('heroImageUrl')
+    return url ? [{ id: 'hero', imageUrl: url, alt: form.getValues('heroImageAlt') || 'Hero image' }] : []
+  }
+
+  function setHeroSlides(next: HeroSlide[]) {
+    form.setValue('heroSlides', next, { shouldDirty: true })
+    form.setValue('heroImageUrl', next[0]?.imageUrl || '', { shouldDirty: true })
+    form.setValue('heroImageAlt', next[0]?.alt || '', { shouldDirty: true })
+  }
+
+  function moveHeroSlide(index: number, dir: -1 | 1) {
+    const slides = currentSlides()
+    const target = index + dir
+    if (target < 0 || target >= slides.length) return
+    const next = [...slides]
+    const [item] = next.splice(index, 1)
+    next.splice(target, 0, item)
+    setHeroSlides(next)
+    setActiveSlide(target)
+  }
+
+  function removeHeroSlide(index: number) {
+    const next = currentSlides().filter((_, i) => i !== index)
+    setHeroSlides(next)
+    setActiveSlide((prev) => Math.max(0, Math.min(prev, next.length - 1)))
   }
 
   function applyHeroUrl() {
     if (!heroUrlInput.trim()) return
-    form.setValue('heroImageUrl', heroUrlInput.trim(), { shouldDirty: true })
-    setHeroMeta(null)
+    const next = [...currentSlides(), { id: `hero-${Date.now()}`, imageUrl: heroUrlInput.trim(), alt: 'Hero banner' }]
+    setHeroSlides(next)
+    setActiveSlide(next.length - 1)
     setHeroUrlInput('')
   }
 
@@ -203,7 +281,16 @@ export default function HomepageManagerPage() {
 
   const sections = form.watch('sections') || []
   const heroImageUrl = form.watch('heroImageUrl')
+  const heroSlides = (form.watch('heroSlides') || []).filter((slide) => Boolean(slide.imageUrl))
+  const bannerSlides = heroSlides.length
+    ? heroSlides
+    : heroImageUrl
+      ? [{ id: 'hero', imageUrl: heroImageUrl, alt: form.watch('heroImageAlt') || 'Hero image' }]
+      : []
+  const previewSlide = bannerSlides[Math.min(activeSlide, Math.max(0, bannerSlides.length - 1))]
+  const slideDuration = Number(form.watch('heroSlideDuration') || 6)
   const headlineSize = Number(form.watch('heroHeadlineSize') || 64)
+  const headlineCase = (form.watch('heroHeadlineCase') || 'uppercase') as HeroHeadlineCase
   const headline = form.watch('heroHeadline') || ''
   const intro = form.watch('heroIntro') || ''
   const primaryCta = form.watch('primaryCtaLabel') || 'Give now'
@@ -395,6 +482,21 @@ export default function HomepageManagerPage() {
                 <Field label="Headline" hint="This sits over the photo. Keep it short." count={`${headline.length}/80`} over={headline.length > 80}>
                   <input className="admin-input" {...form.register('heroHeadline')} />
                 </Field>
+                <Field label="Headline letters" hint="Choose how the headline looks on the public homepage.">
+                  <div className="hp-case" role="group" aria-label="Headline letter case">
+                    {HERO_CASE_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={headlineCase === option.id ? 'hp-case-btn hp-case-btn-on' : 'hp-case-btn'}
+                        onClick={() => form.setValue('heroHeadlineCase', option.id, { shouldDirty: true })}
+                      >
+                        <strong>{option.label}</strong>
+                        <span>{option.hint}</span>
+                      </button>
+                    ))}
+                  </div>
+                </Field>
                 <Field label="Headline size" hint="Large screens use this size. Phones stay smaller automatically.">
                   <div className="hp-size">
                     <input className="hp-range" type="range" min={32} max={96} step={2} {...form.register('heroHeadlineSize', { valueAsNumber: true })} />
@@ -435,14 +537,14 @@ export default function HomepageManagerPage() {
                   }}
                   style={dragOver ? { outline: '2px solid var(--color-sage)', outlineOffset: 2 } : undefined}
                 >
-                  {heroImageUrl ? (
-                    <img src={heroImageUrl} alt="" />
+                  {previewSlide ? (
+                    <img src={previewSlide.imageUrl} alt="" />
                   ) : (
-                    <div className="hp-preview-empty">Hero preview</div>
+                    <div className="hp-preview-empty">Upload a photo to preview the banner</div>
                   )}
                   <div className="hp-preview-scrim" />
                   <div className="hp-preview-copy">
-                    <h4 style={{ fontSize: `${Math.max(14, Math.round(headlineSize * 0.45))}px` }}>{headline || 'Headline'}</h4>
+                    <h4 style={{ fontSize: `${Math.max(14, Math.round(headlineSize * 0.45))}px`, textTransform: heroTextTransform(headlineCase) }}>{headline || 'Headline'}</h4>
                     <p className="line-clamp-2">{intro || 'Intro text appears here.'}</p>
                     <div className="hp-preview-ctas">
                       <span className="hp-preview-primary">{primaryCta}</span>
@@ -450,21 +552,45 @@ export default function HomepageManagerPage() {
                     </div>
                   </div>
                 </div>
+                <Field label="Slide duration" hint={bannerSlides.length > 1 ? 'How long each photo stays before the next one.' : 'Add more than one photo to create a slideshow.'}>
+                  <div className="hp-size">
+                    <input className="hp-range" type="range" min={3} max={12} step={1} {...form.register('heroSlideDuration', { valueAsNumber: true })} />
+                    <output>{slideDuration}s</output>
+                  </div>
+                </Field>
+                <div className="hp-slides">
+                  {bannerSlides.map((slide, index) => (
+                    <div key={slide.id} className={index === activeSlide ? 'hp-slide hp-slide-on' : 'hp-slide'}>
+                      <button type="button" className="hp-slide-thumb" onClick={() => setActiveSlide(index)}>
+                        <img src={slide.imageUrl} alt="" />
+                        <span>{index + 1}</span>
+                      </button>
+                      <div className="hp-slide-actions">
+                        <button type="button" className="btn-secondary px-2 py-1 text-xs" disabled={index === 0} onClick={() => moveHeroSlide(index, -1)}>↑</button>
+                        <button type="button" className="btn-secondary px-2 py-1 text-xs" disabled={index === bannerSlides.length - 1} onClick={() => moveHeroSlide(index, 1)}>↓</button>
+                        <label className="btn-secondary px-2 py-1 text-xs cursor-pointer">
+                          Replace
+                          <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => { onHeroFile(e.target.files?.[0], index); e.currentTarget.value = '' }} />
+                        </label>
+                        <button type="button" className="hp-danger" onClick={() => removeHeroSlide(index)}>Remove</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
                 <MediaUpload
                   kind="image"
-                  label="Hero photo"
-                  value={heroImageUrl}
+                  label="Upload banner photo"
                   onLoaded={async (url, file) => {
                     setHeroUploadError('')
-                    form.setValue('heroImageUrl', url, { shouldDirty: true })
-                    form.setValue('heroImageAlt', file.name.replace(/\.[^.]+$/, ''), { shouldDirty: true })
+                    const next = [...currentSlides(), { id: `hero-${Date.now()}`, imageUrl: url, alt: file.name.replace(/\.[^.]+$/, '') }]
+                    setHeroSlides(next)
+                    setActiveSlide(next.length - 1)
                     setHeroMeta(await readImageMeta(file, url))
                   }}
-                  onClear={() => { form.setValue('heroImageUrl', ''); setHeroMeta(null); setHeroUploadError('') }}
                   extra={(
                     <div className="hp-url-row">
                       <input className="admin-input" value={heroUrlInput} onChange={(e) => setHeroUrlInput(e.target.value)} placeholder="Or paste a photo URL" />
-                      <button type="button" className="btn-secondary" onClick={applyHeroUrl}>Use URL</button>
+                      <button type="button" className="btn-secondary" onClick={applyHeroUrl}>Add URL</button>
                     </div>
                   )}
                 />
@@ -657,11 +783,42 @@ export default function HomepageManagerPage() {
               <Field label="Subtitle">
                 <textarea className="admin-input min-h-24" value={copyHome.mapSubtitle} onChange={(e) => patchCopy('mapSubtitle', e.target.value)} />
               </Field>
+              <div className="hp-map-preview" style={{ background: form.watch('mapOceanColor') || '#E7F1EE' }}>
+                <div className="hp-map-land" style={{ background: form.watch('mapLandColor') || '#1B4D3E' }} />
+                <span className="hp-map-pin" style={{ background: form.watch('mapPinColor') || '#1B4D3E' }} />
+                <span className="hp-map-pin hp-map-pin-on" style={{ background: form.watch('mapActiveColor') || '#C4A574' }} />
+                <p>Ocean, land, and pin colors update the public map.</p>
+              </div>
+              <div className="hp-grid-2">
+                <Field label="Ocean color">
+                  <div className="hp-color">
+                    <input type="color" value={form.watch('mapOceanColor') || '#E7F1EE'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapOceanColor') || '#E7F1EE'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
+                  </div>
+                </Field>
+                <Field label="Land color">
+                  <div className="hp-color">
+                    <input type="color" value={form.watch('mapLandColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapLandColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
+                  </div>
+                </Field>
+                <Field label="Pin color">
+                  <div className="hp-color">
+                    <input type="color" value={form.watch('mapPinColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapPinColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
+                  </div>
+                </Field>
+                <Field label="Selected pin color">
+                  <div className="hp-color">
+                    <input type="color" value={form.watch('mapActiveColor') || '#C4A574'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapActiveColor') || '#C4A574'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
+                  </div>
+                </Field>
+              </div>
               <div className="hp-note">
-                Country pins are edited in Locations. Map colors follow Theme & Branding. Clicking a nation on the public site shows its name.
+                Country pins are edited in Locations. Publish live to show the new map colors on the public homepage.
                 <div className="hp-note-actions">
                   <Link className="btn-secondary" to="/locations">Edit locations</Link>
-                  <Link className="btn-secondary" to="/theme">Edit map colors</Link>
                 </div>
               </div>
             </div>

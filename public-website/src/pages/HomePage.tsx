@@ -58,14 +58,18 @@ export function HomePage() {
   const heroImageUrl = site.homepage.heroImageUrl || site.homepage.heroSlides?.[0]?.imageUrl
   const heroImageAlt = site.homepage.heroImageAlt || homepage.hero.imageAlt
   const heroHeadlineSize = site.homepage.heroHeadlineSize || 64
+  const heroHeadlineCase = site.homepage.heroHeadlineCase || 'uppercase'
+  const heroSlideDuration = site.homepage.heroSlideDuration || 6
   const primaryCtaLabel = site.homepage.primaryCtaLabel || homepage.hero.primaryCta.label
   const primaryCtaHref = site.homepage.primaryCtaHref || homepage.hero.primaryCta.href
   const missionTitle = site.homepage.missionTitle || homepage.mission.title
   const missionStatement = site.homepage.missionStatement || homepage.mission.statement
   const missionScripture = site.homepage.missionScripture || homepage.mission.scripture
-  const heroSlides = (heroImageUrl
-    ? [{ id: 'hero', imageUrl: heroImageUrl, alt: heroImageAlt }]
-    : []
+  const heroSlides = (site.homepage.heroSlides?.length
+    ? site.homepage.heroSlides
+    : heroImageUrl
+      ? [{ id: 'hero', imageUrl: heroImageUrl, alt: heroImageAlt }]
+      : []
   ).filter((slide) => Boolean(slide.imageUrl))
   const impactStats = site.homepage.impactStats?.length ? site.homepage.impactStats : homepage.impactStats
   const sectionEnabled = (id: string): boolean => {
@@ -105,12 +109,15 @@ export function HomePage() {
         if (isCustomHomeSection(section)) return <CustomHomeSection key={section.id} section={section} />
         if (section.id === 'hero') return (
       <section key="hero" className="relative min-h-[92vh] overflow-hidden" aria-label="Welcome">
-        <HeroSlider slides={heroSlides} />
+        <HeroSlider slides={heroSlides} intervalMs={heroSlideDuration * 1000} />
         <div className="relative z-10 mx-auto flex min-h-[92vh] max-w-6xl flex-col justify-end px-4 pb-24 pt-32 md:pb-28">
           <motion.div {...(reduced ? {} : { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8 } })}>
             <h1
-              className="max-w-5xl font-display font-bold uppercase leading-[0.95] tracking-wide text-white"
-              style={{ fontSize: `clamp(1.85rem, 4.6vw, ${heroHeadlineSize}px)` }}
+              className="max-w-5xl font-display font-bold leading-[0.95] tracking-wide text-white"
+              style={{
+                fontSize: `clamp(1.85rem, 4.6vw, ${heroHeadlineSize}px)`,
+                textTransform: heroHeadlineCase === 'lowercase' ? 'lowercase' : heroHeadlineCase === 'as-typed' ? 'none' : 'uppercase',
+              }}
             >
               {heroHeadline}
             </h1>
@@ -236,7 +243,7 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'map') return (
-      <section key="map" className="bg-[#f6f3ee] py-24">
+      <section key="map" className="py-24" style={{ background: site.homepage.mapOceanColor || '#f6f3ee' }}>
         <div className="mx-auto max-w-7xl px-4">
           <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">Where we serve</p>
           <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">{copy.mapTitle}</h2>

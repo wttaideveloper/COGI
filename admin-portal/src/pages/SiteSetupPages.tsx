@@ -70,6 +70,7 @@ export function ThemePage() {
   const [theme, setTheme] = useState<ThemeSettings>(defaultSiteConfig().theme)
   const [logoUrl, setLogoUrl] = useState(defaultSiteConfig().header.logoUrl)
   const [logoAlt, setLogoAlt] = useState(defaultSiteConfig().header.logoAlt)
+  const [logoHeight, setLogoHeight] = useState(defaultSiteConfig().header.logoHeight ?? 48)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -81,6 +82,7 @@ export function ThemePage() {
         setTheme({ ...config.theme, buttonHoverColor: config.theme.buttonHoverColor || '#D4B88A' })
         setLogoUrl(config.header.logoUrl)
         setLogoAlt(config.header.logoAlt)
+        setLogoHeight(config.header.logoHeight ?? 48)
       }
     })
     return () => { active = false }
@@ -92,7 +94,7 @@ export function ThemePage() {
     try {
       await saveSiteConfig({
         theme,
-        header: { ...loadSiteConfig().header, logoUrl, logoAlt },
+        header: { ...loadSiteConfig().header, logoUrl, logoAlt, logoHeight },
       }, status)
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
@@ -170,6 +172,12 @@ export function ThemePage() {
               <Field label="Logo alt text">
                 <input className="admin-input" value={logoAlt} onChange={(e) => setLogoAlt(e.target.value)} />
               </Field>
+              <Field label="Logo size" hint="Height on the public header. Width scales with the image.">
+                <div className="hp-size">
+                  <input className="hp-range" type="range" min={28} max={88} step={2} value={logoHeight} onChange={(e) => setLogoHeight(Number(e.target.value))} />
+                  <output>{logoHeight}px</output>
+                </div>
+              </Field>
             </div>
           </div>
           <div className="admin-card grid gap-4 p-5 md:grid-cols-2">
@@ -192,7 +200,7 @@ export function ThemePage() {
             <div className="mb-4 h-2 rounded-full" style={{ background: theme.secondaryColor }} />
             <p className="m-0 text-sm">Body text preview — communities of grace among healthcare professionals.</p>
             <h3 className="mt-3 mb-0 text-xl font-bold" style={{ fontFamily: theme.headingFontFamily, color: theme.secondaryColor }}>Heading preview</h3>
-            {logoUrl ? <img src={logoUrl} alt="" className="mt-4 h-10 max-w-[160px] object-contain" /> : null}
+            {logoUrl ? <img src={logoUrl} alt="" className="mt-4 max-w-[220px] object-contain" style={{ height: logoHeight }} /> : null}
             <span
               className="mt-4 inline-flex rounded-lg px-3 py-2 text-sm font-bold text-white"
               style={{ background: theme.accentColor }}
@@ -275,6 +283,12 @@ export function HeaderEditorPage() {
             <Field label="Logo alt text">
               <input className="admin-input" value={header.logoAlt} onChange={(e) => patch('logoAlt', e.target.value)} />
             </Field>
+            <Field label="Logo size" hint="Height on the public header.">
+              <div className="hp-size">
+                <input className="hp-range" type="range" min={28} max={88} step={2} value={header.logoHeight ?? 48} onChange={(e) => patch('logoHeight', Number(e.target.value))} />
+                <output>{header.logoHeight ?? 48}px</output>
+              </div>
+            </Field>
             <Field label="CTA button text">
               <input className="admin-input" value={header.ctaText} onChange={(e) => patch('ctaText', e.target.value)} />
             </Field>
@@ -292,7 +306,7 @@ export function HeaderEditorPage() {
           <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-slate-600">Header preview</div>
           <div className="site-header-preview" style={{ background: header.backgroundColor, color: header.textColor }}>
             {header.logoUrl ? (
-              <img src={header.logoUrl} alt={header.logoAlt} className="h-10 max-w-[180px] object-contain" />
+              <img src={header.logoUrl} alt={header.logoAlt} className="max-w-[220px] object-contain" style={{ height: header.logoHeight ?? 48 }} />
             ) : (
               <strong>COGI</strong>
             )}
@@ -365,9 +379,17 @@ export function FooterEditorPage() {
                 onClear={() => patch('logoUrl', '')}
                 noun="logo"
                 extra={(
-                  <Field label="Or paste a logo URL">
-                    <input className="admin-input" value={footer.logoUrl.startsWith('data:') ? '' : footer.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} />
-                  </Field>
+                  <>
+                    <Field label="Or paste a logo URL">
+                      <input className="admin-input" value={footer.logoUrl.startsWith('data:') ? '' : footer.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} />
+                    </Field>
+                    <Field label="Logo size">
+                      <div className="hp-size">
+                        <input className="hp-range" type="range" min={24} max={72} step={2} value={footer.logoHeight ?? 40} onChange={(e) => patch('logoHeight', Number(e.target.value))} />
+                        <output>{footer.logoHeight ?? 40}px</output>
+                      </div>
+                    </Field>
+                  </>
                 )}
               />
             </div>
@@ -392,7 +414,7 @@ export function FooterEditorPage() {
         <div className="admin-card overflow-hidden p-0">
           <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-slate-600">Footer preview</div>
           <div className="site-footer-preview" style={{ background: footer.backgroundColor, color: footer.textColor }}>
-            {footer.logoUrl ? <img src={footer.logoUrl} alt="" className="mb-3 h-8 max-w-[160px] object-contain" /> : null}
+            {footer.logoUrl ? <img src={footer.logoUrl} alt="" className="mb-3 max-w-[180px] object-contain" style={{ height: footer.logoHeight ?? 40 }} /> : null}
             <p className="m-0 text-sm opacity-90">{footer.description}</p>
             <small className="mt-4 block opacity-70">{footer.copyright}</small>
           </div>

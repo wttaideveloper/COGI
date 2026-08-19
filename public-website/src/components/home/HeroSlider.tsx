@@ -11,10 +11,11 @@ type Props = {
   slides: HeroSlide[]
   intervalMs?: number
   className?: string
+  objectPosition?: string
   children?: React.ReactNode
 }
 
-export function HeroSlider({ slides, intervalMs = 6000, className, children }: Props) {
+export function HeroSlider({ slides, intervalMs = 6000, className, objectPosition = 'center', children }: Props) {
   const valid = slides.filter((slide) => Boolean(slide.imageUrl))
   const [active, setActive] = useState(0)
 
@@ -41,15 +42,15 @@ export function HeroSlider({ slides, intervalMs = 6000, className, children }: P
   return (
     <div className={clsx('absolute inset-0', className)}>
       {valid.map((slide, index) => (
-        <div
+        <img
           key={slide.id}
+          src={slide.imageUrl}
+          alt={index === active ? (slide.alt || 'Hero banner') : ''}
           className={clsx(
-            'absolute inset-0 bg-cover bg-center transition-opacity duration-700',
+            'absolute inset-0 h-full w-full object-cover transition-opacity duration-700',
             index === active ? 'opacity-100' : 'opacity-0',
           )}
-          style={{ backgroundImage: `url(${slide.imageUrl})` }}
-          role="img"
-          aria-label={slide.alt || `Hero slide ${index + 1}`}
+          style={{ objectPosition }}
           aria-hidden={index !== active}
         />
       ))}
@@ -79,7 +80,7 @@ export function HeroSlider({ slides, intervalMs = 6000, className, children }: P
             type="button"
             className="absolute left-3 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-black/30 p-2 text-white backdrop-blur-sm hover:bg-black/50 md:inline-flex"
             aria-label="Previous slide"
-            onClick={() => setActive((current) => (current - 1 + valid.length) % valid.length)}
+            onClick={() => setActive((current) => (current + 1 + valid.length) % valid.length)}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m15 18-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>

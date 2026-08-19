@@ -40,12 +40,19 @@ export interface HomepageSection {
   eyebrow?: string
 }
 export interface HeroSlide { id: string; imageUrl: string; alt?: string }
+export type HeroHeadlineCase = 'as-typed' | 'uppercase' | 'lowercase'
 export interface HomepageRecord {
   heroHeadline: string
   heroIntro: string
   heroHeadlineSize?: number
+  heroHeadlineCase?: HeroHeadlineCase
   heroImageUrl?: string
   heroImageAlt?: string
+  heroSlideDuration?: number
+  mapOceanColor?: string
+  mapLandColor?: string
+  mapPinColor?: string
+  mapActiveColor?: string
   heroSlides?: HeroSlide[]
   primaryCtaLabel: string
   primaryCtaHref: string
@@ -78,6 +85,7 @@ export interface HeaderSettings {
   textColor: string
   logoUrl: string
   logoAlt: string
+  logoHeight?: number
   ctaText: string
   ctaLink: string
   sticky: boolean
@@ -86,6 +94,7 @@ export interface FooterSettings {
   backgroundColor: string
   textColor: string
   logoUrl: string
+  logoHeight?: number
   description: string
   copyright: string
   showSocial: boolean

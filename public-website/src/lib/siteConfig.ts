@@ -28,6 +28,7 @@ export type SiteConfig = {
     textColor: string
     logoUrl: string
     logoAlt: string
+    logoHeight?: number
     ctaText: string
     ctaLink: string
     sticky: boolean
@@ -36,6 +37,7 @@ export type SiteConfig = {
     backgroundColor: string
     textColor: string
     logoUrl: string
+    logoHeight?: number
     description: string
     copyright: string
     showSocial: boolean
@@ -56,8 +58,14 @@ export type SiteConfig = {
     heroHeadline: string
     heroIntro: string
     heroHeadlineSize?: number
+    heroHeadlineCase?: 'as-typed' | 'uppercase' | 'lowercase'
     heroImageUrl?: string
     heroImageAlt?: string
+    heroSlideDuration?: number
+    mapOceanColor?: string
+    mapLandColor?: string
+    mapPinColor?: string
+    mapActiveColor?: string
     heroSlides?: Array<{ id: string; imageUrl: string; alt?: string }>
     primaryCtaLabel: string
     primaryCtaHref: string
@@ -101,6 +109,7 @@ const defaults: SiteConfig = {
     textColor: '#1A2E2D',
     logoUrl: '',
     logoAlt: 'Companions of Grace International',
+    logoHeight: 48,
     ctaText: 'Give now',
     ctaLink: '/donate',
     sticky: true,
@@ -109,6 +118,7 @@ const defaults: SiteConfig = {
     backgroundColor: '#161412',
     textColor: '#ffffff',
     logoUrl: '',
+    logoHeight: 40,
     description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',
     copyright: '© Companions of Grace International. All rights reserved.',
     showSocial: true,
@@ -128,8 +138,14 @@ const defaults: SiteConfig = {
     heroIntro:
       'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
     heroHeadlineSize: 64,
+    heroHeadlineCase: 'uppercase' as const,
     heroImageUrl: siteImages.heroCrowd,
     heroImageAlt: 'Healthcare professionals gathered in worship and mission',
+    heroSlideDuration: 6,
+    mapOceanColor: '#E7F1EE',
+    mapLandColor: '#1B4D3E',
+    mapPinColor: '#1B4D3E',
+    mapActiveColor: '#C4A574',
     heroSlides: [
       { id: 'hero', imageUrl: siteImages.heroCrowd, alt: 'Healthcare professionals gathered in worship and mission' },
     ],

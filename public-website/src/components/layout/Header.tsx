@@ -47,7 +47,12 @@ export function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4">
         <Link to="/" className="flex min-w-0 items-center gap-3" aria-label="Companions of Grace International — Home">
           {header.logoUrl ? (
-            <img src={header.logoUrl} alt={header.logoAlt || 'Companions of Grace International'} className="h-12 max-w-[220px] object-contain" />
+            <img
+              src={header.logoUrl}
+              alt={header.logoAlt || 'Companions of Grace International'}
+              className="max-w-[240px] object-contain"
+              style={{ height: header.logoHeight || 48 }}
+            />
           ) : (
             <span className="flex flex-col text-current">
               <span className="font-display text-xl font-bold leading-tight md:text-2xl">Companions of Grace</span>

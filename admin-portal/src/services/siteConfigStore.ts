@@ -12,7 +12,7 @@ export type SiteConfig = {
   seo: SeoSettings
   headerNav: NavItem[]
   footerNav: NavItem[]
-  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroHeadlineSize' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture'> & {
+  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroHeadlineSize' | 'heroHeadlineCase' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlideDuration' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture' | 'mapOceanColor' | 'mapLandColor' | 'mapPinColor' | 'mapActiveColor'> & {
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
     sections?: HomepageSection[]
   }
@@ -35,8 +35,14 @@ export function defaultSiteConfig(): SiteConfig {
       heroHeadline: mockHomepage.heroHeadline,
       heroIntro: mockHomepage.heroIntro,
       heroHeadlineSize: mockHomepage.heroHeadlineSize ?? 64,
+      heroHeadlineCase: mockHomepage.heroHeadlineCase ?? 'uppercase',
       heroImageUrl: mockHomepage.heroImageUrl,
       heroImageAlt: mockHomepage.heroImageAlt,
+      heroSlideDuration: mockHomepage.heroSlideDuration ?? 6,
+      mapOceanColor: mockHomepage.mapOceanColor ?? '#E7F1EE',
+      mapLandColor: mockHomepage.mapLandColor ?? '#1B4D3E',
+      mapPinColor: mockHomepage.mapPinColor ?? '#1B4D3E',
+      mapActiveColor: mockHomepage.mapActiveColor ?? '#C4A574',
       heroSlides: structuredClone(mockHomepage.heroSlides || []),
       primaryCtaLabel: mockHomepage.primaryCtaLabel,
       primaryCtaHref: mockHomepage.primaryCtaHref,

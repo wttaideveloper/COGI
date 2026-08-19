@@ -144,10 +144,10 @@ export function MediaUpload({
         ) : kind === 'video' && value?.startsWith('data:video') ? (
           <video src={value} className="hp-upload-thumb" controls muted onClick={(e) => e.stopPropagation()} />
         ) : (
-          <p className="hp-upload-empty">Drop a {item} here, or click to choose one</p>
+          <p className="hp-upload-empty">Drop a {item} here, or click Upload {item}</p>
         )}
         <button type="button" className="btn-primary hp-upload-choose" onClick={(e) => { e.stopPropagation(); inputRef.current?.click() }}>
-          {value ? `Replace ${item}` : `Choose ${item}`}
+          {value ? `Replace ${item}` : `Upload ${item}`}
         </button>
       </div>
       {meta ? (

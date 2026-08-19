@@ -50,7 +50,12 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div>
           {footer.logoUrl ? (
-            <img src={footer.logoUrl} alt="Companions of Grace International" className="mb-3 h-12 max-w-[200px] object-contain" />
+            <img
+              src={footer.logoUrl}
+              alt="Companions of Grace International"
+              className="mb-3 max-w-[220px] object-contain"
+              style={{ height: footer.logoHeight || 40 }}
+            />
           ) : (
             <div>
               <h2 className="font-display text-2xl font-bold leading-tight">Companions of Grace</h2>
