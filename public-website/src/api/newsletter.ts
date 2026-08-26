@@ -1,19 +1,23 @@
-import { postToStrapi } from '@/services/strapi'
 import type { NewsletterFormData } from '@/types'
 
-export async function submitNewsletter(data: NewsletterFormData): Promise<{ success: boolean; message: string }> {
-  const result = await postToStrapi('/newsletter-subscribers', {
-    ...data,
-    source: 'website',
-    consent: true,
-    subscribedAt: new Date().toISOString(),
-  })
+type SubscribeResponse = { success: boolean; message: string }
 
-  if (result) {
-    return { success: true, message: 'Welcome to the ADVANCE community! Check your inbox for a confirmation.' }
+export async function submitNewsletter(data: NewsletterFormData): Promise<SubscribeResponse> {
+  try {
+    const response = await fetch('/__leads/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        whatsapp: data.whatsapp,
+        source: typeof window !== 'undefined' ? window.location.pathname : 'website',
+      }),
+    })
+    const body = (await response.json()) as SubscribeResponse
+    if (body?.message) return body
+    return { success: false, message: 'We could not complete your subscription. Please try again in a moment.' }
+  } catch {
+    return { success: false, message: 'We could not complete your subscription. Please try again in a moment.' }
   }
-
-  await new Promise((r) => setTimeout(r, 600))
-  console.info('[Demo] Newsletter signup:', data)
-  return { success: true, message: 'Thank you for subscribing! (Demo mode — Strapi unavailable)' }
 }

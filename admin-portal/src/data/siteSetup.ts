@@ -2,6 +2,17 @@ import type { FooterSettings, HeaderSettings, NavigationMenu, SeoSettings, Theme
 
 export const colorPresets: Array<{ name: string } & ThemeSettings> = [
   {
+    name: 'White & Blue',
+    primaryColor: '#1B3A6B',
+    secondaryColor: '#163057',
+    backgroundColor: '#FFFFFF',
+    textColor: '#1A2332',
+    accentColor: '#2B6CB0',
+    buttonHoverColor: '#3B82F6',
+    fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+    headingFontFamily: 'Cormorant Garamond, Georgia, serif',
+  },
+  {
     name: 'Grace Forest',
     primaryColor: '#1B4D3E',
     secondaryColor: '#12362C',
@@ -46,7 +57,7 @@ export const fontOptions = [
 ]
 
 export const headingFontOptions = [
-  { label: 'Georgia (Classic Serif)', value: 'Georgia, "Times New Roman", serif' },
+  { label: 'Cormorant Garamond', value: 'Cormorant Garamond, Georgia, serif' },
   { label: 'Merriweather (Editorial)', value: 'Merriweather, Georgia, serif' },
   { label: 'Playfair Display (Elegant)', value: '"Playfair Display", Georgia, serif' },
   { label: 'Lora (Readable Serif)', value: 'Lora, Georgia, serif' },
@@ -65,9 +76,9 @@ export const mockTheme: ThemeSettings = {
 }
 
 export const mockHeader: HeaderSettings = {
-  backgroundColor: '#ffffff',
-  textColor: '#1A2E2D',
-  logoUrl: '/cogi-admin-logo.svg',
+  backgroundColor: '#2B6CB0',
+  textColor: '#ffffff',
+  logoUrl: '/images/cogi-logo.png',
   logoAlt: 'Companions of Grace International',
   logoHeight: 48,
   ctaText: 'Give now',
@@ -76,9 +87,9 @@ export const mockHeader: HeaderSettings = {
 }
 
 export const mockFooter: FooterSettings = {
-  backgroundColor: '#161412',
-  textColor: '#E8F0EC',
-  logoUrl: '/cogi-admin-logo.svg',
+  backgroundColor: '#ffffff',
+  textColor: '#1A2332',
+  logoUrl: '/images/cogi-logo.png',
   logoHeight: 40,
   description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',
   copyright: '© Companions of Grace International. All rights reserved.',

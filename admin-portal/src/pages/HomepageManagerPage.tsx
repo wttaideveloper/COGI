@@ -3,15 +3,20 @@ import { Link } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { mockHomepage } from '@/data/mock'
-import { CUSTOM_BLOCK_OPTIONS, createHomepageBlock, ensureBuiltinSections, isCustomSection, SECTION_HINTS } from '@/data/homepageBlocks'
+import { CUSTOM_BLOCK_OPTIONS, createHomepageBlock, ensureBuiltinSections, isCustomSection, isSplitSection, SECTION_HINTS } from '@/data/homepageBlocks'
 import { mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiPublishSingle, apiSingle, apiUpdateSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import { MediaUpload, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
-import type { HeroHeadlineCase, HeroSlide, HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
+import type { HeroHeadlineCase, HeroMedia, HeroSlide, HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
 
 const HOMEPAGE_DRAFT_KEY = 'cogi_homepage_draft'
+
+const HERO_MEDIA_OPTIONS: Array<{ id: HeroMedia; label: string; hint: string }> = [
+  { id: 'video', label: 'Video', hint: 'YouTube link or upload an MP4 / WebM file' },
+  { id: 'images', label: 'Image slider', hint: 'Rotate one or more photos behind the headline' },
+]
 
 const HERO_CASE_OPTIONS: Array<{ id: HeroHeadlineCase; label: string; hint: string }> = [
   { id: 'as-typed', label: 'As typed', hint: 'Keep the letters you typed' },
@@ -23,6 +28,18 @@ function heroTextTransform(value: HeroHeadlineCase | undefined): 'none' | 'upper
   if (value === 'lowercase') return 'lowercase'
   if (value === 'as-typed') return 'none'
   return 'uppercase'
+}
+
+function isEmbedVideo(url: string) {
+  return /youtu\.be|youtube\.com|vimeo\.com/i.test(url)
+}
+
+function youtubeId(src: string) {
+  return src.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/)?.[1] || null
+}
+
+function isFileVideo(url: string) {
+  return url.startsWith('data:video') || /\.(mp4|webm|mov)(\?|$)/i.test(url)
 }
 
 type HeroMeta = { name: string; size: number; width?: number; height?: number }
@@ -92,6 +109,8 @@ export default function HomepageManagerPage() {
     ...data,
     heroHeadlineSize: data.heroHeadlineSize ?? mockHomepage.heroHeadlineSize ?? 64,
     heroHeadlineCase: data.heroHeadlineCase ?? mockHomepage.heroHeadlineCase ?? 'uppercase',
+    heroMedia: data.heroMedia === 'video' ? 'video' : 'images',
+    heroVideoUrl: data.heroVideoUrl ?? '',
     heroSlideDuration: data.heroSlideDuration ?? mockHomepage.heroSlideDuration ?? 6,
     heroSlides: (Array.isArray(data.heroSlides) && data.heroSlides.length
       ? data.heroSlides
@@ -113,6 +132,7 @@ export default function HomepageManagerPage() {
   const [hasDraft, setHasDraft] = useState(Boolean(existingDraft))
   const [heroMeta, setHeroMeta] = useState<HeroMeta | null>(null)
   const [heroUrlInput, setHeroUrlInput] = useState('')
+  const [heroVideoInput, setHeroVideoInput] = useState('')
   const [heroUploadError, setHeroUploadError] = useState('')
   const [activeSlide, setActiveSlide] = useState(0)
   const [activeTab, setActiveTab] = useState('hero')
@@ -130,6 +150,8 @@ export default function HomepageManagerPage() {
         ...home,
         heroHeadlineSize: home.heroHeadlineSize ?? 64,
         heroHeadlineCase: home.heroHeadlineCase ?? 'uppercase',
+        heroMedia: home.heroMedia === 'video' ? 'video' : 'images',
+        heroVideoUrl: home.heroVideoUrl ?? '',
         heroSlideDuration: home.heroSlideDuration ?? 6,
         mapOceanColor: home.mapOceanColor,
         mapLandColor: home.mapLandColor,
@@ -152,6 +174,8 @@ export default function HomepageManagerPage() {
         ...values,
         heroHeadlineSize: Number(values.heroHeadlineSize) || 64,
         heroHeadlineCase: values.heroHeadlineCase || 'uppercase',
+        heroMedia: values.heroMedia === 'video' ? 'video' : 'images',
+        heroVideoUrl: values.heroVideoUrl || '',
         heroSlideDuration: Number(values.heroSlideDuration) || 6,
         heroImageUrl: first?.imageUrl || values.heroImageUrl || '',
         heroImageAlt: first?.alt || values.heroImageAlt || '',
@@ -168,6 +192,8 @@ export default function HomepageManagerPage() {
           heroIntro: payload.heroIntro,
           heroHeadlineSize: payload.heroHeadlineSize,
           heroHeadlineCase: payload.heroHeadlineCase,
+          heroMedia: payload.heroMedia,
+          heroVideoUrl: payload.heroVideoUrl,
           heroImageUrl: payload.heroImageUrl,
           heroImageAlt: payload.heroImageAlt,
           heroSlideDuration: payload.heroSlideDuration,
@@ -233,6 +259,20 @@ export default function HomepageManagerPage() {
     setHeroMeta(await readImageMeta(file, url))
   }
 
+  async function onHeroVideoFile(file: File | undefined) {
+    if (!file) return
+    const check = validateMediaFile(file, 'video')
+    if (check.error) {
+      setHeroUploadError(check.error)
+      return
+    }
+    setHeroUploadError(check.warning || '')
+    const url = await readFileAsDataUrl(file)
+    form.setValue('heroVideoUrl', url, { shouldDirty: true })
+    form.setValue('heroMedia', 'video', { shouldDirty: true })
+    setHeroMeta({ name: file.name, size: file.size })
+  }
+
   function currentSlides(): HeroSlide[] {
     const slides = (form.getValues('heroSlides') || []).filter((slide) => Boolean(slide.imageUrl))
     if (slides.length) return slides
@@ -271,6 +311,19 @@ export default function HomepageManagerPage() {
     setHeroUrlInput('')
   }
 
+  function applyHeroVideoUrl() {
+    const url = heroVideoInput.trim() || (youtubeId(heroVideoUrl) ? heroVideoUrl : '')
+    if (!url) return
+    if (!youtubeId(url) && !isEmbedVideo(url)) {
+      setHeroUploadError('Paste a YouTube link (watch, share, or Shorts). Or upload an MP4 / WebM file below.')
+      return
+    }
+    form.setValue('heroVideoUrl', url, { shouldDirty: true })
+    form.setValue('heroMedia', 'video', { shouldDirty: true })
+    setHeroVideoInput(url)
+    setHeroUploadError('')
+  }
+
   function patchCopy<K extends keyof SiteCopy['homepage']>(key: K, value: SiteCopy['homepage'][K]) {
     setCopyHome((prev) => ({ ...prev, [key]: value }))
   }
@@ -291,6 +344,10 @@ export default function HomepageManagerPage() {
   const slideDuration = Number(form.watch('heroSlideDuration') || 6)
   const headlineSize = Number(form.watch('heroHeadlineSize') || 64)
   const headlineCase = (form.watch('heroHeadlineCase') || 'uppercase') as HeroHeadlineCase
+  const heroMedia = (form.watch('heroMedia') === 'video' ? 'video' : 'images') as HeroMedia
+  const heroVideoUrl = form.watch('heroVideoUrl') || ''
+  const youtubeThumbId = youtubeId(heroVideoUrl)
+  const youtubeField = heroVideoInput || (youtubeThumbId ? heroVideoUrl : '')
   const headline = form.watch('heroHeadline') || ''
   const intro = form.watch('heroIntro') || ''
   const primaryCta = form.watch('primaryCtaLabel') || 'Give now'
@@ -307,6 +364,7 @@ export default function HomepageManagerPage() {
   const currentTab = navTabs.find((tab) => tab.id === activeTab) ?? navTabs[0] ?? { id: 'hero', label: 'Hero banner', hint: '' }
   const activeSection = sortedSections.find((section) => section.id === activeTab)
   const customEditing = Boolean(activeSection && isCustomSection(activeSection))
+  const splitEditing = Boolean(activeSection && isSplitSection(activeSection))
   const visibleCount = sortedSections.filter((s) => s.enabled).length
   const draftOpen = hasDraft && savedAs !== 'published'
   const filteredSections = useMemo(() => {
@@ -376,7 +434,7 @@ export default function HomepageManagerPage() {
             <i className="hp-status-dot" />
             {draftOpen ? 'Unpublished draft' : 'Live homepage'}
           </p>
-          <p>Choose a section above, edit it, then publish when visitors should see it.</p>
+          <p>Click a block on the left, change the words or photos, then publish. Turn a block off if you do not want it on the live homepage.</p>
         </div>
         <div className="hp-toolbar-actions">
           <a className="btn-secondary" href={getPreviewUrl('/')} target="_blank" rel="noreferrer">Preview</a>
@@ -400,60 +458,61 @@ export default function HomepageManagerPage() {
       {mutation.error ? <p className="hp-flash hp-flash-err">{getErrorMessage(mutation.error)}</p> : null}
 
       <div className="hp-workspace">
-        <nav className="hp-strip" aria-label="Homepage sections">
-          <div className="hp-strip-head">
-            <div>
-              <p className="hp-rail-label">Page sections</p>
-              <p className="hp-side-count">{visibleCount} of {sortedSections.length} on the live page · scroll sideways to see all</p>
-            </div>
-            <div className="hp-strip-tools">
-              <input
-                className="admin-input"
-                value={sectionQuery}
-                onChange={(e) => setSectionQuery(e.target.value)}
-                placeholder="Find a section…"
-                aria-label="Find a section"
-              />
-              <button type="button" className="btn-primary" onClick={() => setPickerOpen(true)}>Add</button>
-            </div>
+        <nav className="hp-rail" aria-label="Homepage sections">
+          <div className="hp-rail-head">
+            <p className="hp-rail-label">Homepage blocks</p>
+            <p className="hp-side-count">{visibleCount} showing</p>
           </div>
-          <div className="hp-strip-track">
-            {filteredSections.map((section) => {
-              const i = sortedSections.findIndex((item) => item.id === section.id)
-              return (
-                <div
-                  key={section.id}
-                  className={[
-                    'hp-chip-card',
-                    section.id === activeTab ? 'hp-chip-card-active' : '',
-                    section.enabled ? '' : 'hp-chip-card-off',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => setActiveTab(section.id)}
-                >
-                  <span className="hp-nav-num">{i + 1}</span>
-                  <div className="hp-chip-copy">
-                    <span className="hp-chip-title">{section.label}</span>
-                    <span className="hp-chip-hint">{section.enabled ? (SECTION_HINTS[section.id] || section.summary || 'Custom section') : 'Hidden'}</span>
-                    <div className="hp-chip-foot">
-                      <button type="button" className="btn-secondary px-2 py-1 text-xs" disabled={i === 0} aria-label={`Move ${section.label} left`} onClick={(e) => { e.stopPropagation(); moveSection(section.id, -1) }}>←</button>
-                      <button type="button" className="btn-secondary px-2 py-1 text-xs" disabled={i === sortedSections.length - 1} aria-label={`Move ${section.label} right`} onClick={(e) => { e.stopPropagation(); moveSection(section.id, 1) }}>→</button>
+          <p className="hp-hint">Click a block to edit it. Use On/Off to hide it from visitors.</p>
+          <div className="hp-search">
+            <input
+              className="admin-input"
+              value={sectionQuery}
+              onChange={(e) => setSectionQuery(e.target.value)}
+              placeholder="Find a block…"
+              aria-label="Find a homepage block"
+            />
+          </div>
+          <div className="hp-nav-wrap">
+            <div className="hp-nav">
+              {filteredSections.map((section) => {
+                const i = sortedSections.findIndex((item) => item.id === section.id)
+                return (
+                  <div
+                    key={section.id}
+                    className={[
+                      'hp-nav-item',
+                      section.id === activeTab ? 'hp-nav-item-active' : '',
+                      section.enabled ? '' : 'hp-nav-item-off',
+                    ].filter(Boolean).join(' ')}
+                  >
+                    <span className="hp-nav-num">{i + 1}</span>
+                    <button type="button" className="hp-nav-copy" onClick={() => setActiveTab(section.id)}>
+                      <span className="hp-nav-title">{section.label}</span>
+                      <span className="hp-nav-hint">{section.enabled ? (SECTION_HINTS[section.id] || section.summary || 'Custom block') : 'Hidden from the live page'}</span>
+                    </button>
+                    <div className="hp-move">
+                      <button type="button" disabled={i === 0} aria-label={`Move ${section.label} up`} onClick={() => moveSection(section.id, -1)}>↑</button>
+                      <button type="button" disabled={i === sortedSections.length - 1} aria-label={`Move ${section.label} down`} onClick={() => moveSection(section.id, 1)}>↓</button>
                     </div>
+                    <button
+                      type="button"
+                      className={section.enabled ? 'admin-switch admin-switch-on' : 'admin-switch'}
+                      aria-pressed={section.enabled}
+                      aria-label={`${section.enabled ? 'Hide' : 'Show'} ${section.label}`}
+                      onClick={() => setSectionEnabled(section.id, !section.enabled)}
+                    />
+                    <span className={section.enabled ? 'hp-vis hp-on' : 'hp-vis hp-off'}>{section.enabled ? 'On' : 'Off'}</span>
                   </div>
-                  <button
-                    type="button"
-                    className={section.enabled ? 'admin-switch admin-switch-on' : 'admin-switch'}
-                    aria-pressed={section.enabled}
-                    aria-label={`${section.enabled ? 'Hide' : 'Show'} ${section.label}`}
-                    onClick={(e) => { e.stopPropagation(); setSectionEnabled(section.id, !section.enabled) }}
-                  />
-                </div>
-              )
-            })}
-            <button type="button" className="hp-chip-add" onClick={() => setPickerOpen(true)}>
-              + Add a new section
-            </button>
+                )
+              })}
+            </div>
+            <div className="hp-nav-fade" aria-hidden="true" />
           </div>
-          {!filteredSections.length ? <p className="hp-hint">No sections match that search.</p> : null}
+          {!filteredSections.length ? <p className="hp-hint">No blocks match that search.</p> : null}
+          <button type="button" className="btn-primary hp-add-btn" onClick={() => setPickerOpen(true)}>
+            + Add a block
+          </button>
         </nav>
 
         <section className="hp-editor">
@@ -479,7 +538,22 @@ export default function HomepageManagerPage() {
           {activeTab === 'hero' ? (
             <div className="hp-hero">
               <div className="hp-fields">
-                <Field label="Headline" hint="This sits over the photo. Keep it short." count={`${headline.length}/80`} over={headline.length > 80}>
+                <Field label="Hero background" hint="Choose video or an image slider. Headline and buttons stay the same either way.">
+                  <div className="hp-case hp-case-2" role="group" aria-label="Hero background">
+                    {HERO_MEDIA_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={heroMedia === option.id ? 'hp-case-btn hp-case-btn-on' : 'hp-case-btn'}
+                        onClick={() => form.setValue('heroMedia', option.id, { shouldDirty: true })}
+                      >
+                        <strong>{option.label}</strong>
+                        <span>{option.hint}</span>
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Headline" hint="This sits over the photo or film. Keep it short." count={`${headline.length}/80`} over={headline.length > 80}>
                   <input className="admin-input" {...form.register('heroHeadline')} />
                 </Field>
                 <Field label="Headline letters" hint="Choose how the headline looks on the public homepage.">
@@ -533,17 +607,36 @@ export default function HomepageManagerPage() {
                   onDrop={(e) => {
                     e.preventDefault()
                     setDragOver(false)
-                    onHeroFile(e.dataTransfer.files?.[0])
+                    const file = e.dataTransfer.files?.[0]
+                    if (!file) return
+                    if (heroMedia === 'video' && (file.type.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(file.name))) {
+                      void onHeroVideoFile(file)
+                    } else {
+                      void onHeroFile(file)
+                    }
                   }}
                   style={dragOver ? { outline: '2px solid var(--color-sage)', outlineOffset: 2 } : undefined}
                 >
-                  {previewSlide ? (
+                  {heroMedia === 'video' && heroVideoUrl && isFileVideo(heroVideoUrl) ? (
+                    <video src={heroVideoUrl} muted loop playsInline autoPlay poster={previewSlide?.imageUrl} />
+                  ) : youtubeThumbId ? (
+                    <img src={`https://img.youtube.com/vi/${youtubeThumbId}/hqdefault.jpg`} alt="" />
+                  ) : previewSlide ? (
                     <img src={previewSlide.imageUrl} alt="" />
                   ) : (
-                    <div className="hp-preview-empty">Upload a photo to preview the banner</div>
+                    <div className="hp-preview-empty">
+                      {heroMedia === 'video'
+                        ? 'Add a YouTube link or upload a video to preview'
+                        : 'Upload a photo to preview the banner'}
+                    </div>
                   )}
                   <div className="hp-preview-scrim" />
                   <div className="hp-preview-copy">
+                    {heroMedia === 'video' && heroVideoUrl ? (
+                      <span className="hp-preview-badge">{youtubeThumbId ? 'YouTube video' : isFileVideo(heroVideoUrl) ? 'Uploaded video' : 'Video'}</span>
+                    ) : heroMedia === 'images' && bannerSlides.length > 1 ? (
+                      <span className="hp-preview-badge">Image slider · {bannerSlides.length} photos</span>
+                    ) : null}
                     <h4 style={{ fontSize: `${Math.max(14, Math.round(headlineSize * 0.45))}px`, textTransform: heroTextTransform(headlineCase) }}>{headline || 'Headline'}</h4>
                     <p className="line-clamp-2">{intro || 'Intro text appears here.'}</p>
                     <div className="hp-preview-ctas">
@@ -552,12 +645,58 @@ export default function HomepageManagerPage() {
                     </div>
                   </div>
                 </div>
-                <Field label="Slide duration" hint={bannerSlides.length > 1 ? 'How long each photo stays before the next one.' : 'Add more than one photo to create a slideshow.'}>
-                  <div className="hp-size">
-                    <input className="hp-range" type="range" min={3} max={12} step={1} {...form.register('heroSlideDuration', { valueAsNumber: true })} />
-                    <output>{slideDuration}s</output>
-                  </div>
-                </Field>
+                {heroMedia === 'video' ? (
+                  <>
+                    <Field label="YouTube" hint="Paste a YouTube watch, share, or Shorts link.">
+                      <div className="hp-url-row">
+                        <input
+                          className="admin-input"
+                          value={youtubeField}
+                          onChange={(e) => setHeroVideoInput(e.target.value)}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                        />
+                        <button type="button" className="btn-secondary" onClick={applyHeroVideoUrl}>Use YouTube</button>
+                      </div>
+                    </Field>
+                    {youtubeThumbId && youtubeField === heroVideoUrl ? (
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => {
+                          form.setValue('heroVideoUrl', '', { shouldDirty: true })
+                          setHeroVideoInput('')
+                        }}
+                      >
+                        Remove YouTube video
+                      </button>
+                    ) : null}
+                    <MediaUpload
+                      kind="video"
+                      label="Or upload a video file"
+                      value={isFileVideo(heroVideoUrl) ? heroVideoUrl : ''}
+                      onLoaded={(url, file) => {
+                        form.setValue('heroVideoUrl', url, { shouldDirty: true })
+                        form.setValue('heroMedia', 'video', { shouldDirty: true })
+                        setHeroVideoInput('')
+                        setHeroMeta({ name: file.name, size: file.size })
+                        setHeroUploadError('')
+                      }}
+                      onClear={() => {
+                        form.setValue('heroVideoUrl', '', { shouldDirty: true })
+                        setHeroMeta(null)
+                      }}
+                    />
+                    <p className="hp-hint">Use either YouTube or an uploaded file — the last one you add is what visitors see. Optional poster photo below is shown while the video loads.</p>
+                  </>
+                ) : (
+                  <Field label="Slide duration" hint={bannerSlides.length > 1 ? 'How long each photo stays before the next one.' : 'Add more than one photo to create a slideshow.'}>
+                    <div className="hp-size">
+                      <input className="hp-range" type="range" min={3} max={12} step={1} {...form.register('heroSlideDuration', { valueAsNumber: true })} />
+                      <output>{slideDuration}s</output>
+                    </div>
+                  </Field>
+                )}
+                {heroMedia === 'images' ? (
                 <div className="hp-slides">
                   {bannerSlides.map((slide, index) => (
                     <div key={slide.id} className={index === activeSlide ? 'hp-slide hp-slide-on' : 'hp-slide'}>
@@ -577,9 +716,10 @@ export default function HomepageManagerPage() {
                     </div>
                   ))}
                 </div>
+                ) : null}
                 <MediaUpload
                   kind="image"
-                  label="Upload banner photo"
+                  label={heroMedia === 'video' ? 'Optional poster photo' : 'Upload banner photo'}
                   onLoaded={async (url, file) => {
                     setHeroUploadError('')
                     const next = [...currentSlides(), { id: `hero-${Date.now()}`, imageUrl: url, alt: file.name.replace(/\.[^.]+$/, '') }]
@@ -783,35 +923,35 @@ export default function HomepageManagerPage() {
               <Field label="Subtitle">
                 <textarea className="admin-input min-h-24" value={copyHome.mapSubtitle} onChange={(e) => patchCopy('mapSubtitle', e.target.value)} />
               </Field>
-              <div className="hp-map-preview" style={{ background: form.watch('mapOceanColor') || '#E7F1EE' }}>
-                <div className="hp-map-land" style={{ background: form.watch('mapLandColor') || '#1B4D3E' }} />
-                <span className="hp-map-pin" style={{ background: form.watch('mapPinColor') || '#1B4D3E' }} />
-                <span className="hp-map-pin hp-map-pin-on" style={{ background: form.watch('mapActiveColor') || '#C4A574' }} />
+              <div className="hp-map-preview" style={{ background: form.watch('mapOceanColor') || '#F7FAFC' }}>
+                <div className="hp-map-land" style={{ background: form.watch('mapLandColor') || '#1B3A6B' }} />
+                <span className="hp-map-pin" style={{ background: form.watch('mapPinColor') || '#2B6CB0' }} />
+                <span className="hp-map-pin hp-map-pin-on" style={{ background: form.watch('mapActiveColor') || '#3B82F6' }} />
                 <p>Ocean, land, and pin colors update the public map.</p>
               </div>
               <div className="hp-grid-2">
                 <Field label="Ocean color">
                   <div className="hp-color">
-                    <input type="color" value={form.watch('mapOceanColor') || '#E7F1EE'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapOceanColor') || '#E7F1EE'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
+                    <input type="color" value={form.watch('mapOceanColor') || '#F7FAFC'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapOceanColor') || '#F7FAFC'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
                   </div>
                 </Field>
                 <Field label="Land color">
                   <div className="hp-color">
-                    <input type="color" value={form.watch('mapLandColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapLandColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
+                    <input type="color" value={form.watch('mapLandColor') || '#1B3A6B'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapLandColor') || '#1B3A6B'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
                   </div>
                 </Field>
                 <Field label="Pin color">
                   <div className="hp-color">
-                    <input type="color" value={form.watch('mapPinColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapPinColor') || '#1B4D3E'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
+                    <input type="color" value={form.watch('mapPinColor') || '#2B6CB0'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapPinColor') || '#2B6CB0'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
                   </div>
                 </Field>
                 <Field label="Selected pin color">
                   <div className="hp-color">
-                    <input type="color" value={form.watch('mapActiveColor') || '#C4A574'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapActiveColor') || '#C4A574'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
+                    <input type="color" value={form.watch('mapActiveColor') || '#3B82F6'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapActiveColor') || '#3B82F6'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
                   </div>
                 </Field>
               </div>
@@ -879,11 +1019,13 @@ export default function HomepageManagerPage() {
             </div>
           ) : null}
 
-          {customEditing && activeSection ? (
+          {(customEditing || splitEditing) && activeSection ? (
             <div className="hp-fields">
-              <Field label="Section name" hint="Shown in this admin list. Visitors see the title below.">
-                <input className="admin-input" value={activeSection.label} onChange={(e) => patchSection(activeSection.id, { label: e.target.value })} />
-              </Field>
+              {customEditing ? (
+                <Field label="Section name" hint="Shown in this admin list. Visitors see the title below.">
+                  <input className="admin-input" value={activeSection.label} onChange={(e) => patchSection(activeSection.id, { label: e.target.value })} />
+                </Field>
+              ) : null}
               {activeSection.kind === 'banner' || activeSection.kind === 'cta' ? (
                 <Field label="Small label above the title">
                   <input className="admin-input" value={activeSection.eyebrow || ''} onChange={(e) => patchSection(activeSection.id, { eyebrow: e.target.value })} />
@@ -895,7 +1037,7 @@ export default function HomepageManagerPage() {
               <Field label={activeSection.kind === 'quote' ? 'Quote' : 'Body'}>
                 <textarea className="admin-input min-h-28" value={activeSection.content || ''} onChange={(e) => patchSection(activeSection.id, { content: e.target.value })} />
               </Field>
-              {['split', 'banner', 'image'].includes(activeSection.kind || '') ? (
+              {splitEditing || ['banner', 'image'].includes(activeSection.kind || '') ? (
                 <>
                   <MediaUpload
                     kind="image"
@@ -909,7 +1051,29 @@ export default function HomepageManagerPage() {
                   </Field>
                 </>
               ) : null}
-              {activeSection.kind === 'cta' || activeSection.kind === 'banner' ? (
+              {splitEditing ? (
+                <Field label="Photo placement" hint="Same layout as Colson Center: a full-height photo beside the story.">
+                  <div className="hp-case hp-case-2" role="group" aria-label="Photo placement">
+                    <button
+                      type="button"
+                      className={activeSection.imageSide === 'left' ? 'hp-case-btn hp-case-btn-on' : 'hp-case-btn'}
+                      onClick={() => patchSection(activeSection.id, { imageSide: 'left' })}
+                    >
+                      <strong>Image on left</strong>
+                      <span>Photo first, then text</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={activeSection.imageSide !== 'left' ? 'hp-case-btn hp-case-btn-on' : 'hp-case-btn'}
+                      onClick={() => patchSection(activeSection.id, { imageSide: 'right' })}
+                    >
+                      <strong>Image on right</strong>
+                      <span>Text first, then photo</span>
+                    </button>
+                  </div>
+                </Field>
+              ) : null}
+              {splitEditing || activeSection.kind === 'cta' || activeSection.kind === 'banner' ? (
                 <div className="hp-grid-2">
                   <Field label="Button text">
                     <input className="admin-input" value={activeSection.buttonLabel || ''} onChange={(e) => patchSection(activeSection.id, { buttonLabel: e.target.value })} />
@@ -929,8 +1093,8 @@ export default function HomepageManagerPage() {
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="add-section-title">
             <div className="mb-3 flex items-start justify-between gap-3">
               <div>
-                <h3 id="add-section-title" className="text-lg font-extrabold text-[var(--color-primary)]">Add a homepage section</h3>
-                <p className="mt-1 text-sm text-slate-600">Choose a layout, then edit the words and photo. Publish to show it on the live site.</p>
+                <h3 id="add-section-title" className="text-lg font-extrabold text-[var(--color-primary)]">Add a homepage block</h3>
+                <p className="mt-1 text-sm text-slate-600">Pick a layout. Then type the words, add a photo if you want one, and publish.</p>
               </div>
               <button type="button" className="admin-icon-btn admin-modal-close" onClick={() => setPickerOpen(false)} aria-label="Close">×</button>
             </div>

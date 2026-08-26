@@ -79,7 +79,7 @@ export function ThemePage() {
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
       if (active) {
-        setTheme({ ...config.theme, buttonHoverColor: config.theme.buttonHoverColor || '#D4B88A' })
+        setTheme({ ...config.theme, buttonHoverColor: config.theme.buttonHoverColor || '#3B82F6' })
         setLogoUrl(config.header.logoUrl)
         setLogoAlt(config.header.logoAlt)
         setLogoHeight(config.header.logoHeight ?? 48)

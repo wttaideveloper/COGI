@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { HelmetProvider } from 'react-helmet-async'
 import { SiteConfigProvider } from '@/contexts/SiteConfigContext'
+import { BootSplash } from '@/components/layout/BootSplash'
 import { MainLayout } from '@/components/layout/MainLayout'
 import { HomePage } from '@/pages/HomePage'
 import { AboutPage } from '@/pages/AboutPage'
@@ -43,6 +44,7 @@ export default function App() {
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <SiteConfigProvider>
+          <BootSplash />
           <BrowserRouter>
           <Routes>
             <Route element={<MainLayout />}>

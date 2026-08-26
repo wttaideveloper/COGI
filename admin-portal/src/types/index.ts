@@ -35,17 +35,21 @@ export interface HomepageSection {
   content?: string
   imageUrl?: string
   imageAlt?: string
+  imageSide?: 'left' | 'right'
   buttonLabel?: string
   buttonHref?: string
   eyebrow?: string
 }
 export interface HeroSlide { id: string; imageUrl: string; alt?: string }
 export type HeroHeadlineCase = 'as-typed' | 'uppercase' | 'lowercase'
+export type HeroMedia = 'video' | 'images'
 export interface HomepageRecord {
   heroHeadline: string
   heroIntro: string
   heroHeadlineSize?: number
   heroHeadlineCase?: HeroHeadlineCase
+  heroMedia?: HeroMedia
+  heroVideoUrl?: string
   heroImageUrl?: string
   heroImageAlt?: string
   heroSlideDuration?: number

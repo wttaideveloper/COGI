@@ -8,12 +8,14 @@ import { z } from 'zod'
 import MenuSwapper from '@/components/MenuSwapper'
 import RichTextEditor from '@/components/RichTextEditor'
 import { useAuth } from '@/contexts/AuthContext'
-import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomepage, mockLocations, mockMedia, mockNavigation, mockPages, mockPartners, mockPrograms, mockSettings, mockStats, mockStories, mockSubscribers, mockTeam, mockTestimonials } from '@/data/mock'
+import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomepage, mockLocations, mockMedia, mockNavigation, mockPages, mockPartners, mockPrograms, mockSettings, mockStats, mockStories, mockTeam, mockTestimonials } from '@/data/mock'
 import { mockFooterNavigation } from '@/data/siteSetup'
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
 import { apiCreate, apiDelete, apiList, apiListAll, apiSingle, apiPublish, apiUnpublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
+import { fetchLeads, removeSubscriber, type LeadSubscriber } from '@/services/leads'
+import { COGI_LOGO } from '@/lib/brand'
 import { getPreviewUrl } from '@/utils/preview'
 import type { AuditRecord, BaseRecord, EnquiryRecord, EnquiryStatus, FormField, HomepageRecord, MediaFile, ModuleConfig, ModuleKey, SettingsRecord } from '@/types'
 
@@ -26,15 +28,15 @@ const moduleData: Record<string, AnyRecord[]> = {
 }
 
 export const moduleConfigs: Record<string, ModuleConfig<AnyRecord>> = {
-  pages: { key: 'pages', title: 'Pages', endpoint: '/pages', route: '/pages', singular: 'Page', description: 'Create SEO-ready pages from templates with sections, menu placement, and SEO options.', columns: [{ key: 'title', label: 'Title' }, { key: 'slug', label: 'Slug' }, { key: 'status', label: 'Status' }, { key: 'updatedAt', label: 'Updated' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  programs: { key: 'programs', title: 'Programs', endpoint: '/programs', route: '/programs', singular: 'Program', description: 'CRUD for ministry programs and portfolio areas.', columns: [{ key: 'title', label: 'Title' }, { key: 'area', label: 'Area' }, { key: 'status', label: 'Status' }, { key: 'order', label: 'Order' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'area', label: 'Area', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }, { name: 'order', label: 'Order', type: 'number' }] },
-  blog: { key: 'blog', title: 'Blog / News', endpoint: '/news-articles', route: '/blog', singular: 'Article', description: 'Publish news and resource articles with TipTap rich text.', columns: [{ key: 'title', label: 'Title' }, { key: 'category', label: 'Category' }, { key: 'author', label: 'Author' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'body', label: 'Body', type: 'richtext' }, { name: 'author', label: 'Author', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  events: { key: 'events', title: 'Events', endpoint: '/events', route: '/events', singular: 'Event', description: 'Manage event calendar listings and details.', columns: [{ key: 'title', label: 'Title' }, { key: 'startDate', label: 'Starts' }, { key: 'venue', label: 'Venue' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'startDate', label: 'Start date', type: 'date' }, { name: 'endDate', label: 'End date', type: 'date' }, { name: 'venue', label: 'Venue', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  stories: { key: 'stories', title: 'Stories', endpoint: '/stories', route: '/stories', singular: 'Story', description: 'Stories of transformation, including video and written entries.', columns: [{ key: 'title', label: 'Title' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'type', label: 'Type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'imageUrl', label: 'Thumbnail URL', type: 'text' }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  testimonials: { key: 'testimonials', title: 'Testimonials', endpoint: '/testimonials', route: '/testimonials', singular: 'Testimonial', description: 'Written and video testimonials with filters.', columns: [{ key: 'author', label: 'Author' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'quote', label: 'Quote', type: 'textarea', required: true }, { name: 'author', label: 'Author', type: 'text', required: true }, { name: 'mediaType', label: 'Media type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  team: { key: 'team', title: 'Team Members', endpoint: '/team-members', route: '/team', singular: 'Team member', description: 'Board and global team profiles.', columns: [{ key: 'name', label: 'Name' }, { key: 'title', label: 'Title' }, { key: 'role', label: 'Role' }, { key: 'status', label: 'Status' }, { key: 'publicVisibility', label: 'Visible' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'title', label: 'Title', type: 'text' }, { name: 'role', label: 'Role', type: 'select', options: ['board', 'global-team', 'staff', 'advisor'].map((v) => ({ label: v, value: v })) }, { name: 'region', label: 'Region', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'bio', label: 'Bio', type: 'textarea' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'publicVisibility', label: 'Public visibility', type: 'select', options: yesNo }] },
-  partners: { key: 'partners', title: 'Partners', endpoint: '/partners', route: '/partners', singular: 'Partner', description: 'Partner logos, links, regions, and ordering.', columns: [{ key: 'name', label: 'Name' }, { key: 'region', label: 'Region' }, { key: 'url', label: 'URL' }, { key: 'status', label: 'Status' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'url', label: 'URL', type: 'text' }, { name: 'region', label: 'Region', type: 'text' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  locations: { key: 'locations', title: 'Locations', endpoint: '/locations', route: '/locations', singular: 'Location', description: 'Country pins for the Where we serve map. Latitude and longitude place each marker.', columns: [{ key: 'country', label: 'Country' }, { key: 'region', label: 'Region' }, { key: 'latitude', label: 'Lat' }, { key: 'longitude', label: 'Lng' }], fields: [{ name: 'country', label: 'Country', type: 'text', required: true }, { name: 'region', label: 'Region', type: 'text' }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'programs', label: 'Programs (comma-separated)', type: 'text' }, { name: 'latitude', label: 'Latitude', type: 'number' }, { name: 'longitude', label: 'Longitude', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  pages: { key: 'pages', title: 'Custom pages', endpoint: '/pages', route: '/pages', singular: 'Page', description: 'Extra pages beyond the main site. Edit About, Donate, Contact, and other live wording under Site pages.', columns: [{ key: 'title', label: 'Title' }, { key: 'slug', label: 'URL' }, { key: 'status', label: 'Status' }, { key: 'updatedAt', label: 'Updated' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  programs: { key: 'programs', title: 'Programs', endpoint: '/programs', route: '/programs', singular: 'Program', description: 'The training and ministry areas listed on the Programs page.', columns: [{ key: 'title', label: 'Title' }, { key: 'area', label: 'Area' }, { key: 'status', label: 'Status' }, { key: 'order', label: 'Order' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'area', label: 'Area', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }, { name: 'order', label: 'Order', type: 'number' }] },
+  blog: { key: 'blog', title: 'Blog / News', endpoint: '/news-articles', route: '/blog', singular: 'Article', description: 'News and articles that appear in Resources → Blog.', columns: [{ key: 'title', label: 'Title' }, { key: 'category', label: 'Category' }, { key: 'author', label: 'Author' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'body', label: 'Body', type: 'richtext' }, { name: 'author', label: 'Author', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  events: { key: 'events', title: 'Events', endpoint: '/events', route: '/events', singular: 'Event', description: 'Upcoming gatherings shown on the Events page and homepage.', columns: [{ key: 'title', label: 'Title' }, { key: 'startDate', label: 'Starts' }, { key: 'venue', label: 'Venue' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'startDate', label: 'Start date', type: 'date' }, { name: 'endDate', label: 'End date', type: 'date' }, { name: 'venue', label: 'Venue', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  stories: { key: 'stories', title: 'Stories', endpoint: '/stories', route: '/stories', singular: 'Story', description: 'Video and written stories of transformation.', columns: [{ key: 'title', label: 'Title' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'type', label: 'Type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'imageUrl', label: 'Thumbnail URL', type: 'text' }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  testimonials: { key: 'testimonials', title: 'Testimonials', endpoint: '/testimonials', route: '/testimonials', singular: 'Testimonial', description: 'Quotes from board members and the healthcare community.', columns: [{ key: 'author', label: 'Author' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'quote', label: 'Quote', type: 'textarea', required: true }, { name: 'author', label: 'Author', type: 'text', required: true }, { name: 'mediaType', label: 'Media type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  team: { key: 'team', title: 'Team Members', endpoint: '/team-members', route: '/team', singular: 'Team member', description: 'Board and global team profiles shown on the public site.', columns: [{ key: 'name', label: 'Name' }, { key: 'title', label: 'Title' }, { key: 'role', label: 'Role' }, { key: 'status', label: 'Status' }, { key: 'publicVisibility', label: 'Visible' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'title', label: 'Title', type: 'text' }, { name: 'role', label: 'Role', type: 'select', options: ['board', 'global-team', 'staff', 'advisor'].map((v) => ({ label: v, value: v })) }, { name: 'region', label: 'Region', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'bio', label: 'Bio', type: 'textarea' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'publicVisibility', label: 'Public visibility', type: 'select', options: yesNo }] },
+  partners: { key: 'partners', title: 'Partners', endpoint: '/partners', route: '/partners', singular: 'Partner', description: 'Partner names, logos, and links on the Partners page.', columns: [{ key: 'name', label: 'Name' }, { key: 'region', label: 'Region' }, { key: 'url', label: 'URL' }, { key: 'status', label: 'Status' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'url', label: 'URL', type: 'text' }, { name: 'region', label: 'Region', type: 'text' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  locations: { key: 'locations', title: 'Locations', endpoint: '/locations', route: '/locations', singular: 'Location', description: 'Country pins for the Where we serve map.', columns: [{ key: 'country', label: 'Country' }, { key: 'region', label: 'Region' }, { key: 'latitude', label: 'Lat' }, { key: 'longitude', label: 'Lng' }], fields: [{ name: 'country', label: 'Country', type: 'text', required: true }, { name: 'region', label: 'Region', type: 'text' }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'programs', label: 'Programs (comma-separated)', type: 'text' }, { name: 'latitude', label: 'Latitude', type: 'number' }, { name: 'longitude', label: 'Longitude', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
 }
 
 function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -86,25 +88,51 @@ export function LoginPage() {
   const { isAuthenticated, login } = useAuth(); const navigate = useNavigate(); const form = useForm({ resolver: zodResolver(z.object({ identifier: z.string().email(), password: z.string().min(1) })), defaultValues: { identifier: 'admin@cogi.local', password: 'admin123' } });
   const mutation = useMutation({ mutationFn: login, onSuccess: () => navigate('/dashboard') })
   if (isAuthenticated) return <Navigate to="/dashboard" replace />
-  return <AuthShell title="Welcome back" subtitle="Sign in to manage the COGI website. Demo login works without Strapi."><form className="space-y-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}><Field label="Email" error={form.formState.errors.identifier?.message}><input className="admin-input" {...form.register('identifier')} /></Field><Field label="Password" error={form.formState.errors.password?.message}><input className="admin-input" type="password" {...form.register('password')} /></Field>{mutation.error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p>}<button className="btn-primary w-full" disabled={mutation.isPending}>{mutation.isPending ? 'Signing in…' : 'Sign in'}</button><div className="flex justify-between text-sm"><Link className="font-semibold text-[var(--color-primary)]" to="/forgot-password">Forgot password?</Link><span className="text-slate-500">admin@cogi.local / admin123</span></div></form></AuthShell>
+  return (
+    <AuthShell
+      title="Sign in"
+      subtitle="Update pages, photos, and the homepage in one place."
+      hint="Demo login: admin@cogi.local / admin123"
+    >
+      <form className="space-y-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
+        <Field label="Email" error={form.formState.errors.identifier?.message}>
+          <input className="admin-input" {...form.register('identifier')} autoComplete="username" />
+        </Field>
+        <Field label="Password" error={form.formState.errors.password?.message}>
+          <input className="admin-input" type="password" {...form.register('password')} autoComplete="current-password" />
+        </Field>
+        {mutation.error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(mutation.error)}</p>}
+        <button className="btn-primary w-full" disabled={mutation.isPending}>{mutation.isPending ? 'Signing in…' : 'Sign in'}</button>
+        <div className="flex justify-between text-sm">
+          <Link className="font-semibold text-[var(--color-accent)]" to="/forgot-password">Forgot password?</Link>
+        </div>
+      </form>
+    </AuthShell>
+  )
 }
 export function ForgotPasswordPage() { const form = useForm({ resolver: zodResolver(z.object({ email: z.string().email() })), defaultValues: { email: '' } }); const [sent, setSent] = useStateMessage(); return <AuthShell title="Forgot password" subtitle="Request a reset email from Strapi."><form className="space-y-4" onSubmit={form.handleSubmit(() => setSent('If Strapi is available, a reset email was requested.'))}><Field label="Email" error={form.formState.errors.email?.message}><input className="admin-input" {...form.register('email')} /></Field><button className="btn-primary w-full">Send reset link</button>{sent && <p className="text-sm text-emerald-700">{sent}</p>}<Link className="text-sm font-semibold text-[var(--color-primary)]" to="/login">Back to login</Link></form></AuthShell> }
 export function ResetPasswordPage() { const form = useForm({ resolver: zodResolver(z.object({ code: z.string().min(1), password: z.string().min(6), passwordConfirmation: z.string().min(6) })), defaultValues: { code: '', password: '', passwordConfirmation: '' } }); const [sent, setSent] = useStateMessage(); return <AuthShell title="Reset password" subtitle="Paste the reset code from your email."><form className="space-y-4" onSubmit={form.handleSubmit(() => setSent('Password reset submitted.'))}>{['code','password','passwordConfirmation'].map((name) => <Field key={name} label={name} error={(form.formState.errors as Record<string, { message?: string }>)[name]?.message}><input className="admin-input" type={name.includes('password') ? 'password' : 'text'} {...form.register(name as 'code')} /></Field>)}<button className="btn-primary w-full">Reset password</button>{sent && <p className="text-sm text-emerald-700">{sent}</p>}</form></AuthShell> }
-function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+function AuthShell({ title, subtitle, hint, children }: { title: string; subtitle: string; hint?: string; children: ReactNode }) {
   return (
     <div className="admin-login-screen">
       <div className="admin-login-card admin-login-card-solo">
         <div className="admin-login-card-head">
           <div className="admin-login-icon" aria-hidden="true">
-            <img src="/cogi-admin-logo.svg" alt="" width={32} height={32} />
+            <img src={COGI_LOGO} alt="COGI" width={44} height={44} />
           </div>
           <div>
-            <p className="admin-login-kicker">COGI Admin</p>
+            <p className="admin-login-kicker">Companions of Grace</p>
             <h2>{title}</h2>
             <p>{subtitle}</p>
           </div>
         </div>
         {children}
+        {hint ? (
+          <p className="admin-login-hint">
+            <strong>Need a password?</strong>
+            {hint}
+          </p>
+        ) : null}
       </div>
     </div>
   )
@@ -118,11 +146,11 @@ export function DashboardPage() {
     <>
       <PageHeader
         title="Dashboard"
-        description="At-a-glance CMS health, engagement, and publishing activity."
+        description="A simple snapshot of pages, events, and messages. Use the menu on the left to edit the website."
         action={
           <div className="flex flex-wrap gap-2">
-            <Link className="btn-primary" to="/pages/new">Create page</Link>
-            <a className="btn-secondary" href={getPreviewUrl('/')} target="_blank" rel="noreferrer">Preview site</a>
+            <Link className="btn-primary" to="/pages/new">Add a page</Link>
+            <a className="btn-secondary" href={getPreviewUrl('/')} target="_blank" rel="noreferrer">View the website</a>
           </div>
         }
       />
@@ -138,14 +166,14 @@ export function DashboardPage() {
         <div className="admin-card p-5">
           <h3 className="mb-4 font-bold">Content mix</h3>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={chart}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="value" fill="#1B4D3E" radius={[8, 8, 0, 0]} /></BarChart>
+            <BarChart data={chart}><CartesianGrid strokeDasharray="3 3" stroke="#d5e4f3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="value" fill="#2B6CB0" radius={[8, 8, 0, 0]} /></BarChart>
           </ResponsiveContainer>
         </div>
         <div className="admin-card p-5">
           <h3 className="mb-4 font-bold">Engagement trend</h3>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={[{ name: 'Apr', value: 120 }, { name: 'May', value: 220 }, { name: 'Jun', value: 310 }, { name: 'Jul', value: 420 }]}>
-              <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Line type="monotone" dataKey="value" stroke="#5B8A72" strokeWidth={3} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#d5e4f3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Line type="monotone" dataKey="value" stroke="#1B3A6B" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -165,9 +193,9 @@ export function DashboardPage() {
         <div className="admin-card p-5">
           <h3 className="mb-4 font-bold">Quick actions</h3>
           <div className="grid gap-2">
-            <Link className="btn-secondary justify-start" to="/pages/new">Create page</Link>
-            <Link className="btn-secondary justify-start" to="/homepage">Edit homepage hero</Link>
-            <Link className="btn-secondary justify-start" to="/website-copy">Website copy</Link>
+            <Link className="btn-secondary justify-start" to="/homepage">Edit homepage</Link>
+            <Link className="btn-secondary justify-start" to="/website-copy">Edit site pages</Link>
+            <Link className="btn-secondary justify-start" to="/pages/new">Create a custom page</Link>
             <Link className="btn-secondary justify-start" to="/theme">Theme & branding</Link>
             <Link className="btn-secondary justify-start" to="/header">Header editor</Link>
             <Link className="btn-secondary justify-start" to="/footer">Footer editor</Link>
@@ -179,7 +207,7 @@ export function DashboardPage() {
             <ResponsiveContainer width="100%" height={150}>
               <PieChart>
                 <Pie data={chart} dataKey="value" innerRadius={38} outerRadius={60}>
-                  {chart.map((_, i) => <Cell key={i} fill={['#1B4D3E', '#5B8A72', '#C4A574', '#A8C4B5'][i]} />)}
+                  {chart.map((_, i) => <Cell key={i} fill={['#1B3A6B', '#2B6CB0', '#3B82F6', '#93C5FD'][i]} />)}
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
@@ -547,6 +575,11 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
   return (
     <>
       <PageHeader title={config.title} description={config.description} action={<Link className="btn-primary" to={`${config.route}/new`}>Create {config.singular}</Link>} />
+      {moduleKey === 'pages' ? (
+        <div className="mb-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-accent-soft)] px-4 py-3 text-sm text-[var(--color-primary)]">
+          About, Donate, Contact, and the other main pages are edited in <Link className="font-bold underline" to="/website-copy">Site pages</Link>. Use this list only for extra pages.
+        </div>
+      ) : null}
       <ErrorNotice error={query.error} />
       <div className="admin-toolbar">
         <input
@@ -586,6 +619,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
                   <td>
                     <div className="flex gap-2">
                       <Link className="btn-secondary px-3 py-1" to={`${config.route}/${row.documentId || row.id}`}>Edit</Link>
+                      {row.slug ? <a className="btn-secondary px-3 py-1" href={getPreviewUrl(String(row.slug))} target="_blank" rel="noreferrer">View</a> : null}
                       <button
                         className="btn-danger px-3 py-1"
                         onClick={() => {
@@ -761,23 +795,100 @@ export function EnquiriesPage() {
 }
 export function NewsletterPage() {
   const [search, setSearch] = useState('')
-  const rows = mockSubscribers.filter((item) => {
+  const [subscribers, setSubscribers] = useState<LeadSubscriber[]>([])
+  const [mailNote, setMailNote] = useState('')
+  const [strapiReachable, setStrapiReachable] = useState<boolean | null>(null)
+  const [removingId, setRemovingId] = useState('')
+  async function load() {
+    const data = await fetchLeads()
+    setSubscribers(data.subscribers)
+    const queued = data.mails.some((item) => item.status === 'queued')
+    setMailNote(queued ? 'Confirmation and admin emails are saved. Add SMTP settings in .env to send them to real inboxes.' : '')
+    setStrapiReachable(Boolean(data.strapi?.reachable))
+  }
+  useEffect(() => {
+    let active = true
+    async function refresh() {
+      if (!active) return
+      await load()
+    }
+    void refresh()
+    const timer = window.setInterval(() => { void refresh() }, 4000)
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
+  }, [])
+  const rows = subscribers.filter((item) => {
     const q = search.trim().toLowerCase()
     if (!q) return true
     return [item.name, item.email, item.whatsapp, item.source].join(' ').toLowerCase().includes(q)
   })
+  async function onRemove(row: LeadSubscriber) {
+    if (!window.confirm(`Remove ${row.email} from the newsletter list?`)) return
+    setRemovingId(row.id)
+    const ok = await removeSubscriber(row.id)
+    if (ok) setSubscribers((prev) => prev.filter((item) => item.id !== row.id))
+    setRemovingId('')
+    await load()
+  }
   return (
     <>
       <PageHeader
         title="Newsletter subscribers"
-        description="People who opted in for updates. Export the list for mailings."
-        action={<button className="btn-secondary" onClick={() => exportCsv(rows as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }], 'cogi-newsletter.csv')}>Export CSV</button>}
+        description="People who signed up on the website. Each signup is saved in Strapi, listed here, and sent a confirmation email when SMTP is configured."
+        action={<button className="btn-secondary" onClick={() => exportCsv(rows as unknown as Array<Record<string, unknown>>, [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }, { key: 'subscriberMail', label: 'Confirmation email' }], 'cogi-newsletter.csv')}>Export CSV</button>}
       />
+      {strapiReachable === true ? <p className="hp-flash hp-flash-ok">New signups are saved in Strapi and in this list.</p> : null}
+      {strapiReachable === false ? <p className="hp-flash hp-flash-warn">Strapi is not reachable. Signups are still saved here; they will sync when Strapi is running.</p> : null}
+      {mailNote ? <p className="hp-flash hp-flash-warn">{mailNote}</p> : null}
       <div className="admin-toolbar">
         <input className="admin-input admin-toolbar-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search subscribers…" aria-label="Search subscribers" />
         <p className="admin-toolbar-count">{rows.length} {rows.length === 1 ? 'subscriber' : 'subscribers'}</p>
       </div>
-      <SimpleTable rows={rows as unknown as AnyRecord[]} columns={[{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }, { key: 'createdAt', label: 'Joined' }]} />
+      {rows.length === 0 ? (
+        <EmptyState label="subscribers" />
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>WhatsApp</th>
+                <th>Source</th>
+                <th>Confirmation</th>
+                <th>Strapi</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.name}</td>
+                  <td>{row.email}</td>
+                  <td>{row.whatsapp || '—'}</td>
+                  <td>{row.source}</td>
+                  <td>{row.subscriberMail || '—'}</td>
+                  <td>{row.strapiSaved ? 'Saved' : 'Local only'}</td>
+                  <td>{formatDate(row.createdAt)}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="btn-danger px-3 py-1"
+                      disabled={removingId === row.id}
+                      onClick={() => void onRemove(row)}
+                    >
+                      {removingId === row.id ? 'Removing…' : 'Remove'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   )
 }

@@ -5,6 +5,8 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { leadsPlugin } from '../shared/leadsPlugin'
+
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 const CONFIG_PATH = path.resolve(rootDir, '../public-website/public/site-config.json')
 
@@ -65,7 +67,7 @@ function siteConfigSyncPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), siteConfigSyncPlugin()],
+  plugins: [react(), tailwindcss(), siteConfigSyncPlugin(), leadsPlugin()],
   base: '/admin/',
   resolve: {
     alias: {

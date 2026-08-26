@@ -10,5 +10,11 @@
     "build:web": "npm run build --prefix public-website",
     "build:admin": "npm run build --prefix admin-portal",
     "build:cms": "npm run build --prefix strapi-backend"
+  },
+  "dependencies": {
+    "nodemailer": "^7.0.6"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.17"
   }
 }

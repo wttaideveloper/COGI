@@ -59,9 +59,9 @@ export const fallbackHomepage: Homepage = {
     scripture: 'Colossians 3:17  ·  Romans 12:2',
   },
   video: {
-    title: 'Watch our story',
+    title: 'Healthcare that reaches people',
     description:
-      'A short introduction to who Companions of Grace is, why we exist, and the vision behind the ministry.',
+      'Volunteer doctors and nurses bringing free care, medicine, and hope to families who often cannot reach a clinic.',
     thumbnailAlt: 'Companions of Grace introduction video thumbnail',
     videoUrl: siteVideos.intro,
   },

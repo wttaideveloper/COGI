@@ -3,10 +3,12 @@ import { useQueryClient } from '@tanstack/react-query'
 import { applyTheme, defaultSiteConfig, fetchSiteConfig, type SiteConfig } from '@/lib/siteConfig'
 
 const SiteConfigContext = createContext<SiteConfig>(defaultSiteConfig)
+const SiteReadyContext = createContext(false)
 const PUBLISH_CHANNEL = 'cogi-cms-publish'
 
 export function SiteConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<SiteConfig>(defaultSiteConfig)
+  const [ready, setReady] = useState(false)
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -17,10 +19,13 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
       if (!active) return
       setConfig(next)
       applyTheme(next.theme)
+      setReady(true)
       if (invalidateContent) void queryClient.invalidateQueries()
     }
 
-    void load(true)
+    void load(true).finally(() => {
+      if (active) setReady(true)
+    })
 
     const onFocus = () => { void load(true) }
     const onVisible = () => {
@@ -56,9 +61,17 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
     }
   }, [queryClient])
 
-  return <SiteConfigContext.Provider value={config}>{children}</SiteConfigContext.Provider>
+  return (
+    <SiteConfigContext.Provider value={config}>
+      <SiteReadyContext.Provider value={ready}>{children}</SiteReadyContext.Provider>
+    </SiteConfigContext.Provider>
+  )
 }
 
 export function useSiteConfig() {
   return useContext(SiteConfigContext)
+}
+
+export function useSiteReady() {
+  return useContext(SiteReadyContext)
 }

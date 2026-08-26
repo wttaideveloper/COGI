@@ -69,7 +69,7 @@ export function PageHero({ title, subtitle, imageUrl }: { title: string; subtitl
     return (
       <section className="relative min-h-[42vh] overflow-hidden md:min-h-[52vh]">
         <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-teal-deep/70" />
+        <div className="absolute inset-0 bg-teal-deep/55" />
         <div className="relative z-10 mx-auto flex min-h-[42vh] max-w-4xl flex-col items-center justify-center px-4 py-16 text-center text-white md:min-h-[52vh] md:py-24">
           <h1 className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
           {subtitle && <p className="mt-4 text-lg text-white/90">{subtitle}</p>}
@@ -78,10 +78,10 @@ export function PageHero({ title, subtitle, imageUrl }: { title: string; subtitl
     )
   }
   return (
-    <section className="bg-teal-gradient py-16 text-white md:py-24">
+    <section className="border-b border-mist-dark bg-white py-16 text-teal-deep md:py-24">
       <div className="mx-auto max-w-4xl px-4 text-center">
         <h1 className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
-        {subtitle && <p className="mt-4 text-lg text-white/90">{subtitle}</p>}
+        {subtitle && <p className="mt-4 text-lg text-ink-muted">{subtitle}</p>}
       </div>
     </section>
   )

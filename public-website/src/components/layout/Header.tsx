@@ -41,8 +41,8 @@ export function Header() {
 
   return (
     <header
-      className={clsx('z-40 border-b border-black/5 bg-white/95 backdrop-blur-md', sticky ? 'sticky top-0' : 'relative')}
-      style={{ backgroundColor: header.backgroundColor || '#ffffff', color: header.textColor || '#1A2E2D' }}
+      className={clsx('z-40 border-b border-white/15', sticky ? 'sticky top-0' : 'relative')}
+      style={{ backgroundColor: header.backgroundColor || '#2B6CB0', color: header.textColor || '#ffffff' }}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4">
         <Link to="/" className="flex min-w-0 items-center gap-3" aria-label="Companions of Grace International — Home">
@@ -112,7 +112,12 @@ export function Header() {
             </svg>
           </Link>
 
-          <ButtonLink to={header.ctaLink || '/donate'} size="sm" className="rounded-sm uppercase tracking-[0.2em]">
+          <ButtonLink
+            to={header.ctaLink || '/donate'}
+            size="sm"
+            className="rounded-sm bg-white uppercase tracking-[0.2em] hover:bg-white/90"
+            style={{ color: header.backgroundColor || '#2B6CB0', backgroundColor: '#ffffff' }}
+          >
             {header.ctaText || 'Donate'}
           </ButtonLink>
         </nav>
@@ -153,7 +158,12 @@ export function Header() {
               </li>
             ))}
             <li className="pt-2">
-              <ButtonLink to={header.ctaLink || '/donate'} className="w-full" onClick={() => setMobileOpen(false)}>
+              <ButtonLink
+                to={header.ctaLink || '/donate'}
+                className="w-full bg-white hover:bg-white/90"
+                style={{ color: header.backgroundColor || '#2B6CB0', backgroundColor: '#ffffff' }}
+                onClick={() => setMobileOpen(false)}
+              >
                 {header.ctaText || 'Donate'}
               </ButtonLink>
             </li>

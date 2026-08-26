@@ -13,9 +13,9 @@ import { NewsletterForm } from '@/components/forms/NewsletterForm'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { formatDate } from '@/lib/utils'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
-import { HeroSlider } from '@/components/home/HeroSlider'
+import { HeroBackground } from '@/components/home/HeroBackground'
 import { WorldMap } from '@/components/home/WorldMap'
-import { CustomHomeSection, isCustomHomeSection } from '@/components/home/CustomSection'
+import { CustomHomeSection, SplitBand, isCustomHomeSection, isSplitHomeSection } from '@/components/home/CustomSection'
 import { siteImages } from '@/data/siteCopy'
 import { VideoPlayer } from '@/components/ui/VideoPlayer'
 
@@ -59,6 +59,8 @@ export function HomePage() {
   const heroImageAlt = site.homepage.heroImageAlt || homepage.hero.imageAlt
   const heroHeadlineSize = site.homepage.heroHeadlineSize || 64
   const heroHeadlineCase = site.homepage.heroHeadlineCase || 'uppercase'
+  const heroMedia = site.homepage.heroMedia === 'video' ? 'video' : 'images'
+  const heroVideoUrl = site.homepage.heroVideoUrl || ''
   const heroSlideDuration = site.homepage.heroSlideDuration || 6
   const primaryCtaLabel = site.homepage.primaryCtaLabel || homepage.hero.primaryCta.label
   const primaryCtaHref = site.homepage.primaryCtaHref || homepage.hero.primaryCta.href
@@ -84,15 +86,17 @@ export function HomePage() {
     { id: 'legacy', label: 'Legacy', enabled: true, order: 3, summary: '' },
     { id: 'video', label: 'Video', enabled: true, order: 4, summary: '' },
     { id: 'mission', label: 'Mission', enabled: true, order: 5, summary: '' },
-    { id: 'methods', label: 'Methods', enabled: true, order: 6, summary: '' },
-    { id: 'impact', label: 'Impact', enabled: true, order: 7, summary: '' },
-    { id: 'portfolio', label: 'Portfolio', enabled: true, order: 8, summary: '' },
-    { id: 'map', label: 'Map', enabled: true, order: 9, summary: '' },
-    { id: 'stories', label: 'Stories', enabled: true, order: 10, summary: '' },
-    { id: 'events', label: 'Events', enabled: true, order: 11, summary: '' },
-    { id: 'newsletter', label: 'Newsletter', enabled: true, order: 12, summary: '' },
-    { id: 'donate', label: 'Donate', enabled: true, order: 13, summary: '' },
-    { id: 'faith', label: 'Faith', enabled: true, order: 14, summary: '' },
+    { id: 'splitPrograms', label: 'Programs', enabled: true, order: 6, summary: '' },
+    { id: 'splitStories', label: 'Stories', enabled: true, order: 7, summary: '' },
+    { id: 'methods', label: 'Methods', enabled: true, order: 8, summary: '' },
+    { id: 'impact', label: 'Impact', enabled: true, order: 9, summary: '' },
+    { id: 'portfolio', label: 'Portfolio', enabled: true, order: 10, summary: '' },
+    { id: 'map', label: 'Map', enabled: true, order: 11, summary: '' },
+    { id: 'stories', label: 'Stories', enabled: true, order: 12, summary: '' },
+    { id: 'events', label: 'Events', enabled: true, order: 13, summary: '' },
+    { id: 'newsletter', label: 'Newsletter', enabled: true, order: 14, summary: '' },
+    { id: 'donate', label: 'Donate', enabled: true, order: 15, summary: '' },
+    { id: 'faith', label: 'Faith', enabled: true, order: 16, summary: '' },
   ])]
     .sort((a, b) => a.order - b.order)
     .filter((section) => section.enabled !== false)
@@ -107,9 +111,25 @@ export function HomePage() {
       <SEO description={heroIntro} />
       {orderedSections.map((section) => {
         if (isCustomHomeSection(section)) return <CustomHomeSection key={section.id} section={section} />
+        if (isSplitHomeSection(section)) {
+          return (
+            <SplitBand
+              key={section.id}
+              section={section}
+              tone={section.id === 'splitStories' ? 'mist' : 'white'}
+            />
+          )
+        }
         if (section.id === 'hero') return (
       <section key="hero" className="relative min-h-[92vh] overflow-hidden" aria-label="Welcome">
-        <HeroSlider slides={heroSlides} intervalMs={heroSlideDuration * 1000} />
+        <HeroBackground
+          mode={heroMedia}
+          videoUrl={heroVideoUrl}
+          poster={heroImageUrl}
+          slides={heroSlides}
+          intervalMs={heroSlideDuration * 1000}
+          reduced={reduced}
+        />
         <div className="relative z-10 mx-auto flex min-h-[92vh] max-w-6xl flex-col justify-end px-4 pb-24 pt-32 md:pb-28">
           <motion.div {...(reduced ? {} : { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8 } })}>
             <h1
@@ -126,16 +146,18 @@ export function HomePage() {
               <ButtonLink to={primaryCtaHref} size="lg" className="rounded-sm uppercase tracking-[0.22em]">
                 {primaryCtaLabel}
               </ButtonLink>
-              <Link to={copy.secondaryCtaHref} className="text-sm font-bold uppercase tracking-[0.18em] text-white underline-offset-4 hover:underline">
-                {copy.secondaryCtaLabel}
-              </Link>
+              {copy.secondaryCtaLabel ? (
+                <Link to={copy.secondaryCtaHref} className="text-sm font-bold uppercase tracking-[0.18em] text-white underline-offset-4 hover:underline">
+                  {copy.secondaryCtaLabel}
+                </Link>
+              ) : null}
             </div>
           </motion.div>
         </div>
       </section>
         )
         if (section.id === 'newsletterBanner') return (
-      <section key="newsletterBanner" className="bg-gold py-16 text-teal-deep">
+      <section key="newsletterBanner" className="border-y border-mist-dark bg-white py-16 text-teal-deep">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.28em]">{copy.eyebrow}</p>
           <h2 className="mt-3 font-display text-4xl font-bold italic md:text-5xl">{copy.newsletterBannerTitle}</h2>
@@ -183,7 +205,7 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'methods') return (
-      <section key="methods" className="bg-[#f6f3ee] py-24">
+      <section key="methods" className="bg-white py-24">
         <div className="mx-auto max-w-7xl px-4">
           <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">{copy.methodsTitle}</p>
           <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl font-semibold text-teal-deep md:text-5xl">
@@ -206,15 +228,15 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'impact') return (
-      <section key="impact" className="bg-teal-deep py-20 text-white">
+      <section key="impact" className="border-y border-mist-dark bg-white py-20 text-ink">
         <div className="mx-auto max-w-6xl px-4 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">{copy.impactTitle}</p>
-          <p className="mx-auto mt-5 max-w-3xl text-lg text-white/85">{copy.impactIntro}</p>
+          <p className="mx-auto mt-5 max-w-3xl text-lg text-ink-muted">{copy.impactIntro}</p>
           <div className="mt-12 grid grid-cols-2 gap-10 md:grid-cols-4">
             {impactStats.map((stat) => (
               <div key={stat.id}>
                 <p className="font-display text-5xl font-bold text-gold md:text-6xl">{stat.value}</p>
-                <p className="mt-3 text-[11px] font-bold uppercase leading-snug tracking-[0.16em]">{stat.label}</p>
+                <p className="mt-3 text-[11px] font-bold uppercase leading-snug tracking-[0.16em] text-teal-deep">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -243,7 +265,7 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'map') return (
-      <section key="map" className="py-24" style={{ background: site.homepage.mapOceanColor || '#f6f3ee' }}>
+      <section key="map" className="bg-white py-24" style={{ background: site.homepage.mapOceanColor || '#ffffff' }}>
         <div className="mx-auto max-w-7xl px-4">
           <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">Where we serve</p>
           <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">{copy.mapTitle}</h2>
@@ -321,7 +343,7 @@ export function HomePage() {
         </section>
         ) : null
         if (section.id === 'newsletter') return (
-      <section key="newsletter" className="bg-[#f6f3ee] py-20">
+      <section key="newsletter" className="bg-white py-20">
         <div className="mx-auto max-w-xl px-4">
           <SectionHeading title={homepage.newsletter.title} subtitle={homepage.newsletter.description} />
           <div className="border border-mist-dark bg-white p-6"><NewsletterForm /></div>
@@ -340,11 +362,11 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'faith') return (
-      <section key="faith" className="bg-[#161412] py-20 text-white">
+      <section key="faith" className="border-t border-mist-dark bg-white py-20 text-ink">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <h2 className="text-xs font-bold uppercase tracking-[0.32em] text-gold">{copy.faithTitle}</h2>
-          <p className="mt-8 font-display text-xl leading-relaxed text-white/90 md:text-2xl">{copy.faithStatement}</p>
-          <Link to="/about/beliefs" className="mt-8 inline-block text-xs font-bold uppercase tracking-[0.22em] text-gold hover:text-white">
+          <p className="mt-8 font-display text-xl leading-relaxed text-ink-muted md:text-2xl">{copy.faithStatement}</p>
+          <Link to="/about/beliefs" className="mt-8 inline-block text-xs font-bold uppercase tracking-[0.22em] text-gold hover:text-teal-deep">
             Read our beliefs
           </Link>
         </div>

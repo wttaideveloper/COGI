@@ -24,7 +24,7 @@ export function DonatePage() {
               href={giveLivelyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-6 inline-flex items-center justify-center rounded-md bg-gold px-8 py-4 text-lg font-semibold text-teal-deep hover:bg-gold-light"
+              className="mt-6 inline-flex items-center justify-center rounded-md bg-gold px-8 py-4 text-lg font-semibold text-white hover:bg-gold-light"
             >
               {page.giveCta}
             </a>

@@ -1,5 +1,5 @@
 import { fetchFromStrapi } from '@/services/strapi'
-import { defaultSiteCopy, mergeSiteCopy, siteImages, type SiteCopy } from '@/data/siteCopy'
+import { defaultSiteCopy, mergeSiteCopy, siteImages, siteVideos, type SiteCopy } from '@/data/siteCopy'
 
 export type { SiteCopy }
 export { siteImages }
@@ -59,6 +59,8 @@ export type SiteConfig = {
     heroIntro: string
     heroHeadlineSize?: number
     heroHeadlineCase?: 'as-typed' | 'uppercase' | 'lowercase'
+    heroMedia?: 'video' | 'images'
+    heroVideoUrl?: string
     heroImageUrl?: string
     heroImageAlt?: string
     heroSlideDuration?: number
@@ -84,6 +86,7 @@ export type SiteConfig = {
       content?: string
       imageUrl?: string
       imageAlt?: string
+      imageSide?: 'left' | 'right'
       buttonLabel?: string
       buttonHref?: string
       eyebrow?: string
@@ -95,30 +98,30 @@ export type SiteConfig = {
 
 const defaults: SiteConfig = {
   theme: {
-    primaryColor: '#0A4D4A',
-    secondaryColor: '#083B39',
-    backgroundColor: '#F4F8F7',
-    textColor: '#1A2E2D',
-    accentColor: '#C9A227',
-    buttonHoverColor: '#E0BC4A',
+    primaryColor: '#1B3A6B',
+    secondaryColor: '#163057',
+    backgroundColor: '#FFFFFF',
+    textColor: '#1A2332',
+    accentColor: '#2B6CB0',
+    buttonHoverColor: '#3B82F6',
     fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
     headingFontFamily: 'Cormorant Garamond, Georgia, serif',
   },
   header: {
-    backgroundColor: '#ffffff',
-    textColor: '#1A2E2D',
-    logoUrl: '',
+    backgroundColor: '#2B6CB0',
+    textColor: '#ffffff',
+    logoUrl: '/images/cogi-logo.png',
     logoAlt: 'Companions of Grace International',
-    logoHeight: 48,
+    logoHeight: 64,
     ctaText: 'Give now',
     ctaLink: '/donate',
     sticky: true,
   },
   footer: {
-    backgroundColor: '#161412',
-    textColor: '#ffffff',
-    logoUrl: '',
-    logoHeight: 40,
+    backgroundColor: '#ffffff',
+    textColor: '#1A2332',
+    logoUrl: '/images/cogi-logo.png',
+    logoHeight: 48,
     description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',
     copyright: '© Companions of Grace International. All rights reserved.',
     showSocial: true,
@@ -139,13 +142,15 @@ const defaults: SiteConfig = {
       'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
     heroHeadlineSize: 64,
     heroHeadlineCase: 'uppercase' as const,
+    heroMedia: 'video' as const,
+    heroVideoUrl: siteVideos.intro,
     heroImageUrl: siteImages.heroCrowd,
     heroImageAlt: 'Healthcare professionals gathered in worship and mission',
     heroSlideDuration: 6,
-    mapOceanColor: '#E7F1EE',
-    mapLandColor: '#1B4D3E',
-    mapPinColor: '#1B4D3E',
-    mapActiveColor: '#C4A574',
+    mapOceanColor: '#F7FAFC',
+    mapLandColor: '#1B3A6B',
+    mapPinColor: '#2B6CB0',
+    mapActiveColor: '#3B82F6',
     heroSlides: [
       { id: 'hero', imageUrl: siteImages.heroCrowd, alt: 'Healthcare professionals gathered in worship and mission' },
     ],
@@ -167,15 +172,45 @@ const defaults: SiteConfig = {
       { id: 'legacy', label: 'Legacy', enabled: true, order: 3, summary: 'Strong legacy, bold future.' },
       { id: 'mission', label: 'Mission', enabled: true, order: 4, summary: 'Mission statement and scripture.' },
       { id: 'video', label: 'Video', enabled: true, order: 5, summary: 'Introduction video / photo.' },
-      { id: 'methods', label: 'Methods', enabled: true, order: 6, summary: 'Enable, train, and support.' },
-      { id: 'impact', label: 'Impact Stats', enabled: true, order: 7, summary: 'Countries, professionals, programs.' },
-      { id: 'portfolio', label: 'Portfolio', enabled: true, order: 8, summary: 'Four ministry areas.' },
-      { id: 'map', label: 'Where We Serve', enabled: true, order: 9, summary: 'Countries served.' },
-      { id: 'stories', label: 'Featured Stories', enabled: true, order: 10, summary: 'Featured story teasers.' },
-      { id: 'events', label: 'Featured Event', enabled: true, order: 11, summary: 'Upcoming featured event.' },
-      { id: 'newsletter', label: 'Newsletter', enabled: true, order: 12, summary: 'Newsletter signup.' },
-      { id: 'donate', label: 'Donate CTA', enabled: true, order: 13, summary: 'Donate call to action.' },
-      { id: 'faith', label: 'Statement of faith', enabled: true, order: 14, summary: 'Closing faith statement.' },
+      {
+        id: 'splitPrograms',
+        label: 'Programs',
+        enabled: true,
+        order: 6,
+        summary: 'Photo on one side, text on the other',
+        kind: 'built-in',
+        title: 'Programs',
+        content: 'Training, formation, and Kingdom of God seminars that help healthcare professionals think, live, and work missionally — in clinics, hospitals, and communities around the world.',
+        imageUrl: '/images/cogi-train.png',
+        imageAlt: 'Healthcare professionals in training',
+        imageSide: 'right',
+        buttonLabel: 'Learn more',
+        buttonHref: '/programs',
+      },
+      {
+        id: 'splitStories',
+        label: 'Stories',
+        enabled: true,
+        order: 7,
+        summary: 'Photo on one side, text on the other',
+        kind: 'built-in',
+        title: 'Stories of transformation',
+        content: 'From the bedside to the mission field, Companions of Grace walk with healthcare workers whose ordinary work is becoming extraordinary witness. Watch and read how communities of grace are taking shape.',
+        imageUrl: '/images/cogi-kenya.png',
+        imageAlt: 'Healthcare workers serving a community',
+        imageSide: 'left',
+        buttonLabel: 'See stories',
+        buttonHref: '/resources/stories',
+      },
+      { id: 'methods', label: 'Methods', enabled: true, order: 8, summary: 'Enable, train, and support.' },
+      { id: 'impact', label: 'Impact Stats', enabled: true, order: 9, summary: 'Countries, professionals, programs.' },
+      { id: 'portfolio', label: 'Portfolio', enabled: true, order: 10, summary: 'Four ministry areas.' },
+      { id: 'map', label: 'Where We Serve', enabled: true, order: 11, summary: 'Countries served.' },
+      { id: 'stories', label: 'Featured Stories', enabled: true, order: 12, summary: 'Featured story teasers.' },
+      { id: 'events', label: 'Featured Event', enabled: true, order: 13, summary: 'Upcoming featured event.' },
+      { id: 'newsletter', label: 'Newsletter', enabled: true, order: 14, summary: 'Newsletter signup.' },
+      { id: 'donate', label: 'Donate CTA', enabled: true, order: 15, summary: 'Donate call to action.' },
+      { id: 'faith', label: 'Statement of faith', enabled: true, order: 16, summary: 'Closing faith statement.' },
     ],
   },
   copy: defaultSiteCopy,
@@ -185,10 +220,13 @@ export function applyTheme(theme: SiteConfig['theme']) {
   const root = document.documentElement
   root.style.setProperty('--color-teal-deep', theme.primaryColor)
   root.style.setProperty('--color-teal-mid', theme.secondaryColor)
+  root.style.setProperty('--color-teal-light', theme.buttonHoverColor || theme.accentColor)
   root.style.setProperty('--color-gold', theme.accentColor)
   root.style.setProperty('--color-gold-light', theme.buttonHoverColor || theme.accentColor)
-  root.style.setProperty('--color-mist', theme.backgroundColor)
+  root.style.setProperty('--color-mist', theme.backgroundColor || '#ffffff')
+  root.style.setProperty('--color-mist-dark', '#e6eef7')
   root.style.setProperty('--color-ink', theme.textColor)
+  root.style.setProperty('--color-ink-muted', '#5a6a80')
   root.style.setProperty('--font-body', theme.fontFamily)
   root.style.setProperty('--font-display', theme.headingFontFamily)
   document.body.style.backgroundColor = theme.backgroundColor

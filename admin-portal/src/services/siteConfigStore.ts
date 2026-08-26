@@ -12,7 +12,7 @@ export type SiteConfig = {
   seo: SeoSettings
   headerNav: NavItem[]
   footerNav: NavItem[]
-  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroHeadlineSize' | 'heroHeadlineCase' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlideDuration' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture' | 'mapOceanColor' | 'mapLandColor' | 'mapPinColor' | 'mapActiveColor'> & {
+  homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroHeadlineSize' | 'heroHeadlineCase' | 'heroMedia' | 'heroVideoUrl' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlideDuration' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture' | 'mapOceanColor' | 'mapLandColor' | 'mapPinColor' | 'mapActiveColor'> & {
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
     sections?: HomepageSection[]
   }
@@ -26,8 +26,8 @@ const PUBLISH_CHANNEL = 'cogi-cms-publish'
 export function defaultSiteConfig(): SiteConfig {
   return {
     theme: { ...mockTheme },
-    header: { ...mockHeader, logoUrl: '' },
-    footer: { ...mockFooter, logoUrl: '' },
+    header: { ...mockHeader, logoUrl: mockHeader.logoUrl || '/images/cogi-logo.png' },
+    footer: { ...mockFooter, logoUrl: mockFooter.logoUrl || '/images/cogi-logo.png' },
     seo: { ...mockSeo },
     headerNav: structuredClone(mockNavigation[0].items),
     footerNav: structuredClone(mockFooterNavigation.items),
@@ -36,13 +36,15 @@ export function defaultSiteConfig(): SiteConfig {
       heroIntro: mockHomepage.heroIntro,
       heroHeadlineSize: mockHomepage.heroHeadlineSize ?? 64,
       heroHeadlineCase: mockHomepage.heroHeadlineCase ?? 'uppercase',
+      heroMedia: mockHomepage.heroMedia ?? 'images',
+      heroVideoUrl: mockHomepage.heroVideoUrl ?? '',
       heroImageUrl: mockHomepage.heroImageUrl,
       heroImageAlt: mockHomepage.heroImageAlt,
       heroSlideDuration: mockHomepage.heroSlideDuration ?? 6,
-      mapOceanColor: mockHomepage.mapOceanColor ?? '#E7F1EE',
-      mapLandColor: mockHomepage.mapLandColor ?? '#1B4D3E',
-      mapPinColor: mockHomepage.mapPinColor ?? '#1B4D3E',
-      mapActiveColor: mockHomepage.mapActiveColor ?? '#C4A574',
+      mapOceanColor: mockHomepage.mapOceanColor ?? '#F7FAFC',
+      mapLandColor: mockHomepage.mapLandColor ?? '#1B3A6B',
+      mapPinColor: mockHomepage.mapPinColor ?? '#2B6CB0',
+      mapActiveColor: mockHomepage.mapActiveColor ?? '#3B82F6',
       heroSlides: structuredClone(mockHomepage.heroSlides || []),
       primaryCtaLabel: mockHomepage.primaryCtaLabel,
       primaryCtaHref: mockHomepage.primaryCtaHref,
@@ -120,10 +122,19 @@ function dataUrlToFile(dataUrl: string, filename: string): File {
   return new File([bytes], filename, { type: mime })
 }
 
+function dataUrlExt(value: string) {
+  if (value.startsWith('data:image/png')) return 'png'
+  if (value.startsWith('data:image/svg') || value.startsWith('data:image/svg+xml')) return 'svg'
+  if (value.startsWith('data:image/webp')) return 'webp'
+  if (value.startsWith('data:video/webm')) return 'webm'
+  if (value.startsWith('data:video')) return 'mp4'
+  return 'jpg'
+}
+
 export async function ensureRemoteUrl(value: string, alt = 'Uploaded image'): Promise<string> {
   if (!value?.startsWith('data:')) return value
   if (isDemoMode()) return value
-  const ext = value.startsWith('data:image/png') ? 'png' : value.startsWith('data:image/svg') ? 'svg' : 'jpg'
+  const ext = dataUrlExt(value)
   const uploaded = await uploadMedia(dataUrlToFile(value, `${alt}.${ext}`), alt)
   return uploaded.url?.startsWith('http') ? uploaded.url : `${getStrapiUrl()}${uploaded.url}`
 }
@@ -134,6 +145,9 @@ async function prepareConfigForStrapi(config: SiteConfig): Promise<SiteConfig> {
   next.footer.logoUrl = await ensureRemoteUrl(next.footer.logoUrl, 'Footer logo')
   if (next.homepage.heroImageUrl) {
     next.homepage.heroImageUrl = await ensureRemoteUrl(next.homepage.heroImageUrl, next.homepage.heroImageAlt || 'Hero image')
+  }
+  if (next.homepage.heroVideoUrl) {
+    next.homepage.heroVideoUrl = await ensureRemoteUrl(next.homepage.heroVideoUrl, 'Hero video')
   }
   if (next.homepage.heroSlides?.length) {
     next.homepage.heroSlides = await Promise.all(

@@ -309,11 +309,12 @@ async function seedSingleType(strapi: Core.Strapi, uid: string, data: Record<str
   try {
     const docs: any = strapi.documents(uid as any);
     const existing = await docs.findMany({});
-    if (existing?.results?.length) return;
+    const count = Array.isArray(existing) ? existing.length : existing?.results?.length;
+    if (count) return;
 
     const doc = await docs.create({ data });
     const documentId = doc?.documentId;
-    if (documentId) {
+    if (documentId && typeof docs.publish === 'function') {
       await docs.publish({ documentId });
     }
     strapi.log.info(`Seeded ${uid}`);
@@ -349,6 +350,14 @@ export default {
     await ensureAuthUser(strapi, 'jamuna2580james@gmail.com', 'Qwert@123', 'jamuna');
 
     await seedSingleType(strapi, 'api::homepage.homepage', SEED_HOMEPAGE);
+    await seedSingleType(strapi, 'api::global-setting.global-setting', {
+      organizationName: 'Companions of Grace International',
+      tagline: 'Equipping Healthcare Professionals for Kingdom Engagement',
+      primaryEmail: 'info@coginternational.org',
+      mission:
+        "Inspire and enable transformation so healthcare professionals think, live, and work missionally — reflecting God's love and ushering in His Kingdom in every place they serve.",
+      vision: 'Communities of Grace among healthcare professionals worldwide.',
+    });
     await seedCollection(strapi, 'api::program.program', SEED_PROGRAM);
     await seedCollection(strapi, 'api::news-article.news-article', SEED_NEWS_ARTICLE);
 

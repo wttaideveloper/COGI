@@ -2,6 +2,8 @@ import { useMemo, useState, type ReactNode, type SVGProps } from 'react'
 import clsx from 'clsx'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { COGI_LOGO } from '@/lib/brand'
+import NotificationsBell from '@/components/NotificationsBell'
 import { getPreviewUrl } from '@/utils/preview'
 import { isDemoMode } from '@/services/strapi'
 
@@ -41,50 +43,50 @@ function IconDashboard(props: SVGProps<SVGSVGElement>) {
 
 const groups: Array<{ label: string; items: NavItem[] }> = [
   {
-    label: 'Overview',
-    items: [{ label: 'Dashboard', to: '/dashboard', hint: 'Stats & quick actions' }],
+    label: 'Start here',
+    items: [{ label: 'Dashboard', to: '/dashboard', hint: 'A quick look at the site' }],
   },
   {
-    label: 'Site setup',
+    label: 'Look of the site',
     items: [
-      { label: 'Theme & Branding', to: '/theme', hint: 'Colors & fonts' },
-      { label: 'SEO & Social', to: '/seo', hint: 'Search & share metadata' },
-      { label: 'Header', to: '/header', hint: 'Logo & navigation bar' },
-      { label: 'Footer', to: '/footer', hint: 'Footer content & colors' },
-      { label: 'Pages & Menus', to: '/navigation', hint: 'Drag header & footer links' },
-      { label: 'Website Copy', to: '/website-copy', hint: 'All page headlines & photos' },
+      { label: 'Colors & fonts', to: '/theme', hint: 'Match the public website' },
+      { label: 'Search & sharing', to: '/seo', hint: 'How the site appears in Google' },
+      { label: 'Top menu bar', to: '/header', hint: 'Logo, links, Donate button' },
+      { label: 'Footer', to: '/footer', hint: 'Bottom of every page' },
+      { label: 'Menus', to: '/navigation', hint: 'What appears in header & footer' },
     ],
   },
   {
-    label: 'Content',
+    label: 'Website content',
     items: [
-      { label: 'Homepage', to: '/homepage', hint: 'Hero, mission, sections' },
-      { label: 'Pages', to: '/pages', hint: 'Create & edit pages' },
-      { label: 'Media', to: '/media', hint: 'Images & files' },
-      { label: 'Programs', to: '/programs', hint: 'Ministry pathways' },
-      { label: 'Blog', to: '/blog', hint: 'News & articles' },
-      { label: 'Events', to: '/events', hint: 'Calendar listings' },
-      { label: 'Stories', to: '/stories', hint: 'Transformation stories' },
-      { label: 'Testimonials', to: '/testimonials', hint: 'Quotes & video' },
-      { label: 'Team', to: '/team', hint: 'Board & global team' },
-      { label: 'Partners', to: '/partners', hint: 'Partner logos' },
-      { label: 'Locations', to: '/locations', hint: 'Where we serve' },
+      { label: 'Homepage', to: '/homepage', hint: 'Welcome banner and homepage blocks' },
+      { label: 'Site pages', to: '/website-copy', hint: 'About, Donate, Contact, and more' },
+      { label: 'Custom pages', to: '/pages', hint: 'Extra pages that are not in the main site' },
+      { label: 'Photos & files', to: '/media', hint: 'Upload images and videos' },
+      { label: 'Programs', to: '/programs', hint: 'Training and ministry areas' },
+      { label: 'Blog', to: '/blog', hint: 'News and articles' },
+      { label: 'Events', to: '/events', hint: 'Upcoming gatherings' },
+      { label: 'Stories', to: '/stories', hint: 'Stories of transformation' },
+      { label: 'Testimonials', to: '/testimonials', hint: 'Quotes from the community' },
+      { label: 'Team', to: '/team', hint: 'Board and global team' },
+      { label: 'Partners', to: '/partners', hint: 'Organizations we walk with' },
+      { label: 'Locations', to: '/locations', hint: 'Countries on the map' },
     ],
   },
   {
-    label: 'Engagement',
+    label: 'Inbox',
     items: [
-      { label: 'Enquiries', to: '/enquiries', hint: 'Contact & join forms' },
-      { label: 'Newsletter', to: '/newsletter', hint: 'Subscribers & export' },
+      { label: 'Messages', to: '/enquiries', hint: 'Contact and join forms' },
+      { label: 'Newsletter', to: '/newsletter', hint: 'People who signed up' },
     ],
   },
   {
-    label: 'System',
+    label: 'Admin',
     items: [
-      { label: 'Settings', to: '/settings', hint: 'Org identity & maintenance' },
-      { label: 'Users', to: '/users', hint: 'Roles & accounts' },
-      { label: 'Audit', to: '/audit', hint: 'Admin activity log' },
-      { label: 'Profile', to: '/profile', hint: 'Password & account' },
+      { label: 'Settings', to: '/settings', hint: 'Organization details' },
+      { label: 'People', to: '/users', hint: 'Who can log in' },
+      { label: 'Activity log', to: '/audit', hint: 'What changed, and when' },
+      { label: 'My account', to: '/profile', hint: 'Password and name' },
     ],
   },
 ]
@@ -92,7 +94,7 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
 function pageTitle(pathname: string) {
   const all = groups.flatMap((g) => g.items)
   const match = all.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
-  return match?.label || 'CMS Administration'
+  return match?.label || 'Admin'
 }
 
 export default function AdminLayout() {
@@ -136,15 +138,15 @@ export default function AdminLayout() {
         <div className="admin-sidebar-brand">
           {!collapsed ? (
             <NavLink to="/dashboard" className="admin-brand-link" onClick={() => setMobileOpen(false)}>
-              <img src="/cogi-admin-logo.svg" alt="" className="admin-brand-logo" width={40} height={40} />
+              <img src={COGI_LOGO} alt="COGI" className="admin-brand-logo" width={48} height={48} />
               <div>
                 <p className="admin-sidebar-eyebrow">COGI</p>
-                <h2>Admin Portal</h2>
+                <h2>Website admin</h2>
               </div>
             </NavLink>
           ) : (
             <NavLink to="/dashboard" className="admin-sidebar-mark" aria-label="Dashboard">
-              <img src="/cogi-admin-logo.svg" alt="" width={32} height={32} />
+              <img src={COGI_LOGO} alt="COGI" width={36} height={36} />
             </NavLink>
           )}
           <button type="button" className="admin-icon-btn admin-sidebar-collapse" onClick={() => setCollapsed((v) => !v)} aria-label="Toggle sidebar">
@@ -158,7 +160,7 @@ export default function AdminLayout() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search sections..."
+              placeholder="Find a section…"
               aria-label="Search admin sections"
             />
             {search ? (
@@ -170,7 +172,7 @@ export default function AdminLayout() {
         ) : null}
 
         {isDemoMode() && !collapsed ? (
-          <div className="admin-demo-pill">Demo mode · mock data</div>
+          <div className="admin-demo-pill">Practice mode — nothing is sent to a live server</div>
         ) : null}
 
         <nav className="admin-sidebar-nav">
@@ -200,7 +202,7 @@ export default function AdminLayout() {
 
         <a className="admin-preview-btn" href={getPreviewUrl('/')} target="_blank" rel="noreferrer">
           <IconExternal />
-          {!collapsed ? <span>Preview website</span> : null}
+          {!collapsed ? <span>View the website</span> : null}
         </a>
       </aside>
 
@@ -211,24 +213,22 @@ export default function AdminLayout() {
               <IconMenu />
             </button>
             <div className="admin-topbar-title-block">
-              <p className="admin-breadcrumb">COGI CMS / {title}</p>
+              <p className="admin-breadcrumb">Admin</p>
               <h1>{title}</h1>
-              <p className="admin-topbar-sub">
-                Signed in as <strong>{user?.firstname || user?.username || user?.email}</strong>
-                <span className="admin-role-chip">{user?.role?.name || 'Administrator'}</span>
-              </p>
             </div>
           </div>
 
           <div className="admin-topbar-toolbar">
             <a className="admin-ghost-btn" href={getPreviewUrl('/')} target="_blank" rel="noreferrer">
               <IconExternal />
-              <span>Open site</span>
+              <span>View site</span>
             </a>
+            <NotificationsBell />
             <span className="admin-topbar-sep" aria-hidden="true" />
+            <span className="admin-role-chip">{user?.firstname || user?.username || 'Admin'}</span>
             <button type="button" className="admin-ghost-btn admin-logout-btn" onClick={handleLogout}>
               <IconLogout />
-              <span>Logout</span>
+              <span>Log out</span>
             </button>
           </div>
         </header>
@@ -240,10 +240,10 @@ export default function AdminLayout() {
         <footer className="admin-footer">
           <div className="admin-footer-inner">
             <div className="admin-footer-brand">
-              <img src="/cogi-admin-logo.svg" alt="" width={24} height={24} />
+              <img src={COGI_LOGO} alt="" width={28} height={28} />
               <span>Companions of Grace International</span>
             </div>
-            <p>Admin Portal · Content management for coginternational.org</p>
+            <p>Admin for the Companions of Grace website</p>
           </div>
         </footer>
       </div>

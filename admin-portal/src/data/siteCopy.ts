@@ -21,7 +21,7 @@ export const siteImages = {
 }
 
 export const siteVideos = {
-  intro: '/videos/intro.mp4',
+  intro: 'https://www.youtube.com/watch?v=r6bd53UB7mk',
   kenya: '/videos/kenya-story.mp4',
   india: '/videos/india-story.mp4',
 }
@@ -131,9 +131,9 @@ export const defaultSiteCopy: SiteCopy = {
     legacyTitle: 'Communities of Grace in healthcare',
     legacyBody:
       'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service.',
-    videoTitle: 'Watch our story',
+    videoTitle: 'Healthcare that reaches people',
     videoDescription:
-      'A short introduction to who Companions of Grace is, why we exist, and the global need we are responding to within healthcare.',
+      'Volunteer doctors and nurses bringing free care, medicine, and hope to families who often cannot reach a clinic.',
     videoImageUrl: siteImages.videoThumb,
     videoUrl: siteVideos.intro,
     methodsTitle: 'Our methods',

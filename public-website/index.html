@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/images/cogi-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Companions of Grace International — Equipping Healthcare Professionals for Kingdom Engagement" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,6 +11,144 @@
     <title>Companions of Grace International</title>
   </head>
   <body>
+    <div id="boot-splash" role="status" aria-live="polite" aria-label="Loading Companions of Grace International">
+      <img data-splash-bg class="boot-splash-bg" src="/images/cogi-hero.png" alt="" hidden />
+      <div class="boot-splash-scrim"></div>
+      <div class="boot-splash-inner">
+        <img data-splash-logo class="boot-splash-logo" src="/images/cogi-logo.png" alt="Companions of Grace International" />
+        <div data-splash-wordmark class="boot-splash-wordmark" hidden>
+          <strong>Companions of Grace</strong>
+          <span>International</span>
+        </div>
+        <span class="boot-splash-bar" aria-hidden="true"></span>
+      </div>
+    </div>
+    <noscript>
+      <style>#boot-splash{display:none!important}</style>
+    </noscript>
+    <style>
+      html.boot-splash-lock, html.boot-splash-lock body { overflow: hidden; }
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: #2B6CB0;
+        color: #fff;
+        overflow: hidden;
+        transition: opacity 0.65s ease, visibility 0.65s ease;
+      }
+      #boot-splash.is-leaving { opacity: 0; visibility: hidden; pointer-events: none; }
+      .boot-splash-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+      .boot-splash-scrim {
+        position: absolute;
+        inset: 0;
+        background: #2B6CB0;
+      }
+      .boot-splash-inner {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        justify-items: center;
+        gap: 1.35rem;
+        padding: 1.5rem;
+        text-align: center;
+      }
+      .boot-splash-logo {
+        display: block;
+        height: auto;
+        max-height: 150px;
+        max-width: min(220px, 70vw);
+        width: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.4));
+      }
+      .boot-splash-logo[hidden] { display: none; }
+      .boot-splash-wordmark { display: grid; gap: 0.35rem; }
+      .boot-splash-wordmark[hidden] { display: none; }
+      .boot-splash-wordmark strong {
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: clamp(1.8rem, 5vw, 3rem);
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        line-height: 1.05;
+      }
+      .boot-splash-wordmark span {
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.42em;
+        text-transform: uppercase;
+        color: var(--splash-accent, #ffffff);
+      }
+      .boot-splash-bar {
+        display: block;
+        width: 88px;
+        height: 2px;
+        margin-top: 0.4rem;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--splash-accent, #ffffff) 22%, transparent);
+      }
+      .boot-splash-bar::after {
+        content: "";
+        display: block;
+        width: 40%;
+        height: 100%;
+        background: var(--splash-accent, #ffffff);
+        animation: boot-splash-slide 1.1s ease-in-out infinite;
+      }
+      @keyframes boot-splash-slide {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(280%); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-splash-bar::after { animation: none; width: 100%; }
+      }
+    </style>
+    <script>
+      document.documentElement.classList.add('boot-splash-lock');
+      fetch('/site-config.json?t=' + Date.now())
+        .then(function (res) { return res.ok ? res.json() : null })
+        .then(function (cfg) {
+          if (!cfg) return;
+          var splash = document.getElementById('boot-splash');
+          if (!splash) return;
+          var header = cfg.header || {};
+          var footer = cfg.footer || {};
+          var theme = cfg.theme || {};
+          var bgEl = splash.querySelector('[data-splash-bg]');
+          if (bgEl) bgEl.hidden = true;
+          var logo = header.logoUrl || footer.logoUrl;
+          var logoEl = splash.querySelector('[data-splash-logo]');
+          var mark = splash.querySelector('[data-splash-wordmark]');
+          if (logo && logoEl) {
+            logoEl.onerror = function () {
+              logoEl.hidden = true;
+              if (mark) mark.hidden = false;
+            };
+            logoEl.hidden = false;
+            if (mark) mark.hidden = true;
+            logoEl.alt = header.logoAlt || 'Companions of Grace International';
+            logoEl.src = logo;
+          }
+          var headerColor = (header && header.backgroundColor) || (theme && theme.accentColor) || '#2B6CB0';
+          splash.style.background = headerColor;
+          var scrim = splash.querySelector('.boot-splash-scrim');
+          if (scrim) {
+            scrim.style.background = headerColor;
+          }
+          splash.style.setProperty('--splash-accent', '#ffffff');
+        })
+        .catch(function () {});
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

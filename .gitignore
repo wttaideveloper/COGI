@@ -15,5 +15,5 @@ admin-portal/dist
 strapi-backend/dist
 strapi-backend/.tmp
 *.log
-.vite
+data/leads.json
 .freebuff

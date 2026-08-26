@@ -46,7 +46,7 @@ export function Footer() {
   const socialLinks = social.length ? social : settings?.socialLinks || []
 
   return (
-    <footer className="bg-[#161412] text-[#EDE8DF]" style={{ backgroundColor: footer.backgroundColor || '#161412', color: footer.textColor || '#EDE8DF' }}>
+    <footer className="border-t border-mist-dark bg-white text-ink" style={{ backgroundColor: footer.backgroundColor || '#ffffff', color: footer.textColor || '#1A2332' }}>
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div>
           {footer.logoUrl ? (
@@ -76,7 +76,7 @@ export function Footer() {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full bg-white/10 p-2 hover:bg-gold hover:text-teal-deep"
+                  className="rounded-full bg-teal-deep/10 p-2 text-teal-deep hover:bg-gold hover:text-white"
                   aria-label={link.label}
                 >
                   {socialIcons[link.platform]}
@@ -122,11 +122,11 @@ export function Footer() {
 
         <div>
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gold">Newsletter</h3>
-          <NewsletterForm compact />
+          <NewsletterForm />
         </div>
       </div>
 
-      <div className="border-t border-white/10">
+      <div className="border-t border-mist-dark">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-center text-xs uppercase tracking-[0.16em] opacity-70 md:flex-row md:text-left">
           <p className="normal-case tracking-normal opacity-100">{footer.copyright || `© ${new Date().getFullYear()} Companions of Grace International. All rights reserved.`}</p>
           <p>

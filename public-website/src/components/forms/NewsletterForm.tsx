@@ -15,7 +15,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export function NewsletterForm({ compact = false }: { compact?: boolean }) {
-  const [status, setStatus] = useState<string | null>(null)
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null)
   const {
     register,
     handleSubmit,
@@ -26,7 +26,7 @@ export function NewsletterForm({ compact = false }: { compact?: boolean }) {
   const onSubmit = async (data: FormData) => {
     setStatus(null)
     const result = await submitNewsletter(data)
-    setStatus(result.message)
+    setStatus({ ok: result.success, text: result.message })
     if (result.success) reset()
   }
 
@@ -43,23 +43,27 @@ export function NewsletterForm({ compact = false }: { compact?: boolean }) {
         <label htmlFor="newsletter-name" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-ink')}>
           Name
         </label>
-        <input id="newsletter-name" className={inputClass(!!errors.name)} {...register('name')} />
-        {errors.name && <p className="mt-1 text-xs text-red-300" role="alert">{errors.name.message}</p>}
+        <input id="newsletter-name" className={inputClass(!!errors.name)} {...register('name')} autoComplete="name" />
+        {errors.name && <p className="mt-1 text-xs text-red-600" role="alert">{errors.name.message}</p>}
       </div>
       <div>
         <label htmlFor="newsletter-email" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-ink')}>
           Email
         </label>
-        <input id="newsletter-email" type="email" className={inputClass(!!errors.email)} {...register('email')} />
-        {errors.email && <p className="mt-1 text-xs text-red-300" role="alert">{errors.email.message}</p>}
+        <input id="newsletter-email" type="email" className={inputClass(!!errors.email)} {...register('email')} autoComplete="email" />
+        {errors.email && <p className="mt-1 text-xs text-red-600" role="alert">{errors.email.message}</p>}
       </div>
       <div>
         <label htmlFor="newsletter-whatsapp" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-ink')}>
           WhatsApp (optional)
         </label>
-        <input id="newsletter-whatsapp" type="tel" className={inputClass(false)} {...register('whatsapp')} />
+        <input id="newsletter-whatsapp" type="tel" className={inputClass(false)} {...register('whatsapp')} autoComplete="tel" />
       </div>
-      {status && <p className="text-sm text-gold" role="status">{status}</p>}
+      {status ? (
+        <p className={cn('text-sm font-semibold', status.ok ? 'text-emerald-700' : 'text-red-700')} role="status">
+          {status.text}
+        </p>
+      ) : null}
       <Button type="submit" variant={compact ? 'primary' : 'secondary'} size="sm" disabled={isSubmitting} className="w-full">
         {isSubmitting ? 'Subscribing…' : 'Subscribe'}
       </Button>

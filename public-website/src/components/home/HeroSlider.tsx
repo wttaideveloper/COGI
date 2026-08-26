@@ -12,10 +12,11 @@ type Props = {
   intervalMs?: number
   className?: string
   objectPosition?: string
+  showControls?: boolean
   children?: React.ReactNode
 }
 
-export function HeroSlider({ slides, intervalMs = 6000, className, objectPosition = 'center', children }: Props) {
+export function HeroSlider({ slides, intervalMs = 6000, className, objectPosition = 'center', showControls = true, children }: Props) {
   const valid = slides.filter((slide) => Boolean(slide.imageUrl))
   const [active, setActive] = useState(0)
 
@@ -24,7 +25,7 @@ export function HeroSlider({ slides, intervalMs = 6000, className, objectPositio
   }, [valid.length])
 
   useEffect(() => {
-    if (valid.length <= 1) return undefined
+    if (valid.length <= 1 || !intervalMs) return undefined
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % valid.length)
     }, intervalMs)
@@ -56,7 +57,7 @@ export function HeroSlider({ slides, intervalMs = 6000, className, objectPositio
       ))}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/15" />
       {children}
-      {valid.length > 1 ? (
+      {showControls && valid.length > 1 ? (
         <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2" role="tablist" aria-label="Hero slides">
           {valid.map((slide, index) => (
             <button
@@ -74,7 +75,7 @@ export function HeroSlider({ slides, intervalMs = 6000, className, objectPositio
           ))}
         </div>
       ) : null}
-      {valid.length > 1 ? (
+      {showControls && valid.length > 1 ? (
         <>
           <button
             type="button"

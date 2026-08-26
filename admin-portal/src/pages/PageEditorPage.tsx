@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { mockPages } from '@/data/mock'
 import { PAGE_SECTION_OPTIONS, PAGE_TEMPLATES, createSection, sectionsFromTemplate, slugify, type PageSection, type PageSectionType, type PageTemplateId } from '@/data/pageTemplates'
+import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
 import { apiCreate, apiListAll, apiPublish, apiUnpublish, apiUpdate, getErrorMessage, isDemoMode } from '@/services/strapi'
 import { notifyPublished } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
@@ -32,6 +33,7 @@ export default function PageEditorPage() {
   const [step, setStep] = useState<'template' | 'editor'>(isNew ? 'template' : 'editor')
   const [page, setPage] = useState<PageRecord & { sections: PageSection[] }>(emptyPage)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
+  const [localRows, setLocalRows] = useState(() => loadLocalRecords('pages', mockPages as PageRecord[]))
 
   const query = useQuery({
     queryKey: ['pages'],
@@ -39,7 +41,7 @@ export default function PageEditorPage() {
     enabled: !isDemoMode() && !isNew,
   })
 
-  const rows = query.data?.length ? query.data : (mockPages as PageRecord[])
+  const rows = isDemoMode() || !query.data?.length ? localRows : query.data
 
   useEffect(() => {
     if (isNew) return
@@ -139,8 +141,16 @@ export default function PageEditorPage() {
       const { id: _id, documentId: _documentId, createdAt: _createdAt, updatedAt: _updatedAt, ...body } = payload
       setPage((prev) => ({ ...prev, status }))
       if (isDemoMode()) {
-        localStorage.setItem(`cogi_page_${payload.slug}`, JSON.stringify(payload))
-        return payload
+        const id = String(page.id || page.documentId || Date.now())
+        const record = { ...payload, id, documentId: id } as PageRecord
+        setLocalRows((prev) => {
+          const next = isNew
+            ? [record, ...prev.filter((row) => row.slug !== record.slug)]
+            : prev.map((row) => (row.id === page.id || row.documentId === page.documentId || row.slug === record.slug ? record : row))
+          saveLocalRecords('pages', next)
+          return next
+        })
+        return record
       }
       if (isNew) {
         const created = await apiCreate('/pages', body, 'draft')
@@ -171,7 +181,7 @@ export default function PageEditorPage() {
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">Create a new page</h2>
-            <p className="mt-1 text-sm text-slate-600">Pick a layout template, then customize content, menu placement, and SEO.</p>
+          <p className="mt-1 text-sm text-slate-600">Pick a layout, then add the words and photos. Main site pages such as About and Donate are edited under Site pages.</p>
           </div>
           <Link className="btn-secondary" to="/pages">Back to pages</Link>
         </div>
@@ -222,7 +232,7 @@ export default function PageEditorPage() {
       <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">{isNew ? 'Create page' : 'Edit page'}</h2>
-          <p className="mt-1 text-sm text-slate-600">Configure settings, content blocks, menu visibility, and SEO in one place.</p>
+          <p className="mt-1 text-sm text-slate-600">This extra page appears at its URL after you publish. Main wording for About, Donate, and Contact is in Site pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {isNew ? <button type="button" className="btn-secondary" onClick={() => setStep('template')}>Change template</button> : null}

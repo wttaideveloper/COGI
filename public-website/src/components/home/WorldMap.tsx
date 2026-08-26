@@ -17,10 +17,10 @@ type Props = {
 
 export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   const { homepage, theme } = useSiteConfig()
-  const ocean = homepage.mapOceanColor || theme.backgroundColor || '#E7F1EE'
-  const land = homepage.mapLandColor || theme.primaryColor || '#1B4D3E'
-  const pin = homepage.mapPinColor || theme.primaryColor || '#1B4D3E'
-  const active = homepage.mapActiveColor || theme.accentColor || '#C4A574'
+  const ocean = homepage.mapOceanColor || theme.backgroundColor || '#F7FAFC'
+  const land = homepage.mapLandColor || theme.primaryColor || '#1B3A6B'
+  const pin = homepage.mapPinColor || theme.accentColor || '#2B6CB0'
+  const active = homepage.mapActiveColor || theme.buttonHoverColor || '#3B82F6'
   const [hovered, setHovered] = useState<string | null>(null)
   const pins = useMemo(
     () =>

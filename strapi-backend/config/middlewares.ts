@@ -26,6 +26,7 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Middlewar
     },
   },
   'strapi::poweredBy',
+  'global::strip-unknown-query',
   'strapi::query',
   'strapi::body',
   'strapi::session',
