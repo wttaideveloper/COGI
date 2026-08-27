@@ -36,8 +36,8 @@ services:
   # Public Website
   public-website:
     build:
-      context: ./public-website
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./public-website/Dockerfile
       args:
         VITE_STRAPI_URL: ${VITE_STRAPI_URL:-http://localhost:1337}
         VITE_PUBLIC_SITE_URL: ${VITE_PUBLIC_SITE_URL:-http://localhost}
@@ -50,8 +50,8 @@ services:
   # Admin Portal
   admin-portal:
     build:
-      context: ./admin-portal
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./admin-portal/Dockerfile
       args:
         VITE_STRAPI_URL: ${VITE_STRAPI_URL:-http://localhost:1337}
         VITE_ADMIN_SITE_URL: ${VITE_ADMIN_SITE_URL:-http://localhost/admin}
