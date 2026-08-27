@@ -6,9 +6,10 @@ import { mockHomepage } from '@/data/mock'
 import { CUSTOM_BLOCK_OPTIONS, createHomepageBlock, ensureBuiltinSections, isCustomSection, isSplitSection, SECTION_HINTS } from '@/data/homepageBlocks'
 import { mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiPublishSingle, apiSingle, apiUpdateSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
-import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
+import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import { MediaUpload, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
+import { RevertToLiveButton } from '@/components/RevertButton'
 import type { HeroHeadlineCase, HeroMedia, HeroSlide, HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
 
 const HOMEPAGE_DRAFT_KEY = 'cogi_homepage_draft'
@@ -80,6 +81,26 @@ function Field({
   )
 }
 
+function homepageFromConfig(config: SiteConfig): HomepageRecord {
+  const home = config.homepage
+  return {
+    ...mockHomepage,
+    ...home,
+    heroHeadlineSize: home.heroHeadlineSize ?? 64,
+    heroHeadlineCase: home.heroHeadlineCase ?? 'uppercase',
+    heroMedia: home.heroMedia === 'video' ? 'video' : 'images',
+    heroVideoUrl: home.heroVideoUrl ?? '',
+    heroSlideDuration: home.heroSlideDuration ?? 6,
+    mapOceanColor: home.mapOceanColor,
+    mapLandColor: home.mapLandColor,
+    mapPinColor: home.mapPinColor,
+    mapActiveColor: home.mapActiveColor,
+    stats: home.impactStats?.length ? home.impactStats.map((s) => ({ value: s.value, label: s.label })) : mockHomepage.stats,
+    sections: ensureBuiltinSections(home.sections?.length ? home.sections : mockHomepage.sections),
+    heroSlides: home.heroSlides,
+  }
+}
+
 function loadHomepageDraft(): HomepageDraftPayload | null {
   try {
     const raw = localStorage.getItem(HOMEPAGE_DRAFT_KEY)
@@ -144,23 +165,7 @@ export default function HomepageManagerPage() {
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
       if (!active) return
-      const home = config.homepage
-      setHydrated({
-        ...mockHomepage,
-        ...home,
-        heroHeadlineSize: home.heroHeadlineSize ?? 64,
-        heroHeadlineCase: home.heroHeadlineCase ?? 'uppercase',
-        heroMedia: home.heroMedia === 'video' ? 'video' : 'images',
-        heroVideoUrl: home.heroVideoUrl ?? '',
-        heroSlideDuration: home.heroSlideDuration ?? 6,
-        mapOceanColor: home.mapOceanColor,
-        mapLandColor: home.mapLandColor,
-        mapPinColor: home.mapPinColor,
-        mapActiveColor: home.mapActiveColor,
-        stats: home.impactStats?.length ? home.impactStats.map((s) => ({ value: s.value, label: s.label })) : mockHomepage.stats,
-        sections: ensureBuiltinSections(home.sections?.length ? home.sections : mockHomepage.sections),
-        heroSlides: home.heroSlides,
-      })
+      setHydrated(homepageFromConfig(config))
       if (!loadHomepageDraft()?.copy) setCopyHome(mergeSiteCopy(config.copy).homepage)
     })
     return () => { active = false }
@@ -444,6 +449,18 @@ export default function HomepageManagerPage() {
           <button type="button" className="btn-primary" disabled={mutation.isPending} onClick={() => save('published')}>
             {mutation.isPending && mutation.variables?.status === 'published' ? 'Publishing…' : 'Publish live'}
           </button>
+          <RevertToLiveButton
+            disabled={mutation.isPending}
+            onReverted={(config) => {
+              localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
+              const restored = homepageFromConfig(config)
+              form.reset(restored)
+              setHydrated(restored)
+              setCopyHome(mergeSiteCopy(config.copy).homepage)
+              setHasDraft(false)
+              setSavedAs(null)
+            }}
+          />
         </div>
       </div>
 

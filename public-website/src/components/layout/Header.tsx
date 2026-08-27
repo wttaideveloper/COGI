@@ -44,13 +44,13 @@ export function Header() {
       className={clsx('z-40 border-b border-white/15', sticky ? 'sticky top-0' : 'relative')}
       style={{ backgroundColor: header.backgroundColor || '#2B6CB0', color: header.textColor || '#ffffff' }}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:py-4">
         <Link to="/" className="flex min-w-0 items-center gap-3" aria-label="Companions of Grace International — Home">
           {header.logoUrl ? (
             <img
               src={header.logoUrl}
               alt={header.logoAlt || 'Companions of Grace International'}
-              className="max-w-[240px] object-contain"
+              className="site-header-logo max-w-[min(168px,52vw)] object-contain sm:max-w-[200px] lg:max-w-[240px]"
               style={{ height: header.logoHeight || 48 }}
             />
           ) : (
@@ -124,7 +124,7 @@ export function Header() {
 
         <button
           type="button"
-          className="rounded-md p-2 text-current lg:hidden"
+          className="shrink-0 rounded-md p-2 text-current lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-expanded={mobileOpen}
           aria-controls="mobile-menu"

@@ -21,6 +21,7 @@ export type SiteConfig = {
 }
 
 const STORAGE_KEY = 'cogi_site_config'
+const PUBLISHED_KEY = 'cogi_site_config_published'
 const PUBLISH_CHANNEL = 'cogi-cms-publish'
 
 export function defaultSiteConfig(): SiteConfig {
@@ -88,6 +89,70 @@ export function loadSiteConfig(): SiteConfig {
   } catch {
     return defaultSiteConfig()
   }
+}
+
+export function loadPublishedSiteConfig(): SiteConfig | null {
+  try {
+    const raw = localStorage.getItem(PUBLISHED_KEY)
+    if (!raw) return null
+    return mergeConfig(JSON.parse(raw) as Partial<SiteConfig>)
+  } catch {
+    return null
+  }
+}
+
+function rememberPublishedSiteConfig(config: SiteConfig) {
+  localStorage.setItem(PUBLISHED_KEY, JSON.stringify(config))
+}
+
+async function fetchPublishedFromStrapi(): Promise<SiteConfig | null> {
+  if (isDemoMode()) return null
+  try {
+    const record = await apiSingle<{ payload?: Partial<SiteConfig> }>('/site-config', { status: 'published' })
+    if (record?.payload && typeof record.payload === 'object') {
+      return mergeConfig(record.payload)
+    }
+  } catch {
+    // No published document yet, or Strapi is offline.
+  }
+  return null
+}
+
+async function fetchPublishedFromPublicFile(): Promise<SiteConfig | null> {
+  try {
+    const response = await fetch('/__site-config', { cache: 'no-store' })
+    if (!response.ok) return null
+    const data = (await response.json()) as Partial<SiteConfig>
+    if (!data || typeof data !== 'object') return null
+    if (!data.theme && !data.homepage && !data.header) return null
+    return mergeConfig(data)
+  } catch {
+    return null
+  }
+}
+
+export async function resolvePublishedSiteConfig(): Promise<SiteConfig | null> {
+  const fromStrapi = await fetchPublishedFromStrapi()
+  if (fromStrapi) {
+    rememberPublishedSiteConfig(fromStrapi)
+    return fromStrapi
+  }
+  const fromFile = await fetchPublishedFromPublicFile()
+  if (fromFile) {
+    rememberPublishedSiteConfig(fromFile)
+    return fromFile
+  }
+  return loadPublishedSiteConfig()
+}
+
+export async function revertSiteConfig(): Promise<SiteConfig> {
+  const published = await resolvePublishedSiteConfig()
+  if (!published) {
+    throw new Error('Nothing published yet to revert to. Publish once first, then you can revert later drafts.')
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(published))
+  await persistSiteConfigToStrapi(published, 'draft')
+  return published
 }
 
 export function notifyPublished() {
@@ -184,6 +249,7 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
     if (record?.payload && typeof record.payload === 'object') {
       const merged = mergeConfig(record.payload)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+      void resolvePublishedSiteConfig()
       return merged
     }
   } catch {
@@ -192,12 +258,14 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
       if (record?.payload && typeof record.payload === 'object') {
         const merged = mergeConfig(record.payload)
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
+        void resolvePublishedSiteConfig()
         return merged
       }
     } catch {
       // Strapi may be offline — keep the local draft.
     }
   }
+  void resolvePublishedSiteConfig()
   return local
 }
 
@@ -216,6 +284,7 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
 
   if (status === 'published') {
     await writePublicFile(next)
+    rememberPublishedSiteConfig(next)
   }
 
   await persistSiteConfigToStrapi(next, status)

@@ -5,6 +5,7 @@ import { defaultSiteCopy, mergeSiteCopy, type CopyBlock, type SiteCopy } from '@
 import { hydrateSiteConfigFromStrapi, saveSiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
 import { getPreviewUrl } from '@/utils/preview'
+import { RevertToLiveButton } from '@/components/RevertButton'
 
 const PAGE_TABS = [
   { id: 'about', label: 'Vision & Mission', hint: 'About COGI', href: '/about' },
@@ -165,6 +166,13 @@ export default function WebsiteCopyPage() {
           <button type="button" className="btn-primary" disabled={Boolean(pending)} onClick={() => save('published')}>
             {pending === 'published' ? 'Publishing…' : 'Publish live'}
           </button>
+          <RevertToLiveButton
+            disabled={Boolean(pending)}
+            onReverted={(config) => {
+              setCopy(mergeSiteCopy(config.copy))
+              setSavedAs(null)
+            }}
+          />
         </div>
       </div>
 

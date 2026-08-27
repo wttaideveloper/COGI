@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { mockPages } from '@/data/mock'
 import { PAGE_SECTION_OPTIONS, PAGE_TEMPLATES, createSection, sectionsFromTemplate, slugify, type PageSection, type PageSectionType, type PageTemplateId } from '@/data/pageTemplates'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
-import { apiCreate, apiListAll, apiPublish, apiUnpublish, apiUpdate, getErrorMessage, isDemoMode } from '@/services/strapi'
+import { apiCreate, apiGetOne, apiListAll, apiPublish, apiUnpublish, apiUpdate, getErrorMessage, isDemoMode } from '@/services/strapi'
 import { notifyPublished } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import type { PageRecord } from '@/types'
@@ -244,6 +244,51 @@ export default function PageEditorPage() {
           <button type="button" className="btn-primary" disabled={save.isPending} onClick={() => save.mutate('published')}>
             {save.isPending && save.variables === 'published' ? 'Publishing…' : 'Publish live'}
           </button>
+          {!isNew ? (
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={save.isPending}
+              onClick={() => {
+                if (!window.confirm('Revert this page to the last published version? Draft edits will be discarded.')) return
+                if (isDemoMode()) {
+                  window.alert('No published Strapi version is available in practice mode.')
+                  return
+                }
+                void apiGetOne<PageRecord>('/pages', String(id), { populate: '*', status: 'published' })
+                  .then((found) => {
+                    setPage({
+                      ...emptyPage(),
+                      ...found,
+                      pageType: found.pageType || 'content',
+                      summary: found.summary || '',
+                      heroImageUrl: found.heroImageUrl || '',
+                      externalUrl: found.externalUrl || '',
+                      showInHeader: found.showInHeader !== false,
+                      showInFooter: Boolean(found.showInFooter),
+                      seo: {
+                        metaTitle: found.seo?.metaTitle || found.title,
+                        metaDescription: found.seo?.metaDescription || '',
+                        keywords: found.seo?.keywords || '',
+                      },
+                      sections: (found.sections || []).map((section) => ({
+                        id: section.id,
+                        type: (section.type as PageSectionType) || 'text',
+                        title: section.title,
+                        content: section.content,
+                        imageUrl: section.imageUrl || '',
+                        buttonLabel: section.buttonLabel,
+                        buttonHref: section.buttonHref,
+                      })) as PageSection[],
+                    })
+                    setSavedAs(null)
+                  })
+                  .catch(() => window.alert('No published version of this page yet. Publish once first.'))
+              }}
+            >
+              Revert to live
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -405,6 +450,32 @@ export default function PageEditorPage() {
             <button type="button" className="btn-primary w-full" disabled={save.isPending} onClick={() => save.mutate('published')}>
               Publish live
             </button>
+            {!isNew ? (
+              <button
+                type="button"
+                className="btn-secondary w-full"
+                disabled={save.isPending}
+                onClick={() => {
+                  if (!window.confirm('Revert this page to the last published version? Draft edits will be discarded.')) return
+                  if (isDemoMode()) {
+                    window.alert('No published Strapi version is available in practice mode.')
+                    return
+                  }
+                  void apiGetOne<PageRecord>('/pages', String(id), { populate: '*', status: 'published' })
+                    .then((found) => {
+                      setPage({
+                        ...emptyPage(),
+                        ...found,
+                        sections: (found.sections || []) as PageSection[],
+                      })
+                      setSavedAs(null)
+                    })
+                    .catch(() => window.alert('No published version of this page yet. Publish once first.'))
+                }}
+              >
+                Revert to live
+              </button>
+            ) : null}
           </div>
         </div>
       </div>

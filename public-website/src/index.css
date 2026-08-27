@@ -23,6 +23,7 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -45,6 +46,7 @@
     color: var(--color-ink);
     background: #ffffff;
     min-height: 100vh;
+    overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -107,5 +109,19 @@
     overflow: visible;
     clip: auto;
     white-space: normal;
+  }
+}
+
+@media (max-width: 1023px) {
+  .site-header-logo {
+    height: auto !important;
+    max-height: 40px;
+    width: auto;
+  }
+}
+
+@media (max-width: 639px) {
+  .site-header-logo {
+    max-height: 34px;
   }
 }

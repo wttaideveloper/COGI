@@ -68,6 +68,10 @@ export async function apiPublishSingle(endpoint: string): Promise<unknown> { con
 export async function apiUnpublishSingle(endpoint: string): Promise<unknown> { const { data } = await strapiClient.post(`${endpoint}/actions/unpublish`); return data }
 export async function apiDelete(endpoint: string, id: string): Promise<void> { await strapiClient.delete(`${endpoint}/${id}`) }
 export async function apiSingle<T extends object>(endpoint: string, params: Record<string, unknown> = { populate: '*' }): Promise<T> { const { data } = await strapiClient.get(endpoint, { params }); return unwrapItem<T>((data as { data: unknown }).data) }
+export async function apiGetOne<T extends object>(endpoint: string, id: string, params: Record<string, unknown> = { populate: '*' }): Promise<T> {
+  const { data } = await strapiClient.get(`${endpoint}/${id}`, { params })
+  return unwrapItem<T>((data as { data: unknown }).data)
+}
 export async function apiUpdateSingle<T>(endpoint: string, body: T, status?: 'draft' | 'published'): Promise<unknown> {
   try {
     const { data } = await strapiClient.put(endpoint, { data: body }, { params: status ? { status } : undefined })

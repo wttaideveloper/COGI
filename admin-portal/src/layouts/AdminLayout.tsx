@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode, type SVGProps } from 'react'
+import { useEffect, useMemo, useState, type ReactNode, type SVGProps } from 'react'
 import clsx from 'clsx'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -123,6 +123,20 @@ export default function AdminLayout() {
 
   const title = pageTitle(location.pathname)
 
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1024px)')
+    const sync = () => {
+      if (mq.matches) {
+        setCollapsed(false)
+      } else {
+        setMobileOpen(false)
+      }
+    }
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
   function handleLogout() {
     logout()
     navigate('/login')
@@ -149,6 +163,9 @@ export default function AdminLayout() {
               <img src={COGI_LOGO} alt="COGI" width={36} height={36} />
             </NavLink>
           )}
+          <button type="button" className="admin-icon-btn admin-sidebar-close" onClick={() => setMobileOpen(false)} aria-label="Close menu">
+            <IconX />
+          </button>
           <button type="button" className="admin-icon-btn admin-sidebar-collapse" onClick={() => setCollapsed((v) => !v)} aria-label="Toggle sidebar">
             {collapsed ? <IconChevronRight /> : <IconChevronLeft />}
           </button>

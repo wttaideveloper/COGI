@@ -572,6 +572,7 @@
   }
 
   .admin-mobile-menu { display: none; }
+  .admin-sidebar-close { display: none; }
 
   .admin-section-tab {
     border: 1px solid var(--color-border);
@@ -1476,12 +1477,6 @@
     cursor: pointer;
   }
 
-  @media (max-width: 960px) {
-    .hp-hero, .hp-grid-2, .hp-picker, .hp-editor-split { grid-template-columns: 1fr; }
-    .hp-strip-tools .admin-input { width: 100%; }
-    .hp-chip-card, .hp-chip-add { flex-basis: 200px; width: 200px; min-width: 200px; max-width: 200px; }
-  }
-
   .menu-row {
     display: flex;
     flex-wrap: wrap;
@@ -1671,29 +1666,75 @@
     justify-content: space-between;
     gap: 0.75rem;
   }
+}
 
-  @media (max-width: 960px) {
-    .admin-shell,
-    .admin-shell-collapsed { grid-template-columns: 1fr; }
-    .admin-sidebar {
-      position: fixed;
-      inset: 0 auto 0 0;
-      width: min(300px, 88vw);
-      transform: translateX(-105%);
-      transition: transform 0.2s ease;
-    }
-    .admin-sidebar-mobile-open { transform: translateX(0); }
-    .admin-sidebar-collapse { display: none; }
-    .admin-mobile-menu { display: inline-flex; }
-    .admin-topbar { grid-template-columns: 1fr; }
-    .admin-topbar-toolbar { justify-content: flex-start; flex-wrap: wrap; }
-    .admin-footer-inner { flex-direction: column; align-items: flex-start; }
-    .hp-workspace { grid-template-columns: 1fr; }
-    .hp-rail {
-      position: static;
-      height: auto;
-      max-height: none;
-    }
-    .hp-nav { max-height: 18rem; }
+@media (max-width: 1024px) {
+  .admin-shell,
+  .admin-shell-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-sidebar,
+  .admin-sidebar-collapsed {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: min(300px, 88vw);
+    height: 100vh;
+    max-height: 100vh;
+    transform: translateX(-105%);
+    transition: transform 0.2s ease;
+    z-index: 40;
+    box-shadow: none;
+  }
+  .admin-sidebar-mobile-open {
+    transform: translateX(0);
+    box-shadow: 16px 0 40px rgba(27, 58, 107, 0.18);
+  }
+  .admin-sidebar-collapse { display: none; }
+  .admin-sidebar-close { display: inline-flex; }
+  .admin-mobile-menu { display: inline-flex; }
+  .admin-topbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .admin-topbar-toolbar {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .admin-footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hp-workspace { grid-template-columns: minmax(0, 1fr); }
+  .hp-rail {
+    position: static;
+    height: auto;
+    max-height: none;
+  }
+  .hp-nav { max-height: 18rem; }
+  .hp-hero,
+  .hp-grid-2,
+  .hp-picker,
+  .hp-editor-split {
+    grid-template-columns: 1fr;
+  }
+  .hp-strip-tools { width: 100%; }
+  .hp-strip-tools .admin-input { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .admin-content {
+    padding: 0.85rem 0.85rem 1.25rem;
+  }
+  .admin-topbar {
+    padding: 0.7rem 0.85rem;
+  }
+  .hp-chip-card,
+  .hp-chip-add {
+    flex: 0 0 10.5rem;
+    width: 10.5rem;
+    min-width: 10.5rem;
+    max-width: 10.5rem;
+  }
+  .admin-logout-btn span {
+    display: none;
   }
 }

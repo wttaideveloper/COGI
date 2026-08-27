@@ -3,6 +3,7 @@ import { colorPresets, fontOptions, headingFontOptions } from '@/data/siteSetup'
 import { defaultSiteConfig, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
 import { LOGO_HINT, MediaUpload } from '@/components/MediaUpload'
+import { RevertToLiveButton } from '@/components/RevertButton'
 import type { FooterSettings, HeaderSettings, SeoSettings, ThemeSettings } from '@/types'
 
 function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -49,10 +50,12 @@ function PublishActions({
   pending,
   pendingStatus,
   onSave,
+  onReverted,
 }: {
   pending: boolean
   pendingStatus: 'draft' | 'published' | null
   onSave: (status: 'draft' | 'published') => void
+  onReverted: (config: SiteConfig) => void
 }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -62,6 +65,7 @@ function PublishActions({
       <button type="button" className="btn-primary" disabled={pending} onClick={() => onSave('published')}>
         {pending && pendingStatus === 'published' ? 'Publishing…' : 'Publish live'}
       </button>
+      <RevertToLiveButton disabled={pending} onReverted={onReverted} />
     </div>
   )
 }
@@ -114,7 +118,13 @@ export function ThemePage() {
       <PageHeader
         title="Theme & branding"
         description="Save a private draft in Strapi, then Publish live to update the public website immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+          setTheme(config.theme)
+          setLogoUrl(config.header.logoUrl)
+          setLogoAlt(config.header.logoAlt)
+          setLogoHeight(config.header.logoHeight ?? 48)
+          setSavedAs(null)
+        }} />}
       />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
         <div className="space-y-4">
@@ -254,7 +264,10 @@ export function HeaderEditorPage() {
       <PageHeader
         title="Header & navigation bar"
         description="Save a private draft in Strapi, then Publish live to update the public header immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+          setHeader(config.header)
+          setSavedAs(null)
+        }} />}
       />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
         <div className="space-y-4">
@@ -359,7 +372,10 @@ export function FooterEditorPage() {
       <PageHeader
         title="Footer"
         description="Save a private draft in Strapi, then Publish live to update the public footer immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+          setFooter(config.footer)
+          setSavedAs(null)
+        }} />}
       />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
         <div className="space-y-4">
@@ -461,7 +477,10 @@ export function SeoEditorPage() {
       <PageHeader
         title="SEO & social"
         description="Save a private draft in Strapi, then Publish live to update public meta tags immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} />}
+        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+          setSeo(config.seo)
+          setSavedAs(null)
+        }} />}
       />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(280px,0.9fr)]">
         <div className="admin-card space-y-4 p-5">

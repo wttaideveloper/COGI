@@ -12,11 +12,12 @@ import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomep
 import { mockFooterNavigation } from '@/data/siteSetup'
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
-import { apiCreate, apiDelete, apiList, apiListAll, apiSingle, apiPublish, apiUnpublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
+import { apiCreate, apiDelete, apiGetOne, apiList, apiListAll, apiSingle, apiPublish, apiUnpublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
 import { fetchLeads, removeSubscriber, type LeadSubscriber } from '@/services/leads'
 import { COGI_LOGO } from '@/lib/brand'
 import { getPreviewUrl } from '@/utils/preview'
+import { RevertToLiveButton } from '@/components/RevertButton'
 import type { AuditRecord, BaseRecord, EnquiryRecord, EnquiryStatus, FormField, HomepageRecord, MediaFile, ModuleConfig, ModuleKey, SettingsRecord } from '@/types'
 
 type AnyRecord = BaseRecord & Record<string, unknown>
@@ -405,6 +406,14 @@ export function NavigationPage() {
             <button type="button" className="btn-primary" disabled={Boolean(pending)} onClick={() => saveMenu('published')}>
               {pending === 'published' ? 'Publishing…' : 'Publish live'}
             </button>
+            <RevertToLiveButton
+              disabled={Boolean(pending)}
+              onReverted={(config) => {
+                setHeaderItems(config.headerNav)
+                setFooterItems(config.footerNav)
+                setSavedAs(null)
+              }}
+            />
           </div>
         }
       />
@@ -565,6 +574,27 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
               onClick={() => form.handleSubmit((v) => save.mutate({ values: v, status: 'published' }))()}
             >
               {save.isPending && save.variables?.status === 'published' ? 'Publishing…' : 'Publish live'}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={save.isPending || params.id === 'new'}
+              onClick={() => {
+                if (!window.confirm('Revert this record to the last published version? Draft edits will be discarded.')) return
+                const id = String(params.id)
+                if (isDemoMode() || query.isError) {
+                  window.alert('No published Strapi version is available in practice mode.')
+                  return
+                }
+                void apiGetOne<AnyRecord>(config.endpoint, id, { populate: '*', status: 'published' })
+                  .then((published) => {
+                    form.reset(published)
+                    setSavedAs(null)
+                  })
+                  .catch(() => window.alert('No published version of this record yet. Publish once first.'))
+              }}
+            >
+              Revert to live
             </button>
             <a className="btn-secondary" href={getPreviewUrl(String(form.watch('slug') || ''))} target="_blank" rel="noreferrer">Preview</a>
           </div>
