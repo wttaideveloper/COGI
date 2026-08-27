@@ -151,7 +151,8 @@ async function deliverMail(to: string, subject: string, text: string, html: stri
     return { status: 'queued', error: 'SMTP is not configured. The message is saved in the admin outbox.' }
   }
   try {
-    const nodemailer = await import('nodemailer')
+    // @ts-ignore - nodemailer is an optional server dependency (installed in strapi-backend); vite builds ignore it
+    const nodemailer: any = await import('nodemailer')
     const transporter = nodemailer.createTransport({
       host: smtp.host,
       port: smtp.port,
