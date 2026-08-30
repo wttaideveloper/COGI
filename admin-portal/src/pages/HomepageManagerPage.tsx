@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { mockHomepage } from '@/data/mock'
 import { CUSTOM_BLOCK_OPTIONS, createHomepageBlock, ensureBuiltinSections, isCustomSection, isSplitSection, SECTION_HINTS } from '@/data/homepageBlocks'
 import { mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
-import { apiPublishSingle, apiSingle, apiUpdateSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
+import { apiSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import { MediaUpload, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
@@ -86,6 +86,9 @@ function homepageFromConfig(config: SiteConfig): HomepageRecord {
   return {
     ...mockHomepage,
     ...home,
+    heroHeadline: sampleOrEmpty(home.heroHeadline, SAMPLE_HEADLINES),
+    heroIntro: sampleOrEmpty(home.heroIntro, SAMPLE_INTROS),
+    primaryCtaLabel: sampleOrEmpty(home.primaryCtaLabel, SAMPLE_CTAS),
     heroHeadlineSize: home.heroHeadlineSize ?? 64,
     heroHeadlineCase: home.heroHeadlineCase ?? 'uppercase',
     heroMedia: home.heroMedia === 'video' ? 'video' : 'images',
@@ -99,6 +102,21 @@ function homepageFromConfig(config: SiteConfig): HomepageRecord {
     sections: ensureBuiltinSections(home.sections?.length ? home.sections : mockHomepage.sections),
     heroSlides: home.heroSlides,
   }
+}
+
+const SAMPLE_HEADLINES = [
+  'Equipping Healthcare Professionals for Kingdom Engagement',
+]
+const SAMPLE_INTROS = [
+  'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
+  'COGI cultivates communities of grace among healthcare professionals serving missionally around the world.',
+]
+const SAMPLE_CTAS = ['Give now', 'Join the Movement']
+
+function sampleOrEmpty(value: string | undefined, samples: string | string[]) {
+  const text = (value ?? '').trim()
+  const list = Array.isArray(samples) ? samples : [samples]
+  return list.some((sample) => text === sample.trim()) ? '' : (value ?? '')
 }
 
 function loadHomepageDraft(): HomepageDraftPayload | null {
@@ -128,6 +146,9 @@ export default function HomepageManagerPage() {
   const safeData: HomepageRecord = {
     ...mockHomepage,
     ...data,
+    heroHeadline: sampleOrEmpty(data.heroHeadline, SAMPLE_HEADLINES),
+    heroIntro: sampleOrEmpty(data.heroIntro, SAMPLE_INTROS),
+    primaryCtaLabel: sampleOrEmpty(data.primaryCtaLabel, SAMPLE_CTAS),
     heroHeadlineSize: data.heroHeadlineSize ?? mockHomepage.heroHeadlineSize ?? 64,
     heroHeadlineCase: data.heroHeadlineCase ?? mockHomepage.heroHeadlineCase ?? 'uppercase',
     heroMedia: data.heroMedia === 'video' ? 'video' : 'images',
@@ -218,23 +239,6 @@ export default function HomepageManagerPage() {
         copy: { ...currentCopy, homepage: copyHome },
       }, status)
       if (status === 'published') localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
-      if (!isDemoMode()) {
-        await apiUpdateSingle('/homepage', {
-          heroHeadline: payload.heroHeadline,
-          heroIntro: payload.heroIntro,
-          heroCtaLabel: payload.primaryCtaLabel,
-          heroCtaHref: payload.primaryCtaHref,
-          heroImageUrl: saved.homepage.heroImageUrl || '',
-          heroImageAlt: payload.heroImageAlt || '',
-          missionHeading: payload.missionTitle,
-          missionText: payload.missionStatement,
-          missionScripture: payload.missionScripture ?? '',
-          impactStats: (payload.stats || []).map((s) => ({ value: s.value, label: s.label })),
-          sectionVisibility: Object.fromEntries((payload.sections || []).map((s) => [s.id, s.enabled])),
-          sectionOrder: [...(payload.sections || [])].sort((a, b) => a.order - b.order).map((s) => s.id),
-        }, 'draft')
-        if (status === 'published') await apiPublishSingle('/homepage')
-      }
       return { values: payload, status }
     },
     onSuccess: (_data, variables) => {
@@ -450,6 +454,7 @@ export default function HomepageManagerPage() {
             {mutation.isPending && mutation.variables?.status === 'published' ? 'Publishing…' : 'Publish live'}
           </button>
           <RevertToLiveButton
+            scope="homepage"
             disabled={mutation.isPending}
             onReverted={(config) => {
               localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
@@ -543,10 +548,10 @@ export default function HomepageManagerPage() {
               {customEditing ? (
                 <button type="button" className="hp-danger" onClick={() => removeSection(activeTab)}>Remove section</button>
               ) : null}
-              <button type="button" className="btn-secondary" disabled={tabIndex <= 0} onClick={() => setActiveTab(navTabs[tabIndex - 1].id)}>
+              <button type="button" className="btn-secondary" disabled={tabIndex <= 0} aria-disabled={tabIndex <= 0} onClick={() => { if (tabIndex > 0) setActiveTab(navTabs[tabIndex - 1].id) }}>
                 Previous
               </button>
-              <button type="button" className="btn-secondary" disabled={tabIndex >= navTabs.length - 1} onClick={() => setActiveTab(navTabs[tabIndex + 1].id)}>
+              <button type="button" className="btn-secondary" disabled={tabIndex >= navTabs.length - 1} aria-disabled={tabIndex >= navTabs.length - 1} onClick={() => { if (tabIndex < navTabs.length - 1) setActiveTab(navTabs[tabIndex + 1].id) }}>
                 Next
               </button>
             </div>
@@ -571,7 +576,7 @@ export default function HomepageManagerPage() {
                   </div>
                 </Field>
                 <Field label="Headline" hint="This sits over the photo or film. Keep it short." count={`${headline.length}/80`} over={headline.length > 80}>
-                  <input className="admin-input" {...form.register('heroHeadline')} />
+                  <input className="admin-input" {...form.register('heroHeadline')} placeholder={SAMPLE_HEADLINES[0]} />
                 </Field>
                 <Field label="Headline letters" hint="Choose how the headline looks on the public homepage.">
                   <div className="hp-case" role="group" aria-label="Headline letter case">
@@ -595,11 +600,11 @@ export default function HomepageManagerPage() {
                   </div>
                 </Field>
                 <Field label="Intro paragraph" count={`${intro.length}/280`} over={intro.length > 280}>
-                  <textarea className="admin-input min-h-28" {...form.register('heroIntro')} />
+                  <textarea className="admin-input min-h-28" {...form.register('heroIntro')} placeholder={SAMPLE_INTROS[1]} />
                 </Field>
                 <div className="hp-grid-2">
                   <Field label="Main button" hint="Example: Give now">
-                    <input className="admin-input" {...form.register('primaryCtaLabel')} />
+                    <input className="admin-input" {...form.register('primaryCtaLabel')} placeholder={SAMPLE_CTAS[0]} />
                   </Field>
                   <Field label="Main button link" hint="Example: /donate">
                     <input className="admin-input" {...form.register('primaryCtaHref')} />

@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { colorPresets, fontOptions, headingFontOptions } from '@/data/siteSetup'
-import { defaultSiteConfig, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
+import { defaultSiteConfig, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type RevertScope, type SiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
 import { LOGO_HINT, MediaUpload } from '@/components/MediaUpload'
 import { RevertToLiveButton } from '@/components/RevertButton'
@@ -16,6 +16,14 @@ function PageHeader({ title, description, action }: { title: string; description
       {action}
     </div>
   )
+}
+
+function normalizeLogoUrl(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (trimmed.startsWith('data:') || trimmed.startsWith('/') || trimmed.startsWith('blob:')) return trimmed
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
 }
 
 function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
@@ -47,11 +55,13 @@ function SaveBanner({ savedAs, error }: { savedAs: 'draft' | 'published' | null;
 }
 
 function PublishActions({
+  scope,
   pending,
   pendingStatus,
   onSave,
   onReverted,
 }: {
+  scope: RevertScope
   pending: boolean
   pendingStatus: 'draft' | 'published' | null
   onSave: (status: 'draft' | 'published') => void
@@ -65,7 +75,7 @@ function PublishActions({
       <button type="button" className="btn-primary" disabled={pending} onClick={() => onSave('published')}>
         {pending && pendingStatus === 'published' ? 'Publishing…' : 'Publish live'}
       </button>
-      <RevertToLiveButton disabled={pending} onReverted={onReverted} />
+      <RevertToLiveButton scope={scope} disabled={pending} onReverted={onReverted} />
     </div>
   )
 }
@@ -118,7 +128,7 @@ export function ThemePage() {
       <PageHeader
         title="Theme & branding"
         description="Save a private draft in Strapi, then Publish live to update the public website immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+        action={<PublishActions scope="theme" pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
           setTheme(config.theme)
           setLogoUrl(config.header.logoUrl)
           setLogoAlt(config.header.logoAlt)
@@ -264,7 +274,7 @@ export function HeaderEditorPage() {
       <PageHeader
         title="Header & navigation bar"
         description="Save a private draft in Strapi, then Publish live to update the public header immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+        action={<PublishActions scope="header" pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
           setHeader(config.header)
           setSavedAs(null)
         }} />}
@@ -336,6 +346,7 @@ export function HeaderEditorPage() {
 
 export function FooterEditorPage() {
   const [footer, setFooter] = useState<FooterSettings>(defaultSiteConfig().footer)
+  const [logoUrlDraft, setLogoUrlDraft] = useState('')
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -343,7 +354,10 @@ export function FooterEditorPage() {
   useEffect(() => {
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
-      if (active) setFooter(config.footer)
+      if (active) {
+        setFooter(config.footer)
+        setLogoUrlDraft(config.footer.logoUrl.startsWith('data:') ? '' : config.footer.logoUrl)
+      }
     })
     return () => { active = false }
   }, [])
@@ -358,6 +372,7 @@ export function FooterEditorPage() {
     try {
       const next = await saveSiteConfig({ footer }, status)
       setFooter(next.footer)
+      setLogoUrlDraft(next.footer.logoUrl.startsWith('data:') ? '' : next.footer.logoUrl)
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {
@@ -372,8 +387,9 @@ export function FooterEditorPage() {
       <PageHeader
         title="Footer"
         description="Save a private draft in Strapi, then Publish live to update the public footer immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+        action={<PublishActions scope="footer" pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
           setFooter(config.footer)
+          setLogoUrlDraft(config.footer.logoUrl.startsWith('data:') ? '' : config.footer.logoUrl)
           setSavedAs(null)
         }} />}
       />
@@ -383,6 +399,11 @@ export function FooterEditorPage() {
             <ColorField label="Background" value={footer.backgroundColor} onChange={(v) => patch('backgroundColor', v)} />
             <ColorField label="Text color" value={footer.textColor} onChange={(v) => patch('textColor', v)} />
             <div className="md:col-span-2">
+              <Field label="Copyright">
+                <input className="admin-input" value={footer.copyright} onChange={(e) => patch('copyright', e.target.value)} />
+              </Field>
+            </div>
+            <div className="md:col-span-2">
               <MediaUpload
                 kind="image"
                 label="Upload footer logo"
@@ -390,26 +411,52 @@ export function FooterEditorPage() {
                 allowSvg
                 maxBytes={2 * 1024 * 1024}
                 recommendedBytes={500 * 1024}
-                value={footer.logoUrl}
-                onLoaded={(url) => patch('logoUrl', url)}
-                onClear={() => patch('logoUrl', '')}
+                value={footer.logoUrl.startsWith('data:') ? footer.logoUrl : ''}
+                onLoaded={(url) => {
+                  patch('logoUrl', url)
+                  setLogoUrlDraft('')
+                }}
+                onClear={() => {
+                  patch('logoUrl', '')
+                  setLogoUrlDraft('')
+                }}
                 noun="logo"
-                extra={(
-                  <>
-                    <Field label="Or paste a logo URL">
-                      <input className="admin-input" value={footer.logoUrl.startsWith('data:') ? '' : footer.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} />
-                    </Field>
-                    <Field label="Logo size">
-                      <div className="hp-size">
-                        <input className="hp-range" type="range" min={24} max={72} step={2} value={footer.logoHeight ?? 40} onChange={(e) => patch('logoHeight', Number(e.target.value))} />
-                        <output>{footer.logoHeight ?? 40}px</output>
-                      </div>
-                    </Field>
-                  </>
-                )}
               />
+              <div className="mt-4 grid gap-3">
+                <Field label="Logo URL" hint="Paste a full image link, then click Apply. This replaces an uploaded logo.">
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      className="admin-input"
+                      value={logoUrlDraft}
+                      onChange={(e) => setLogoUrlDraft(e.target.value)}
+                      placeholder="https://…"
+                    />
+                    <button
+                      type="button"
+                      className="btn-secondary shrink-0"
+                      onClick={() => {
+                        const next = normalizeLogoUrl(logoUrlDraft)
+                        setLogoUrlDraft(next)
+                        patch('logoUrl', next)
+                      }}
+                    >
+                      Apply URL
+                    </button>
+                  </div>
+                </Field>
+                <Field label="Logo size">
+                  <div className="hp-size">
+                    <input className="hp-range" type="range" min={24} max={72} step={2} value={footer.logoHeight ?? 48} onChange={(e) => patch('logoHeight', Number(e.target.value))} />
+                    <output>{footer.logoHeight ?? 48}px</output>
+                  </div>
+                </Field>
+                {footer.logoUrl ? (
+                  <button type="button" className="hp-danger w-fit" onClick={() => { patch('logoUrl', ''); setLogoUrlDraft('') }}>
+                    Remove logo
+                  </button>
+                ) : null}
+              </div>
             </div>
-            <Field label="Copyright"><input className="admin-input" value={footer.copyright} onChange={(e) => patch('copyright', e.target.value)} /></Field>
             <div className="md:col-span-2">
               <Field label="Description"><textarea className="admin-input min-h-24" value={footer.description} onChange={(e) => patch('description', e.target.value)} /></Field>
             </div>
@@ -430,9 +477,9 @@ export function FooterEditorPage() {
         <div className="admin-card overflow-hidden p-0">
           <div className="border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold text-slate-600">Footer preview</div>
           <div className="site-footer-preview" style={{ background: footer.backgroundColor, color: footer.textColor }}>
-            {footer.logoUrl ? <img src={footer.logoUrl} alt="" className="mb-3 max-w-[180px] object-contain" style={{ height: footer.logoHeight ?? 40 }} /> : null}
+            {footer.logoUrl ? <img src={footer.logoUrl} alt="" className="mb-3 max-w-[180px] object-contain" style={{ height: footer.logoHeight ?? 48, maxHeight: footer.logoHeight ?? 48 }} /> : null}
             <p className="m-0 text-sm opacity-90">{footer.description}</p>
-            <small className="mt-4 block opacity-70">{footer.copyright}</small>
+            <small className="mt-4 block opacity-90">{footer.copyright || 'Copyright will appear here'}</small>
           </div>
         </div>
       </div>
@@ -477,7 +524,7 @@ export function SeoEditorPage() {
       <PageHeader
         title="SEO & social"
         description="Save a private draft in Strapi, then Publish live to update public meta tags immediately."
-        action={<PublishActions pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
+        action={<PublishActions scope="seo" pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
           setSeo(config.seo)
           setSavedAs(null)
         }} />}

@@ -18,7 +18,7 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
       const next = await fetchSiteConfig()
       if (!active) return
       setConfig(next)
-      applyTheme(next.theme)
+      applyTheme(next.theme, next)
       setReady(true)
       if (invalidateContent) void queryClient.invalidateQueries()
     }

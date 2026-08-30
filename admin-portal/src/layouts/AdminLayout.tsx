@@ -180,11 +180,16 @@ export default function AdminLayout() {
               placeholder="Find a section…"
               aria-label="Search admin sections"
             />
-            {search ? (
-              <button type="button" className="admin-icon-btn" onClick={() => setSearch('')} aria-label="Clear search">
-                <IconX />
-              </button>
-            ) : null}
+            <button
+              type="button"
+              className="admin-icon-btn"
+              onClick={() => setSearch('')}
+              aria-label="Clear search"
+              disabled={!search}
+              style={{ visibility: search ? 'visible' : 'hidden' }}
+            >
+              <IconX />
+            </button>
           </div>
         ) : null}
 

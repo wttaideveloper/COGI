@@ -1,21 +1,23 @@
 import { useState } from 'react'
-import { revertSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
+import { revertSiteConfig, type RevertScope, type SiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
 
 export function RevertToLiveButton({
+  scope,
   disabled,
   onReverted,
 }: {
+  scope: RevertScope
   disabled?: boolean
   onReverted: (config: SiteConfig) => void
 }) {
   const [busy, setBusy] = useState(false)
 
   async function revert() {
-    if (!window.confirm('Revert to the last published version? Draft changes on this screen will be discarded.')) return
+    if (!window.confirm('Revert only the changes on this screen to the last published version? Drafts on other screens will stay.')) return
     setBusy(true)
     try {
-      onReverted(await revertSiteConfig())
+      onReverted(await revertSiteConfig(scope))
     } catch (error) {
       window.alert(getErrorMessage(error))
     } finally {

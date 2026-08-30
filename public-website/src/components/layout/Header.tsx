@@ -50,8 +50,8 @@ export function Header() {
             <img
               src={header.logoUrl}
               alt={header.logoAlt || 'Companions of Grace International'}
-              className="site-header-logo max-w-[min(168px,52vw)] object-contain sm:max-w-[200px] lg:max-w-[240px]"
-              style={{ height: header.logoHeight || 48 }}
+              className="site-header-logo max-w-[min(220px,60vw)] object-contain sm:max-w-[240px] lg:max-w-[280px]"
+              style={{ height: header.logoHeight || 48, maxHeight: header.logoHeight || 48 }}
             />
           ) : (
             <span className="flex flex-col text-current">

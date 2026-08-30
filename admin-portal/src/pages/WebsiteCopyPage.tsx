@@ -167,6 +167,7 @@ export default function WebsiteCopyPage() {
             {pending === 'published' ? 'Publishing…' : 'Publish live'}
           </button>
           <RevertToLiveButton
+            scope="copy"
             disabled={Boolean(pending)}
             onReverted={(config) => {
               setCopy(mergeSiteCopy(config.copy))

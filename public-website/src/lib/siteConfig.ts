@@ -216,7 +216,7 @@ const defaults: SiteConfig = {
   copy: defaultSiteCopy,
 }
 
-export function applyTheme(theme: SiteConfig['theme']) {
+export function applyTheme(theme: SiteConfig['theme'], chrome?: Pick<SiteConfig, 'header' | 'footer'>) {
   const root = document.documentElement
   root.style.setProperty('--color-teal-deep', theme.primaryColor)
   root.style.setProperty('--color-teal-mid', theme.secondaryColor)
@@ -229,22 +229,54 @@ export function applyTheme(theme: SiteConfig['theme']) {
   root.style.setProperty('--color-ink-muted', '#5a6a80')
   root.style.setProperty('--font-body', theme.fontFamily)
   root.style.setProperty('--font-display', theme.headingFontFamily)
+  if (chrome?.header?.logoHeight) {
+    root.style.setProperty('--header-logo-height', `${chrome.header.logoHeight}px`)
+  }
+  if (chrome?.footer?.logoHeight) {
+    root.style.setProperty('--footer-logo-height', `${chrome.footer.logoHeight}px`)
+  }
   document.body.style.backgroundColor = theme.backgroundColor
   document.body.style.color = theme.textColor
   document.body.style.fontFamily = theme.fontFamily
 }
 
-export async function fetchSiteConfig(): Promise<SiteConfig> {
-  const fromStrapi = await fetchSiteConfigFromStrapi()
-  if (fromStrapi) return fromStrapi
+function isPlaceholderHeroVideo(url?: string) {
+  if (!url) return true
+  return url.includes('sGKtc3lI_Pg') || url === '/videos/intro.mp4' || url.includes('images.unsplash.com')
+}
+
+async function fetchSiteConfigFile(): Promise<Partial<SiteConfig> | null> {
   try {
     const res = await fetch(`/site-config.json?t=${Date.now()}`, { cache: 'no-store' })
-    if (!res.ok) return defaults
+    if (!res.ok) return null
     const data = (await res.json()) as Partial<SiteConfig>
-    return mergeSiteConfig(data)
+    return data && typeof data === 'object' ? data : null
   } catch {
-    return defaults
+    return null
   }
+}
+
+export async function fetchSiteConfig(): Promise<SiteConfig> {
+  const [fromStrapi, fromFile] = await Promise.all([
+    fetchSiteConfigFromStrapi(),
+    fetchSiteConfigFile(),
+  ])
+  if (fromStrapi) {
+    const merged = mergeSiteConfig({
+      ...fromFile,
+      ...fromStrapi,
+      homepage: { ...fromFile?.homepage, ...fromStrapi.homepage },
+    })
+    const slides = merged.homepage.heroSlides || []
+    const unsplashOnly = slides.length > 0 && slides.every((slide) => slide.imageUrl?.includes('images.unsplash.com'))
+    if (isPlaceholderHeroVideo(merged.homepage.heroVideoUrl) || unsplashOnly) {
+      merged.homepage.heroVideoUrl = siteVideos.intro
+      if (unsplashOnly || merged.homepage.heroMedia !== 'images') merged.homepage.heroMedia = 'video'
+    }
+    return merged
+  }
+  if (fromFile) return mergeSiteConfig(fromFile)
+  return defaults
 }
 
 function mergeHomeSections(
@@ -262,6 +294,18 @@ function mergeHomeSections(
 }
 
 function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
+  const homepage = {
+    ...defaults.homepage,
+    ...data.homepage,
+    sections: mergeHomeSections(data.homepage?.sections ?? defaults.homepage.sections),
+  }
+  if (!homepage.heroVideoUrl || homepage.heroVideoUrl.includes('sGKtc3lI_Pg')) {
+    homepage.heroVideoUrl = siteVideos.intro
+  }
+  const copy = mergeSiteCopy(data.copy)
+  if (copy.homepage.videoUrl === '/videos/intro.mp4') {
+    copy.homepage.videoUrl = siteVideos.intro
+  }
   return {
     ...defaults,
     ...data,
@@ -269,12 +313,8 @@ function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
     header: { ...defaults.header, ...data.header },
     footer: { ...defaults.footer, ...data.footer },
     seo: { ...defaults.seo, ...data.seo },
-    homepage: {
-      ...defaults.homepage,
-      ...data.homepage,
-      sections: mergeHomeSections(data.homepage?.sections ?? defaults.homepage.sections),
-    },
-    copy: mergeSiteCopy(data.copy),
+    homepage,
+    copy,
     headerNav: data.headerNav?.length ? data.headerNav : defaults.headerNav,
     footerNav: data.footerNav?.length ? data.footerNav : defaults.footerNav,
   }

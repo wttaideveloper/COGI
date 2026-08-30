@@ -53,8 +53,8 @@ export function Footer() {
             <img
               src={footer.logoUrl}
               alt="Companions of Grace International"
-              className="mb-3 max-w-[220px] object-contain"
-              style={{ height: footer.logoHeight || 40 }}
+              className="site-footer-logo mb-3 max-w-[220px] object-contain"
+              style={{ height: footer.logoHeight || 48, maxHeight: footer.logoHeight || 48 }}
             />
           ) : (
             <div>
@@ -62,6 +62,9 @@ export function Footer() {
               <p className="text-[0.65rem] font-semibold uppercase tracking-[0.38em] opacity-80">International</p>
             </div>
           )}
+          {footer.copyright ? (
+            <p className="mt-3 text-sm leading-relaxed opacity-90">{footer.copyright}</p>
+          ) : null}
           <p className="mt-3 text-sm opacity-80">{footer.description || settings?.tagline}</p>
           <p className="mt-4 text-sm">
             <a href={`mailto:${settings?.contactEmail}`} className="text-gold hover:underline">

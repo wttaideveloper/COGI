@@ -25,16 +25,16 @@ export function SplitBand({ section, imageLeft, tone = 'white' }: { section: Hom
   const body = section.content || ''
   const left = imageLeft ?? section.imageSide === 'left'
   const image = (
-    <div className="relative min-h-[320px] h-full overflow-hidden md:min-h-[480px]">
+    <div className="relative min-h-[240px] h-full overflow-hidden md:min-h-[340px]">
       {section.imageUrl ? (
         <img src={section.imageUrl} alt={section.imageAlt || title} className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <div className="flex h-full min-h-[320px] items-center justify-center bg-mist-dark text-sm text-ink-muted md:min-h-[480px]">Photo</div>
+        <div className="flex h-full min-h-[240px] items-center justify-center bg-mist-dark text-sm text-ink-muted md:min-h-[340px]">Photo</div>
       )}
     </div>
   )
   const copy = (
-    <div className="flex items-center px-6 py-16 sm:px-10 lg:px-16 lg:py-24">
+    <div className="flex items-center px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
       <div className="mx-auto max-w-xl">
         {section.eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">{section.eyebrow}</p> : null}
         <h2 className="font-display text-4xl font-semibold italic leading-tight text-teal-deep md:text-5xl">{title}</h2>
@@ -83,7 +83,7 @@ export function CustomHomeSection({ section }: { section: HomeSection }) {
 
   if (kind === 'banner') {
     return (
-      <section className="relative overflow-hidden py-24 text-white" aria-label={title}>
+      <section className="relative overflow-hidden py-14 text-white md:py-20" aria-label={title}>
         {section.imageUrl ? <img src={section.imageUrl} alt={section.imageAlt || ''} className="absolute inset-0 h-full w-full object-cover" /> : null}
         <div className="absolute inset-0 bg-black/70" />
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
@@ -132,7 +132,7 @@ export function CustomHomeSection({ section }: { section: HomeSection }) {
   }
 
   return (
-    <section className="bg-white py-24" aria-label={title}>
+    <section className="bg-white py-14 md:py-20" aria-label={title}>
       <div className="mx-auto max-w-4xl px-4 text-center">
         <h2 className="font-display text-3xl text-teal-deep md:text-5xl">{title}</h2>
         {body ? <p className="mt-6 text-lg leading-relaxed text-ink-muted">{body}</p> : null}

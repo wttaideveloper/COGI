@@ -112,16 +112,29 @@
   }
 }
 
+.site-header-logo {
+  height: var(--header-logo-height, 48px);
+  max-height: var(--header-logo-height, 48px);
+  width: auto;
+}
+
+.site-footer-logo {
+  height: var(--footer-logo-height, 48px);
+  max-height: var(--footer-logo-height, 48px);
+  width: auto;
+}
+
 @media (max-width: 1023px) {
   .site-header-logo {
-    height: auto !important;
-    max-height: 40px;
+    height: min(var(--header-logo-height, 48px), 48px);
+    max-height: min(var(--header-logo-height, 48px), 48px);
     width: auto;
   }
 }
 
 @media (max-width: 639px) {
   .site-header-logo {
-    max-height: 34px;
+    height: min(var(--header-logo-height, 48px), 40px);
+    max-height: min(var(--header-logo-height, 48px), 40px);
   }
 }

@@ -1,29 +1,29 @@
 {
   "theme": {
-    "primaryColor": "#1B3A6B",
-    "secondaryColor": "#163057",
-    "backgroundColor": "#FFFFFF",
-    "textColor": "#1A2332",
-    "accentColor": "#2B6CB0",
-    "buttonHoverColor": "#3B82F6",
-    "fontFamily": "Plus Jakarta Sans, system-ui, sans-serif",
-    "headingFontFamily": "Cormorant Garamond, Georgia, serif"
+    "primaryColor": "#8B4513",
+    "secondaryColor": "#3D2914",
+    "backgroundColor": "#FAF6F1",
+    "textColor": "#2A2118",
+    "accentColor": "#D4A017",
+    "buttonHoverColor": "#D4B88A",
+    "fontFamily": "Lato, Arial, sans-serif",
+    "headingFontFamily": "Playfair Display, Georgia, serif"
   },
   "header": {
-    "backgroundColor": "#2B6CB0",
-    "textColor": "#ffffff",
-    "logoUrl": "/images/cogi-logo.png",
+    "backgroundColor": "#000000",
+    "textColor": "#FFFFFF",
+    "logoUrl": "",
     "logoAlt": "Companions of Grace International",
-    "logoHeight": 64,
+    "logoHeight": 48,
     "ctaText": "Donate",
     "ctaLink": "/donate",
     "sticky": true
   },
   "footer": {
-    "backgroundColor": "#ffffff",
-    "textColor": "#1A2332",
-    "logoUrl": "/images/cogi-logo.png",
-    "logoHeight": 48,
+    "backgroundColor": "#12362C",
+    "textColor": "#E8F0EC",
+    "logoUrl": "",
+    "logoHeight": 40,
     "description": "Equipping healthcare professionals for Kingdom engagement around the world.",
     "copyright": "© Companions of Grace International. All rights reserved.",
     "showSocial": true,
@@ -147,8 +147,8 @@
     }
   ],
   "homepage": {
-    "heroHeadline": "Equipping Healthcare Professionals for Kingdom Engagement",
-    "heroIntro": "COGI cultivates communities of grace among healthcare professionals serving missionally around the world.",
+    "heroHeadline": "",
+    "heroIntro": "",
     "heroHeadlineSize": 64,
     "heroHeadlineCase": "uppercase",
     "heroMedia": "video",
@@ -156,10 +156,10 @@
     "heroImageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
     "heroImageAlt": "Healthcare professionals collaborating in a clinic",
     "heroSlideDuration": 6,
-    "mapOceanColor": "#F7FAFC",
-    "mapLandColor": "#1B3A6B",
-    "mapPinColor": "#2B6CB0",
-    "mapActiveColor": "#3B82F6",
+    "mapOceanColor": "#E7F1EE",
+    "mapLandColor": "#1B4D3E",
+    "mapPinColor": "#1B4D3E",
+    "mapActiveColor": "#C4A574",
     "heroSlides": [
       {
         "id": "s1",
@@ -177,7 +177,7 @@
         "alt": "Community healthcare and care"
       }
     ],
-    "primaryCtaLabel": "Join the Movement",
+    "primaryCtaLabel": "",
     "primaryCtaHref": "/get-involved",
     "missionTitle": "Our Mission",
     "missionStatement": "Inspire and enable transformation so healthcare professionals think, live, and work missionally.",
@@ -207,18 +207,18 @@
     "sections": [
       {
         "id": "hero",
-        "label": "Hero",
+        "label": "Welcome banner",
         "enabled": true,
         "order": 1,
-        "summary": "Primary homepage introduction and call to action.",
+        "summary": "The first thing visitors see",
         "kind": "built-in"
       },
       {
         "id": "newsletterBanner",
-        "label": "Gold banner",
+        "label": "Highlight banner",
         "enabled": true,
         "order": 2,
-        "summary": "Lead story / newsletter callout.",
+        "summary": "A short callout under the welcome",
         "kind": "built-in"
       },
       {
@@ -226,47 +226,31 @@
         "label": "Mission",
         "enabled": true,
         "order": 3,
-        "summary": "Mission statement and scripture.",
+        "summary": "Mission statement and scripture",
         "kind": "built-in"
       },
       {
         "id": "legacy",
-        "label": "Legacy",
+        "label": "Our story",
         "enabled": true,
         "order": 4,
-        "summary": "Strong legacy, bold future.",
+        "summary": "Who we are and why we exist",
         "kind": "built-in"
       },
       {
         "id": "methods",
-        "label": "Methods",
+        "label": "How we work",
         "enabled": true,
         "order": 5,
-        "summary": "Enable, train, and support.",
-        "kind": "built-in"
-      },
-      {
-        "id": "impact",
-        "label": "Impact Stats",
-        "enabled": true,
-        "order": 6,
-        "summary": "Countries, professionals, programs.",
-        "kind": "built-in"
-      },
-      {
-        "id": "video",
-        "label": "Video",
-        "enabled": true,
-        "order": 7,
-        "summary": "Introduction video / photo.",
+        "summary": "Enable, train, and support",
         "kind": "built-in"
       },
       {
         "id": "splitPrograms",
-        "label": "Programs",
+        "label": "Programs (photo + text)",
         "enabled": true,
-        "order": 8,
-        "summary": "Photo on one side, text on the other",
+        "order": 6,
+        "summary": "Photo on one side, words on the other",
         "kind": "built-in",
         "title": "Programs",
         "content": "Training, formation, and Kingdom of God seminars that help healthcare professionals think, live, and work missionally — in clinics, hospitals, and communities around the world.",
@@ -277,11 +261,27 @@
         "buttonHref": "/programs"
       },
       {
+        "id": "impact",
+        "label": "Key numbers",
+        "enabled": true,
+        "order": 7,
+        "summary": "Countries, people, and programs",
+        "kind": "built-in"
+      },
+      {
+        "id": "video",
+        "label": "Intro video",
+        "enabled": true,
+        "order": 8,
+        "summary": "Film or photo introduction",
+        "kind": "built-in"
+      },
+      {
         "id": "splitStories",
-        "label": "Stories",
+        "label": "Stories (photo + text)",
         "enabled": true,
         "order": 9,
-        "summary": "Photo on one side, text on the other",
+        "summary": "Photo on one side, words on the other",
         "kind": "built-in",
         "title": "Stories of transformation",
         "content": "From the bedside to the mission field, Companions of Grace walk with healthcare workers whose ordinary work is becoming extraordinary witness. Watch and read how communities of grace are taking shape.",
@@ -293,10 +293,10 @@
       },
       {
         "id": "portfolio",
-        "label": "Portfolio",
+        "label": "What we do",
         "enabled": true,
         "order": 10,
-        "summary": "Four ministry areas.",
+        "summary": "Ministry areas",
         "kind": "built-in"
       },
       {
@@ -304,39 +304,39 @@
         "label": "Where we serve",
         "enabled": true,
         "order": 11,
-        "summary": "Countries served.",
+        "summary": "Map of countries",
         "kind": "built-in"
       },
       {
         "id": "stories",
-        "label": "Featured Stories",
+        "label": "Featured stories",
         "enabled": true,
         "order": 12,
-        "summary": "Featured story teasers.",
+        "summary": "Story cards from the library",
         "kind": "built-in"
       },
       {
         "id": "events",
-        "label": "Featured Event",
+        "label": "Next event",
         "enabled": true,
         "order": 13,
-        "summary": "Upcoming featured event.",
+        "summary": "The upcoming featured event",
         "kind": "built-in"
       },
       {
         "id": "newsletter",
-        "label": "Newsletter",
+        "label": "Email signup",
         "enabled": true,
         "order": 14,
-        "summary": "Newsletter signup.",
+        "summary": "Newsletter form",
         "kind": "built-in"
       },
       {
         "id": "donate",
-        "label": "Donate CTA",
+        "label": "Give",
         "enabled": true,
         "order": 15,
-        "summary": "Donate call to action.",
+        "summary": "Invite people to donate",
         "kind": "built-in"
       },
       {
@@ -344,7 +344,7 @@
         "label": "Statement of faith",
         "enabled": true,
         "order": 16,
-        "summary": "Closing faith statement.",
+        "summary": "Closing faith statement",
         "kind": "built-in"
       }
     ]
@@ -582,5 +582,5 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-08-24T11:58:49.117Z"
+  "updatedAt": "2026-08-30T08:01:45.546Z"
 }

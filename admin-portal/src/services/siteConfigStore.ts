@@ -145,14 +145,66 @@ export async function resolvePublishedSiteConfig(): Promise<SiteConfig | null> {
   return loadPublishedSiteConfig()
 }
 
-export async function revertSiteConfig(): Promise<SiteConfig> {
+export type RevertScope = 'theme' | 'header' | 'footer' | 'seo' | 'homepage' | 'copy' | 'menus'
+
+function applyRevertScope(current: SiteConfig, published: SiteConfig, scope: RevertScope): SiteConfig {
+  if (scope === 'theme') {
+    return {
+      ...current,
+      theme: structuredClone(published.theme),
+      header: {
+        ...current.header,
+        logoUrl: published.header.logoUrl,
+        logoAlt: published.header.logoAlt,
+        logoHeight: published.header.logoHeight,
+      },
+    }
+  }
+  if (scope === 'header') {
+    return { ...current, header: structuredClone(published.header) }
+  }
+  if (scope === 'footer') {
+    return { ...current, footer: structuredClone(published.footer) }
+  }
+  if (scope === 'seo') {
+    return { ...current, seo: structuredClone(published.seo) }
+  }
+  if (scope === 'homepage') {
+    return {
+      ...current,
+      homepage: structuredClone(published.homepage),
+      copy: { ...current.copy, homepage: structuredClone(published.copy.homepage) },
+    }
+  }
+  if (scope === 'copy') {
+    return {
+      ...current,
+      copy: { ...structuredClone(published.copy), homepage: current.copy.homepage },
+    }
+  }
+  return {
+    ...current,
+    headerNav: structuredClone(published.headerNav),
+    footerNav: structuredClone(published.footerNav),
+  }
+}
+
+export async function revertSiteConfig(scope: RevertScope): Promise<SiteConfig> {
   const published = await resolvePublishedSiteConfig()
   if (!published) {
     throw new Error('Nothing published yet to revert to. Publish once first, then you can revert later drafts.')
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(published))
-  await persistSiteConfigToStrapi(published, 'draft')
-  return published
+  const next = {
+    ...applyRevertScope(loadSiteConfig(), published, scope),
+    updatedAt: new Date().toISOString(),
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  try {
+    await persistSiteConfigToStrapi(stripDataUrls(structuredClone(next)) as SiteConfig, 'draft')
+  } catch {
+    // Local draft already matches the last published values for this screen.
+  }
+  return next
 }
 
 export function notifyPublished() {
@@ -269,6 +321,15 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
   return local
 }
 
+function stripDataUrls(value: unknown): unknown {
+  if (typeof value === 'string') return value.startsWith('data:') ? '' : value
+  if (Array.isArray(value)) return value.map(stripDataUrls)
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, stripDataUrls(nested)]))
+  }
+  return value
+}
+
 export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draft' | 'published' = 'draft'): Promise<SiteConfig> {
   let next = mergeConfig({
     ...loadSiteConfig(),
@@ -276,21 +337,32 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
     updatedAt: new Date().toISOString(),
   })
 
-  if (status === 'published' && !isDemoMode()) {
-    next = await prepareConfigForStrapi(next)
-  }
-
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
 
-  if (status === 'published') {
-    await writePublicFile(next)
-    rememberPublishedSiteConfig(next)
+  if (isDemoMode()) {
+    if (status === 'published') {
+      await writePublicFile(next)
+      rememberPublishedSiteConfig(next)
+      notifyPublished()
+    }
+    return next
   }
 
-  await persistSiteConfigToStrapi(next, status)
+  if (status === 'draft') {
+    try {
+      await persistSiteConfigToStrapi(stripDataUrls(structuredClone(next)) as SiteConfig, 'draft')
+    } catch {
+      // Local draft is already saved; Strapi can catch up on the next publish.
+    }
+    return next
+  }
 
-  if (status === 'published') notifyPublished()
-
+  next = await prepareConfigForStrapi(next)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  await writePublicFile(next)
+  rememberPublishedSiteConfig(next)
+  await persistSiteConfigToStrapi(next, 'published')
+  notifyPublished()
   return next
 }
 

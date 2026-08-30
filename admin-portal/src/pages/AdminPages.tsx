@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
-import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { z } from 'zod'
 import MenuSwapper from '@/components/MenuSwapper'
 import RichTextEditor from '@/components/RichTextEditor'
@@ -12,7 +12,7 @@ import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomep
 import { mockFooterNavigation } from '@/data/siteSetup'
 import { hydrateSiteConfigFromStrapi, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
-import { apiCreate, apiDelete, apiGetOne, apiList, apiListAll, apiSingle, apiPublish, apiUnpublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
+import { apiCreate, apiDelete, apiGetOne, apiList, apiListAll, apiSingle, apiPublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
 import { fetchLeads, removeSubscriber, type LeadSubscriber } from '@/services/leads'
 import { COGI_LOGO } from '@/lib/brand'
@@ -71,18 +71,40 @@ const schemaFieldMap: Record<string, Record<string, string>> = {
   '/testimonials': { quote: 'quote', author: 'author', mediaType: 'mediaType', country: 'country', featured: 'featured' },
   '/team-members': { name: 'name', title: 'title', role: 'role', region: 'region', bio: 'bio', order: 'order', publicVisibility: 'publicVisibility' },
   '/partners': { name: 'name', description: 'description', url: 'url', region: 'region', order: 'order' },
-  '/locations': { country: 'country', region: 'region', summary: 'summary', latitude: 'latitude', longitude: 'longitude', programs: 'programs' },
+  '/locations': { country: 'country', region: 'region', summary: 'summary', latitude: 'latitude', longitude: 'longitude' },
 }
-function buildPayload(endpoint: string, values: Record<string, unknown>, status: 'draft' | 'published') {
+function toDecimal(value: unknown): number | undefined {
+  if (value === '' || value == null) return undefined
+  const n = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(n) ? n : undefined
+}
+function buildPayload(endpoint: string, values: Record<string, unknown>, _status: 'draft' | 'published') {
   const cleaned = cleanPayload(values)
   const map = schemaFieldMap[endpoint]
   const out: Record<string, unknown> = {}
   for (const [formKey, apiKey] of Object.entries(map)) {
-    if (cleaned[formKey] !== undefined) out[apiKey] = cleaned[formKey]
+    if (cleaned[formKey] === undefined) continue
+    if (apiKey === 'latitude' || apiKey === 'longitude' || apiKey === 'order') {
+      const n = toDecimal(cleaned[formKey])
+      if (n !== undefined) out[apiKey] = n
+      continue
+    }
+    out[apiKey] = cleaned[formKey]
   }
-  if (!map.status) out.publishedAt = status === 'published' ? new Date().toISOString() : null
-  else out.status = status
   return out
+}
+function locationPreviewUrl(country?: unknown) {
+  const name = String(country || '').trim()
+  return getPreviewUrl(name ? `/?location=${encodeURIComponent(name)}#map` : '/#map')
+}
+function recordPreviewUrl(moduleKey: ModuleKey, values: Record<string, unknown>, row?: AnyRecord) {
+  if (moduleKey === 'locations') return locationPreviewUrl(values.country || row?.country)
+  return getPreviewUrl(String(values.slug || row?.slug || ''))
+}
+function createdDocumentId(created: unknown): string {
+  if (!created || typeof created !== 'object') return ''
+  const root = created as { data?: { documentId?: string; id?: string | number }; documentId?: string; id?: string | number }
+  return String(root.data?.documentId || root.documentId || root.data?.id || root.id || '')
 }
 
 export function LoginPage() {
@@ -155,22 +177,22 @@ export function DashboardPage() {
           </div>
         }
       />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
-        {[{ label: 'Pages', value: mockStats.pages }, { label: 'Published', value: mockStats.pagesPublished }, { label: 'Drafts', value: mockStats.pagesDraft }, { label: 'Articles', value: mockStats.articles }, { label: 'Upcoming Events', value: mockStats.upcomingEvents }, { label: 'Newsletter', value: mockStats.newsletterSubscribers }].map((s) => (
-          <div key={s.label} className="admin-card p-5">
+      <div className="dash-stats">
+        {[{ label: 'Pages', value: mockStats.pages }, { label: 'Published', value: mockStats.pagesPublished }, { label: 'Drafts', value: mockStats.pagesDraft }, { label: 'Articles', value: mockStats.articles }, { label: 'Upcoming events', value: mockStats.upcomingEvents }, { label: 'Newsletter', value: mockStats.newsletterSubscribers }].map((s) => (
+          <div key={s.label} className="admin-card dash-stat">
             <div className="text-sm font-semibold text-slate-500">{s.label}</div>
             <div className="mt-2 text-3xl font-extrabold text-[var(--color-primary)]">{s.value}</div>
           </div>
         ))}
       </div>
       <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <div className="admin-card p-5">
+        <div className="admin-card flex flex-col p-5">
           <h3 className="mb-4 font-bold">Content mix</h3>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chart}><CartesianGrid strokeDasharray="3 3" stroke="#d5e4f3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="value" fill="#2B6CB0" radius={[8, 8, 0, 0]} /></BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="admin-card p-5">
+        <div className="admin-card flex flex-col p-5">
           <h3 className="mb-4 font-bold">Engagement trend</h3>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={[{ name: 'Apr', value: 120 }, { name: 'May', value: 220 }, { name: 'Jun', value: 310 }, { name: 'Jul', value: 420 }]}>
@@ -179,8 +201,8 @@ export function DashboardPage() {
           </ResponsiveContainer>
         </div>
       </div>
-      <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <div className="admin-card p-5 xl:col-span-2">
+      <div className="mt-6 grid items-stretch gap-6 xl:grid-cols-2">
+        <div className="admin-card p-5">
           <h3 className="mb-4 font-bold">Recent activity</h3>
           <div className="divide-y divide-slate-100">
             {mockActivity.map((item) => (
@@ -193,25 +215,15 @@ export function DashboardPage() {
         </div>
         <div className="admin-card p-5">
           <h3 className="mb-4 font-bold">Quick actions</h3>
-          <div className="grid gap-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             <Link className="btn-secondary justify-start" to="/homepage">Edit homepage</Link>
             <Link className="btn-secondary justify-start" to="/website-copy">Edit site pages</Link>
             <Link className="btn-secondary justify-start" to="/pages/new">Create a custom page</Link>
             <Link className="btn-secondary justify-start" to="/theme">Theme & branding</Link>
             <Link className="btn-secondary justify-start" to="/header">Header editor</Link>
             <Link className="btn-secondary justify-start" to="/footer">Footer editor</Link>
-            <Link className="btn-secondary justify-start" to="/navigation">Pages & menus (drag)</Link>
-            <Link className="btn-secondary justify-start" to="/users">Add admin user</Link>
+            <Link className="btn-secondary justify-start" to="/navigation">Pages & menus</Link>
             <Link className="btn-secondary justify-start" to="/media">Upload images</Link>
-          </div>
-          <div className="mt-5">
-            <ResponsiveContainer width="100%" height={150}>
-              <PieChart>
-                <Pie data={chart} dataKey="value" innerRadius={38} outerRadius={60}>
-                  {chart.map((_, i) => <Cell key={i} fill={['#1B3A6B', '#2B6CB0', '#3B82F6', '#93C5FD'][i]} />)}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -407,6 +419,7 @@ export function NavigationPage() {
               {pending === 'published' ? 'Publishing…' : 'Publish live'}
             </button>
             <RevertToLiveButton
+              scope="menus"
               disabled={Boolean(pending)}
               onReverted={(config) => {
                 setHeaderItems(config.headerNav)
@@ -504,13 +517,12 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
       const id = current?.documentId || current?.id || String(params.id)
       if (params.id === 'new') {
         const created = await apiCreate<Record<string, unknown>>(config.endpoint, payload, 'draft')
-        const createdId = (created as { data?: { documentId?: string } })?.data?.documentId
+        const createdId = createdDocumentId(created)
         if (createdId && status === 'published') await apiPublish(config.endpoint, createdId)
-        return created
+        return { id: createdId, documentId: createdId }
       }
       await apiUpdate<Record<string, unknown>>(config.endpoint, id, payload, 'draft')
       if (status === 'published') await apiPublish(config.endpoint, id)
-      else await apiUnpublish(config.endpoint, id)
       return {}
     },
     onSuccess: (data, variables) => {
@@ -596,7 +608,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
             >
               Revert to live
             </button>
-            <a className="btn-secondary" href={getPreviewUrl(String(form.watch('slug') || ''))} target="_blank" rel="noreferrer">Preview</a>
+            <a className="btn-secondary" href={recordPreviewUrl(moduleKey, form.watch(), current)} target="_blank" rel="noreferrer">Preview</a>
           </div>
         </form>
       </>
@@ -649,7 +661,9 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
                   <td>
                     <div className="flex gap-2">
                       <Link className="btn-secondary px-3 py-1" to={`${config.route}/${row.documentId || row.id}`}>Edit</Link>
-                      {row.slug ? <a className="btn-secondary px-3 py-1" href={getPreviewUrl(String(row.slug))} target="_blank" rel="noreferrer">View</a> : null}
+                      {moduleKey === 'locations' || row.slug ? (
+                        <a className="btn-secondary px-3 py-1" href={recordPreviewUrl(moduleKey, row, row)} target="_blank" rel="noreferrer">View</a>
+                      ) : null}
                       <button
                         className="btn-danger px-3 py-1"
                         onClick={() => {
