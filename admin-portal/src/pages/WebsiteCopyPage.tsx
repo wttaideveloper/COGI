@@ -2,10 +2,10 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { IMAGE_HINT, MediaUpload } from '@/components/MediaUpload'
 import { defaultSiteCopy, mergeSiteCopy, type CopyBlock, type SiteCopy } from '@/data/siteCopy'
-import { hydrateSiteConfigFromStrapi, saveSiteConfig } from '@/services/siteConfigStore'
+import { captureDraftSnapshot, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
-import { getPreviewUrl } from '@/utils/preview'
-import { RevertToLiveButton } from '@/components/RevertButton'
+import { getLiveUrl, getPreviewUrl } from '@/utils/preview'
+import { RevertToLiveButton, UndoDraftButton } from '@/components/RevertButton'
 
 const PAGE_TABS = [
   { id: 'about', label: 'Vision & Mission', hint: 'About COGI', href: '/about' },
@@ -28,11 +28,11 @@ const PAGE_TABS = [
 
 type TabId = (typeof PAGE_TABS)[number]['id']
 
-function Field({ label, children, hint }: { label: string; children: ReactNode; hint?: string }) {
+function Field({ label, children, hint, required }: { label: string; children: ReactNode; hint?: string; required?: boolean }) {
   return (
     <label className="hp-field">
       <span className="hp-field-head">
-        <span className="admin-label">{label}</span>
+        <span className="admin-label">{label}{required ? ' *' : ''}</span>
       </span>
       {children}
       {hint ? <span className="hp-hint">{hint}</span> : null}
@@ -86,8 +86,8 @@ function HeroFields({
 }) {
   return (
     <Card title={title}>
-      <Field label="Page title"><TextInput value={heroTitle} onChange={(v) => onChange({ heroTitle: v })} /></Field>
-      <Field label="Subtitle"><TextArea value={heroSubtitle} onChange={(v) => onChange({ heroSubtitle: v })} rows={2} /></Field>
+      <Field label="Page title" required><TextInput value={heroTitle} onChange={(v) => onChange({ heroTitle: v })} /></Field>
+      <Field label="Subtitle" required><TextArea value={heroSubtitle} onChange={(v) => onChange({ heroSubtitle: v })} rows={2} /></Field>
       <PhotoField label="Hero photo" value={imageUrl} onChange={(v) => onChange({ imageUrl: v })} />
     </Card>
   )
@@ -97,7 +97,7 @@ function LivePreview({ title, subtitle, imageUrl }: { title: string; subtitle: s
   return (
     <aside>
       <p className="hp-preview-label">How visitors see it</p>
-      <div className="hp-canvas hp-canvas-teal" style={imageUrl ? { backgroundImage: `linear-gradient(rgba(15,35,70,0.55), rgba(15,35,70,0.7)), url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
+      <div className="hp-canvas hp-canvas-teal" style={imageUrl ? { backgroundImage: `linear-gradient(rgba(255,255,255,0.86), rgba(255,255,255,0.92)), url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
         <p className="hp-kicker">Page banner</p>
         <h4>{title || 'Page title'}</h4>
         <p>{subtitle || 'Subtitle'}</p>
@@ -107,7 +107,7 @@ function LivePreview({ title, subtitle, imageUrl }: { title: string; subtitle: s
 }
 
 export default function WebsiteCopyPage() {
-  const [copy, setCopy] = useState<SiteCopy>(defaultSiteCopy)
+  const [copy, setCopy] = useState<SiteCopy>(() => mergeSiteCopy(loadSiteConfig().copy))
   const [tab, setTab] = useState<TabId>('about')
   const [search, setSearch] = useState('')
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
@@ -115,18 +115,31 @@ export default function WebsiteCopyPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    captureDraftSnapshot('copy')
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
-      if (active) setCopy(mergeSiteCopy(config.copy))
+      if (active) {
+        setCopy(mergeSiteCopy(config.copy))
+        captureDraftSnapshot('copy')
+      }
     })
     return () => { active = false }
   }, [])
 
   async function save(status: 'draft' | 'published') {
+    if (status === 'published') {
+      const issue = firstBlankPublishIssue(copy)
+      if (issue) {
+        setTab(issue.tab)
+        setError(`Cannot publish live with blank fields on ${issue.label}. Fill: ${issue.fields.join(', ')}.`)
+        return
+      }
+    }
     setPending(status)
     setError(null)
     try {
       await saveSiteConfig({ copy }, status)
+      if (status === 'draft') captureDraftSnapshot('copy')
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {
@@ -166,6 +179,14 @@ export default function WebsiteCopyPage() {
           <button type="button" className="btn-primary" disabled={Boolean(pending)} onClick={() => save('published')}>
             {pending === 'published' ? 'Publishing…' : 'Publish live'}
           </button>
+          <UndoDraftButton
+            scope="copy"
+            disabled={Boolean(pending)}
+            onRestored={(config) => {
+              setCopy(mergeSiteCopy(config.copy))
+              setSavedAs(null)
+            }}
+          />
           <RevertToLiveButton
             scope="copy"
             disabled={Boolean(pending)}
@@ -226,7 +247,7 @@ export default function WebsiteCopyPage() {
               <h3>{active.label}</h3>
               <p>{active.hint}. Changes go live after you publish.</p>
             </div>
-            <a className="btn-secondary" href={getPreviewUrl(active.href)} target="_blank" rel="noreferrer">Open on website</a>
+            <a className="btn-secondary" href={getLiveUrl(active.href)} target="_blank" rel="noreferrer">Open on website</a>
           </div>
 
           <div className="hp-editor-split">
@@ -240,10 +261,18 @@ export default function WebsiteCopyPage() {
                     imageUrl={copy.about.imageUrl}
                     onChange={(p) => patch('about', { ...copy.about, ...p })}
                   />
-                  <Card title="Section titles">
-                    <Field label="Vision heading"><TextInput value={copy.about.visionTitle} onChange={(v) => patch('about', { ...copy.about, visionTitle: v })} /></Field>
-                    <Field label="Mission heading"><TextInput value={copy.about.missionTitle} onChange={(v) => patch('about', { ...copy.about, missionTitle: v })} /></Field>
-                    <p className="hp-hint">Vision and mission body text come from Settings → organization identity.</p>
+                  <Card title="Vision & mission">
+                    <Field label="Vision heading" required><TextInput value={copy.about.visionTitle} onChange={(v) => patch('about', { ...copy.about, visionTitle: v })} /></Field>
+                    <Field label="Vision" required hint="Shown on the public Vision & Mission page.">
+                      <TextArea value={copy.about.visionBody} onChange={(v) => patch('about', { ...copy.about, visionBody: v })} rows={5} />
+                    </Field>
+                    <Field label="Mission heading" required><TextInput value={copy.about.missionTitle} onChange={(v) => patch('about', { ...copy.about, missionTitle: v })} /></Field>
+                    <Field label="Mission" required>
+                      <TextArea value={copy.about.missionBody} onChange={(v) => patch('about', { ...copy.about, missionBody: v })} rows={5} />
+                    </Field>
+                    <Field label="Scripture" hint="Separate references with a middot (·) or comma.">
+                      <TextInput value={copy.about.scripture} onChange={(v) => patch('about', { ...copy.about, scripture: v })} />
+                    </Field>
                   </Card>
                 </>
               )}
@@ -262,10 +291,11 @@ export default function WebsiteCopyPage() {
                   </Card>
                   <Card title="Timeline">
                     {copy.story.milestones.map((item, index) => (
-                      <div key={`${item.year}-${index}`} className="grid gap-3 rounded-xl border border-[var(--color-border)] p-3">
+                      <div key={`milestone-${index}`} className="grid gap-3 rounded-xl border border-[var(--color-border)] p-3">
                         <div className="grid gap-3 md:grid-cols-[100px_1fr_auto]">
-                          <Field label="Year"><TextInput value={item.year} onChange={(v) => {
-                            const milestones = copy.story.milestones.map((row, i) => (i === index ? { ...row, year: v } : row))
+                          <Field label="Year"><input className="admin-input" inputMode="numeric" maxLength={4} value={item.year} onChange={(e) => {
+                            const year = e.target.value.replace(/\D/g, '').slice(0, 4)
+                            const milestones = copy.story.milestones.map((row, i) => (i === index ? { ...row, year } : row))
                             patch('story', { ...copy.story, milestones })
                           }} /></Field>
                           <Field label="Title"><TextInput value={item.title} onChange={(v) => {
@@ -319,10 +349,102 @@ export default function WebsiteCopyPage() {
               )}
 
               {tab === 'board' && (
-                <HeroFields title="Board" heroTitle={copy.board.heroTitle} heroSubtitle={copy.board.heroSubtitle} imageUrl={copy.board.imageUrl} onChange={(p) => patch('board', { ...copy.board, ...p })} />
+                <>
+                  <HeroFields title="Board" heroTitle={copy.board.heroTitle} heroSubtitle={copy.board.heroSubtitle} imageUrl={copy.board.imageUrl} onChange={(p) => patch('board', { ...copy.board, ...p })} />
+                  <Card title="Board members">
+                    <p className="hp-hint">These people appear on the public Board page after you publish. Add, edit, or remove anyone on the board.</p>
+                    {copy.board.members.map((member, index) => (
+                      <div key={member.id || index} className="space-y-3 rounded-xl border border-[var(--color-border)] p-3">
+                        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                          <Field label="Name" required><TextInput value={member.name} onChange={(v) => {
+                            const members = copy.board.members.map((row, i) => (i === index ? { ...row, name: v } : row))
+                            patch('board', { ...copy.board, members })
+                          }} /></Field>
+                          <Field label="Title" required><TextInput value={member.title} onChange={(v) => {
+                            const members = copy.board.members.map((row, i) => (i === index ? { ...row, title: v } : row))
+                            patch('board', { ...copy.board, members })
+                          }} /></Field>
+                          <button type="button" className="btn-danger self-end" onClick={() => patch('board', { ...copy.board, members: copy.board.members.filter((_, i) => i !== index) })}>Remove</button>
+                        </div>
+                        <Field label="Country"><TextInput value={member.country} onChange={(v) => {
+                          const members = copy.board.members.map((row, i) => (i === index ? { ...row, country: v } : row))
+                          patch('board', { ...copy.board, members })
+                        }} /></Field>
+                        <Field label="Bio" required><TextArea value={member.bio} onChange={(v) => {
+                          const members = copy.board.members.map((row, i) => (i === index ? { ...row, bio: v } : row))
+                          patch('board', { ...copy.board, members })
+                        }} rows={4} /></Field>
+                        <PhotoField
+                          label="Photo (optional)"
+                          value={member.imageUrl}
+                          onChange={(v) => {
+                            const members = copy.board.members.map((row, i) => (i === index ? { ...row, imageUrl: v } : row))
+                            patch('board', { ...copy.board, members })
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => patch('board', { ...copy.board, members: [...copy.board.members, { id: `board-${Date.now()}`, name: '', title: '', country: '', bio: '' }] })}
+                    >
+                      Add board member
+                    </button>
+                  </Card>
+                </>
               )}
               {tab === 'globalTeam' && (
-                <HeroFields title="Global team" heroTitle={copy.globalTeam.heroTitle} heroSubtitle={copy.globalTeam.heroSubtitle} imageUrl={copy.globalTeam.imageUrl} onChange={(p) => patch('globalTeam', { ...copy.globalTeam, ...p })} />
+                <>
+                  <HeroFields title="Global team" heroTitle={copy.globalTeam.heroTitle} heroSubtitle={copy.globalTeam.heroSubtitle} imageUrl={copy.globalTeam.imageUrl} onChange={(p) => patch('globalTeam', { ...copy.globalTeam, ...p })} />
+                  <Card title="Team members">
+                    <p className="hp-hint">These people appear on the public Global team page after you publish.</p>
+                    {(copy.globalTeam.members ?? []).map((member, index) => (
+                      <div key={member.id || index} className="space-y-3 rounded-xl border border-[var(--color-border)] p-3">
+                        <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+                          <Field label="Name" required><TextInput value={member.name} onChange={(v) => {
+                            const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, name: v } : row))
+                            patch('globalTeam', { ...copy.globalTeam, members })
+                          }} placeholder="Name" /></Field>
+                          <Field label="Title" required><TextInput value={member.title} onChange={(v) => {
+                            const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, title: v } : row))
+                            patch('globalTeam', { ...copy.globalTeam, members })
+                          }} placeholder="Role or title" /></Field>
+                          <button type="button" className="btn-danger self-end" onClick={() => patch('globalTeam', { ...copy.globalTeam, members: copy.globalTeam.members.filter((_, i) => i !== index) })}>Remove</button>
+                        </div>
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <Field label="Region"><TextInput value={member.region} onChange={(v) => {
+                            const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, region: v } : row))
+                            patch('globalTeam', { ...copy.globalTeam, members })
+                          }} placeholder="Americas & Africa" /></Field>
+                          <Field label="Country"><TextInput value={member.country} onChange={(v) => {
+                            const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, country: v } : row))
+                            patch('globalTeam', { ...copy.globalTeam, members })
+                          }} placeholder="Kenya" /></Field>
+                        </div>
+                        <Field label="Bio" required><TextArea value={member.bio} onChange={(v) => {
+                          const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, bio: v } : row))
+                          patch('globalTeam', { ...copy.globalTeam, members })
+                        }} rows={3} /></Field>
+                        <PhotoField
+                          label="Photo (optional)"
+                          value={member.imageUrl}
+                          onChange={(v) => {
+                            const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, imageUrl: v } : row))
+                            patch('globalTeam', { ...copy.globalTeam, members })
+                          }}
+                        />
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => patch('globalTeam', { ...copy.globalTeam, members: [...copy.globalTeam.members, { id: `gt-${Date.now()}`, name: '', title: '', region: '', country: '', bio: '' }] })}
+                    >
+                      Add team member
+                    </button>
+                  </Card>
+                </>
               )}
               {tab === 'partners' && (
                 <HeroFields title="Partners" heroTitle={copy.partners.heroTitle} heroSubtitle={copy.partners.heroSubtitle} imageUrl={copy.partners.imageUrl} onChange={(p) => patch('partners', { ...copy.partners, ...p })} />
@@ -331,16 +453,27 @@ export default function WebsiteCopyPage() {
                 <>
                   <HeroFields title="Programs" heroTitle={copy.programs.heroTitle} heroSubtitle={copy.programs.heroSubtitle} imageUrl={copy.programs.imageUrl} onChange={(p) => patch('programs', { ...copy.programs, ...p })} />
                   <Card title="Program buttons">
-                    <Field label="Learn more"><TextInput value={copy.programs.learnMore} onChange={(v) => patch('programs', { ...copy.programs, learnMore: v })} /></Field>
-                    <Field label="Express interest"><TextInput value={copy.programs.expressInterest} onChange={(v) => patch('programs', { ...copy.programs, expressInterest: v })} /></Field>
-                    <p className="hp-hint">Individual programs are edited under Website content → Programs.</p>
+                    <Field label="Learn more" hint="Shown on every program card. Each button opens that program’s page (/programs/slug).">
+                      <TextInput value={copy.programs.learnMore} onChange={(v) => patch('programs', { ...copy.programs, learnMore: v })} placeholder="Learn more" />
+                    </Field>
+                    <Field label="Express interest" hint="Shown on every program card. Opens Get Involved (/get-involved).">
+                      <TextInput value={copy.programs.expressInterest} onChange={(v) => patch('programs', { ...copy.programs, expressInterest: v })} placeholder="Express interest" />
+                    </Field>
+                    <p className="hp-hint">The public site has four programs. Edit each program’s title, summary, and experiences under Website content → Programs. Button wording above is shared by all cards.</p>
+                    <ul className="space-y-2 text-sm text-slate-700">
+                      <li><strong>Kingdom of God Studies &amp; Seminars</strong> — Learn more → /programs/kingdom-of-god</li>
+                      <li><strong>Missional Healthcare Training</strong> — Learn more → /programs/missional-training</li>
+                      <li><strong>Care for the Caregiver</strong> — Learn more → /programs/care-for-the-caregiver</li>
+                      <li><strong>Missional Church &amp; Healthcare</strong> — Learn more → /programs/missional-church-healthcare</li>
+                    </ul>
                   </Card>
                 </>
               )}
               {tab === 'events' && (
                 <>
                   <HeroFields title="Events" heroTitle={copy.events.heroTitle} heroSubtitle={copy.events.heroSubtitle} imageUrl={copy.events.imageUrl} onChange={(p) => patch('events', { ...copy.events, ...p })} />
-                  <p className="hp-hint">Individual events are edited under Website content → Events.</p>
+                  <p className="hp-hint">Individual events are created under Website content → Events. This screen only edits the Events page banner.</p>
+                  <Link className="btn-secondary w-fit" to="/events/new">Create an event</Link>
                 </>
               )}
               {tab === 'resources' && (
@@ -349,6 +482,7 @@ export default function WebsiteCopyPage() {
                     title="Resources hub"
                     heroTitle={copy.resources.heroTitle}
                     heroSubtitle={copy.resources.heroSubtitle}
+                    imageUrl={copy.resources.imageUrl}
                     onChange={(p) => patch('resources', { ...copy.resources, ...p })}
                   />
                   <Card title="Resource cards">
@@ -397,7 +531,7 @@ export default function WebsiteCopyPage() {
                     heroTitle={copy.getInvolved.heroTitle}
                     heroSubtitle={copy.getInvolved.heroSubtitle}
                     imageUrl={copy.getInvolved.imageUrl}
-                    onChange={(p) => patch('getInvolved', { ...copy.getInvolved, ...p, imageUrl: p.imageUrl ?? copy.getInvolved.imageUrl })}
+                    onChange={(p) => patch('getInvolved', { ...copy.getInvolved, ...p })}
                   />
                   <Card title="Form">
                     <Field label="Form title"><TextInput value={copy.getInvolved.formTitle} onChange={(v) => patch('getInvolved', { ...copy.getInvolved, formTitle: v })} /></Field>
@@ -426,7 +560,7 @@ export default function WebsiteCopyPage() {
                     heroTitle={copy.donate.heroTitle}
                     heroSubtitle={copy.donate.heroSubtitle}
                     imageUrl={copy.donate.imageUrl}
-                    onChange={(p) => patch('donate', { ...copy.donate, ...p, imageUrl: p.imageUrl ?? copy.donate.imageUrl })}
+                    onChange={(p) => patch('donate', { ...copy.donate, ...p })}
                   />
                   <Card title="Ways to give">
                     <Field label="Intro"><TextArea value={copy.donate.intro} onChange={(v) => patch('donate', { ...copy.donate, intro: v })} /></Field>
@@ -447,7 +581,35 @@ export default function WebsiteCopyPage() {
                         <Field label="Legacy body"><TextArea value={copy.donate.legacyBody} onChange={(v) => patch('donate', { ...copy.donate, legacyBody: v })} /></Field>
                       </div>
                     </div>
-                    <Field label="FAQ heading"><TextInput value={copy.donate.faqTitle} onChange={(v) => patch('donate', { ...copy.donate, faqTitle: v })} /></Field>
+                    <Field label="FAQ heading"><TextInput value={copy.donate.faqTitle} onChange={(v) => patch('donate', { ...copy.donate, faqTitle: v })} placeholder="Frequently asked questions" /></Field>
+                    {(copy.donate.faqs ?? []).map((faq, index) => (
+                      <div key={faq.id || index} className="space-y-3 rounded-xl border border-[var(--color-border)] p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <Field label="Question">
+                            <TextInput
+                              value={faq.question}
+                              onChange={(v) => {
+                                const faqs = (copy.donate.faqs ?? []).map((row, i) => (i === index ? { ...row, question: v } : row))
+                                patch('donate', { ...copy.donate, faqs })
+                              }}
+                              placeholder="e.g. How do I donate to COGI?"
+                            />
+                          </Field>
+                          <button type="button" className="btn-danger mt-6" onClick={() => patch('donate', { ...copy.donate, faqs: (copy.donate.faqs ?? []).filter((_, i) => i !== index) })}>Remove</button>
+                        </div>
+                        <Field label="Answer">
+                          <TextArea
+                            value={faq.answer}
+                            onChange={(v) => {
+                              const faqs = (copy.donate.faqs ?? []).map((row, i) => (i === index ? { ...row, answer: v } : row))
+                              patch('donate', { ...copy.donate, faqs })
+                            }}
+                            rows={3}
+                          />
+                        </Field>
+                      </div>
+                    ))}
+                    <button type="button" className="btn-secondary" onClick={() => patch('donate', { ...copy.donate, faqs: [...(copy.donate.faqs ?? []), { id: `faq-${Date.now()}`, question: '', answer: '' }] })}>Add question</button>
                   </Card>
                 </>
               )}
@@ -470,7 +632,7 @@ export default function WebsiteCopyPage() {
               )}
               {tab === 'search' && (
                 <>
-                  <HeroFields title="Search" heroTitle={copy.search.heroTitle} heroSubtitle={copy.search.heroSubtitle} onChange={(p) => patch('search', { ...copy.search, ...p })} />
+                  <HeroFields title="Search" heroTitle={copy.search.heroTitle} heroSubtitle={copy.search.heroSubtitle} imageUrl={copy.search.imageUrl} onChange={(p) => patch('search', { ...copy.search, ...p })} />
                   <Card title="Search form">
                     <Field label="Placeholder"><TextInput value={copy.search.placeholder} onChange={(v) => patch('search', { ...copy.search, placeholder: v })} /></Field>
                     <Field label="Button"><TextInput value={copy.search.button} onChange={(v) => patch('search', { ...copy.search, button: v })} /></Field>
@@ -493,6 +655,137 @@ export default function WebsiteCopyPage() {
       </div>
     </div>
   )
+}
+
+function preferFilled(value?: string) {
+  return (value ?? '').trim()
+}
+
+function firstBlankPublishIssue(copy: SiteCopy): { tab: TabId; label: string; fields: string[] } | null {
+  const pages: Array<{ tab: TabId; label: string; fields: Array<[string, string | undefined]> }> = [
+    {
+      tab: 'about',
+      label: 'Vision & Mission',
+      fields: [
+        ['Page title', copy.about.heroTitle],
+        ['Subtitle', copy.about.heroSubtitle],
+        ['Vision heading', copy.about.visionTitle],
+        ['Vision', copy.about.visionBody],
+        ['Mission heading', copy.about.missionTitle],
+        ['Mission', copy.about.missionBody],
+      ],
+    },
+    {
+      tab: 'story',
+      label: 'Our Story',
+      fields: [
+        ['Page title', copy.story.heroTitle],
+        ['Subtitle', copy.story.heroSubtitle],
+        ['Intro', copy.story.intro],
+        ...copy.story.milestones.flatMap((item, index) => [
+          [`Milestone ${index + 1} year`, item.year] as [string, string],
+          [`Milestone ${index + 1} title`, item.title] as [string, string],
+          [`Milestone ${index + 1} description`, item.description] as [string, string],
+        ]),
+      ],
+    },
+    {
+      tab: 'beliefs',
+      label: 'Our Beliefs',
+      fields: [
+        ['Page title', copy.beliefs.heroTitle],
+        ['Subtitle', copy.beliefs.heroSubtitle],
+        ['Intro', copy.beliefs.intro],
+        ...copy.beliefs.items.flatMap((item, index) => [
+          [`Belief ${index + 1} title`, item.title] as [string, string],
+          [`Belief ${index + 1} content`, item.content] as [string, string],
+        ]),
+      ],
+    },
+    { tab: 'board', label: 'Board', fields: [
+      ['Page title', copy.board.heroTitle],
+      ['Subtitle', copy.board.heroSubtitle],
+      ...copy.board.members.flatMap((item, index) => [
+        [`Member ${index + 1} name`, item.name] as [string, string],
+        [`Member ${index + 1} title`, item.title] as [string, string],
+        [`Member ${index + 1} bio`, item.bio] as [string, string],
+      ]),
+    ] },
+    { tab: 'globalTeam', label: 'Global Team', fields: [
+      ['Page title', copy.globalTeam.heroTitle],
+      ['Subtitle', copy.globalTeam.heroSubtitle],
+      ...(copy.globalTeam.members ?? []).flatMap((item, index) => [
+        [`Member ${index + 1} name`, item.name] as [string, string],
+        [`Member ${index + 1} title`, item.title] as [string, string],
+        [`Member ${index + 1} bio`, item.bio] as [string, string],
+      ]),
+    ] },
+    { tab: 'partners', label: 'Partners', fields: [['Page title', copy.partners.heroTitle], ['Subtitle', copy.partners.heroSubtitle]] },
+    { tab: 'programs', label: 'Programs', fields: [['Page title', copy.programs.heroTitle], ['Subtitle', copy.programs.heroSubtitle], ['Learn more', copy.programs.learnMore], ['Express interest', copy.programs.expressInterest]] },
+    { tab: 'events', label: 'Events', fields: [['Page title', copy.events.heroTitle], ['Subtitle', copy.events.heroSubtitle]] },
+    {
+      tab: 'resources',
+      label: 'Resources',
+      fields: [
+        ['Page title', copy.resources.heroTitle],
+        ['Subtitle', copy.resources.heroSubtitle],
+        ...copy.resources.cards.flatMap((item, index) => [
+          [`Card ${index + 1} title`, item.title] as [string, string],
+          [`Card ${index + 1} body`, item.body] as [string, string],
+        ]),
+      ],
+    },
+    { tab: 'stories', label: 'Stories', fields: [['Page title', copy.storiesPage.heroTitle], ['Subtitle', copy.storiesPage.heroSubtitle]] },
+    { tab: 'testimonials', label: 'Testimonials', fields: [['Page title', copy.testimonials.heroTitle], ['Subtitle', copy.testimonials.heroSubtitle]] },
+    { tab: 'blog', label: 'Blog', fields: [['Page title', copy.blog.heroTitle], ['Subtitle', copy.blog.heroSubtitle]] },
+    {
+      tab: 'involved',
+      label: 'Get Involved',
+      fields: [
+        ['Page title', copy.getInvolved.heroTitle],
+        ['Subtitle', copy.getInvolved.heroSubtitle],
+        ['Form title', copy.getInvolved.formTitle],
+        ['Form intro', copy.getInvolved.formIntro],
+        ...copy.getInvolved.pathways.flatMap((item, index) => [
+          [`Pathway ${index + 1} title`, item.title] as [string, string],
+          [`Pathway ${index + 1} body`, item.body] as [string, string],
+        ]),
+      ],
+    },
+    {
+      tab: 'donate',
+      label: 'Donate',
+      fields: [
+        ['Page title', copy.donate.heroTitle],
+        ['Subtitle', copy.donate.heroSubtitle],
+        ['Intro', copy.donate.intro],
+        ['Online title', copy.donate.giveTitle],
+        ['Online body', copy.donate.giveBody],
+        ['Give button', copy.donate.giveCta],
+        ...(copy.donate.faqs ?? []).flatMap((item, index) => [
+          [`FAQ ${index + 1} question`, item.question] as [string, string],
+          [`FAQ ${index + 1} answer`, item.answer] as [string, string],
+        ]),
+      ],
+    },
+    {
+      tab: 'contact',
+      label: 'Contact',
+      fields: [
+        ['Page title', copy.contact.heroTitle],
+        ['Subtitle', copy.contact.heroSubtitle],
+        ['Form title', copy.contact.formTitle],
+        ['Info title', copy.contact.infoTitle],
+      ],
+    },
+    { tab: 'search', label: 'Search', fields: [['Page title', copy.search.heroTitle], ['Button', copy.search.button]] },
+  ]
+
+  for (const page of pages) {
+    const fields = page.fields.filter(([, value]) => !preferFilled(value)).map(([name]) => name)
+    if (fields.length) return { tab: page.tab, label: page.label, fields }
+  }
+  return null
 }
 
 function previewTitle(copy: SiteCopy, tab: TabId) {
@@ -553,7 +846,8 @@ function previewImage(copy: SiteCopy, tab: TabId) {
     case 'involved': return copy.getInvolved.imageUrl
     case 'donate': return copy.donate.imageUrl
     case 'contact': return copy.contact.imageUrl
-    default: return undefined
+    case 'resources': return copy.resources.imageUrl
+    case 'search': return copy.search.imageUrl
   }
 }
 
@@ -577,7 +871,7 @@ function BlockEditor({
         <button type="button" className="btn-danger self-end" onClick={onRemove}>Remove</button>
       </div>
       <Field label="Body"><TextArea value={block.body} onChange={(v) => onChange({ ...block, body: v })} /></Field>
-      {showLink ? <Field label="Link"><TextInput value={block.href || ''} onChange={(v) => onChange({ ...block, href: v })} /></Field> : null}
+      {showLink ? <Field label="Link" hint="Use a site path like /resources/stories"><TextInput value={block.href || ''} onChange={(v) => onChange({ ...block, href: v })} placeholder="/resources/stories" /></Field> : null}
       {showImage ? <PhotoField label="Photo" value={block.imageUrl} onChange={(v) => onChange({ ...block, imageUrl: v })} /> : null}
     </div>
   )

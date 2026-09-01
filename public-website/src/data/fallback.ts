@@ -92,10 +92,10 @@ export const fallbackHomepage: Homepage = {
     },
   ],
   impactStats: [
+    { id: 'patients', value: '1,000+', label: 'Patients served through partners' },
+    { id: 'volunteers', value: '200+', label: 'Volunteers & facilitators mobilized' },
     { id: 'countries', value: '10+', label: 'Countries engaged' },
     { id: 'professionals', value: '500+', label: 'Healthcare professionals equipped' },
-    { id: 'programs', value: '30+', label: 'Programs, workshops & formation experiences' },
-    { id: 'communities', value: '∞', label: 'Growing Communities of Grace' },
   ],
   portfolio: [
     {
@@ -246,17 +246,17 @@ export const fallbackBoardMembers: TeamMember[] = [
 ]
 
 export const fallbackGlobalTeam: TeamMember[] = [
-  { id: 'gt-africa', name: 'East Africa team', title: 'Regional facilitators', role: 'global', region: 'Americas & Africa', country: 'Kenya', bio: 'Facilitating programs, mentoring, and Communities of Grace across East Africa.', order: 1 },
-  { id: 'gt-asia', name: 'Asia-Pacific team', title: 'Regional facilitators', role: 'global', region: 'Asia-Pacific', country: 'India', bio: 'Coordinating Kingdom of God seminars, missional training, and partnerships across Asia-Pacific.', order: 2 },
-  { id: 'gt-americas', name: 'North America team', title: 'Regional coordinators', role: 'global', region: 'Americas & Africa', country: 'United States', bio: 'Supporting board leadership, fellowship, and North American healthcare community engagement.', order: 3 },
+  { id: 'gt-africa', name: 'East Africa team', title: 'Regional facilitators', role: 'global-team', region: 'Americas & Africa', country: 'Kenya', bio: 'Facilitating programs, mentoring, and Communities of Grace across East Africa.', order: 1 },
+  { id: 'gt-asia', name: 'Asia-Pacific team', title: 'Regional facilitators', role: 'global-team', region: 'Asia-Pacific', country: 'India', bio: 'Coordinating Kingdom of God seminars, missional training, and partnerships across Asia-Pacific.', order: 2 },
+  { id: 'gt-americas', name: 'North America team', title: 'Regional coordinators', role: 'global-team', region: 'Americas & Africa', country: 'United States', bio: 'Supporting board leadership, fellowship, and North American healthcare community engagement.', order: 3 },
 ]
 
 export const fallbackPartners: Partner[] = [
   { id: 'eha', name: 'Emmanuel Hospital Association (EHA)', description: 'Partner hospital network in India.', url: 'https://www.eha-health.org/', region: 'India', order: 1 },
-  { id: 'emfi', name: 'Evangelical Medical Fellowship of India (EMFI)', description: 'Medical missions training and mentoring partner.', url: 'https://www.emfiindia.org/', region: 'India', order: 2 },
+  { id: 'emfi', name: 'Evangelical Medical Fellowship of India (EMFI)', description: 'Medical missions training and mentoring partner.', url: 'https://emfi.in/', region: 'India', order: 2 },
   { id: 'duncan', name: 'Duncan Hospital', description: 'Raxaul, Bihar — founding partnership location.', url: 'https://coginternational.org/', region: 'India', order: 3 },
   { id: 'global-advance', name: 'Global Advance', description: 'Mission training and church partnership network.', url: 'https://globaladvance.org/', region: 'International', order: 4 },
-  { id: 'healthcare-missions', name: 'Healthcare Missions Network', description: 'Placeholder — upload logo via admin.', region: 'International', order: 5 },
+  { id: 'healthcare-missions', name: 'Healthcare Missions Network', description: 'A collaborative network of healthcare mission partners walking with COGI.', url: 'https://coginternational.org/', region: 'International', order: 5 },
 ]
 
 export const fallbackStories: Story[] = [

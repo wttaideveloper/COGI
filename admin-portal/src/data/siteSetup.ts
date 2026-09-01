@@ -3,12 +3,12 @@ import type { FooterSettings, HeaderSettings, NavigationMenu, SeoSettings, Theme
 export const colorPresets: Array<{ name: string } & ThemeSettings> = [
   {
     name: 'White & Blue',
-    primaryColor: '#1B3A6B',
-    secondaryColor: '#163057',
+    primaryColor: '#1F2937',
+    secondaryColor: '#4B5563',
     backgroundColor: '#FFFFFF',
-    textColor: '#1A2332',
-    accentColor: '#2B6CB0',
-    buttonHoverColor: '#3B82F6',
+    textColor: '#1F2937',
+    accentColor: '#5B8FB5',
+    buttonHoverColor: '#4A7FA3',
     fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
     headingFontFamily: 'Cormorant Garamond, Georgia, serif',
   },
@@ -76,8 +76,8 @@ export const mockTheme: ThemeSettings = {
 }
 
 export const mockHeader: HeaderSettings = {
-  backgroundColor: '#2B6CB0',
-  textColor: '#ffffff',
+  backgroundColor: '#FFFFFF',
+  textColor: '#1F2937',
   logoUrl: '/images/cogi-logo.png',
   logoAlt: 'Companions of Grace International',
   logoHeight: 48,
@@ -97,6 +97,8 @@ export const mockFooter: FooterSettings = {
   facebookUrl: 'https://facebook.com',
   instagramUrl: 'https://instagram.com',
   youtubeUrl: 'https://youtube.com',
+  linkedinUrl: 'https://linkedin.com/company/coginternational',
+  whatsappUrl: '',
 }
 
 export const mockSeo: SeoSettings = {

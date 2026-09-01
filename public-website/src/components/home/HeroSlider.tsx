@@ -55,7 +55,7 @@ export function HeroSlider({ slides, intervalMs = 6000, className, objectPositio
           aria-hidden={index !== active}
         />
       ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/15" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/10" />
       {children}
       {showControls && valid.length > 1 ? (
         <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2" role="tablist" aria-label="Hero slides">

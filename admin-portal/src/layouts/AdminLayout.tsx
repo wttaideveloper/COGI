@@ -234,6 +234,11 @@ export default function AdminLayout() {
             <button type="button" className="admin-icon-btn admin-mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open menu">
               <IconMenu />
             </button>
+            {collapsed ? (
+              <button type="button" className="admin-icon-btn" onClick={() => setCollapsed(false)} aria-label="Expand sidebar">
+                <IconChevronRight />
+              </button>
+            ) : null}
             <div className="admin-topbar-title-block">
               <p className="admin-breadcrumb">Admin</p>
               <h1>{title}</h1>

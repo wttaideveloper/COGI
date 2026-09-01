@@ -4,8 +4,8 @@ import type { MediaFile } from '@/types'
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'
 const TOKEN_KEY = 'cogi_admin_jwt'
 
-export const strapiClient = axios.create({ baseURL: `${STRAPI_URL}/api`, headers: { 'Content-Type': 'application/json' }, timeout: 60000 })
-export const strapiAuthClient = axios.create({ baseURL: STRAPI_URL, headers: { 'Content-Type': 'application/json' }, timeout: 60000 })
+export const strapiClient = axios.create({ baseURL: `${STRAPI_URL}/api`, headers: { 'Content-Type': 'application/json' }, timeout: 90000 })
+export const strapiAuthClient = axios.create({ baseURL: STRAPI_URL, headers: { 'Content-Type': 'application/json' }, timeout: 90000 })
 
 strapiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getJwt()
@@ -90,7 +90,7 @@ export async function uploadMedia(file: File, alternativeText?: string): Promise
   if (alternativeText) form.append('fileInfo', JSON.stringify({ alternativeText }))
   const { data } = await axios.post(`${STRAPI_URL}/api/upload`, form, {
     headers: getJwt() && !isDemoMode() ? { Authorization: `Bearer ${getJwt()}` } : undefined,
-    timeout: 120000,
+    timeout: 180000,
   })
   const uploaded = Array.isArray(data) ? data[0] : data
   return {

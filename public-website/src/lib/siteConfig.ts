@@ -12,6 +12,21 @@ export type SiteNavItem = {
   children?: SiteNavItem[]
 }
 
+export type PublicCustomPage = {
+  id: string
+  title: string
+  slug: string
+  status?: string
+  pageType?: 'content' | 'link'
+  summary?: string
+  heroImageUrl?: string
+  externalUrl?: string
+  showInHeader?: boolean
+  showInFooter?: boolean
+  seo?: { metaTitle?: string; metaDescription?: string; keywords?: string }
+  sections?: Array<{ id: string; type: string; title: string; content: string; imageUrl?: string; buttonLabel?: string; buttonHref?: string }>
+}
+
 export type SiteConfig = {
   theme: {
     primaryColor: string
@@ -44,6 +59,8 @@ export type SiteConfig = {
     facebookUrl?: string
     instagramUrl?: string
     youtubeUrl?: string
+    linkedinUrl?: string
+    whatsappUrl?: string
   }
   seo: {
     metaTitle: string
@@ -54,6 +71,7 @@ export type SiteConfig = {
   }
   headerNav: SiteNavItem[]
   footerNav: SiteNavItem[]
+  customPages: PublicCustomPage[]
   homepage: {
     heroHeadline: string
     heroIntro: string
@@ -98,18 +116,18 @@ export type SiteConfig = {
 
 const defaults: SiteConfig = {
   theme: {
-    primaryColor: '#1B3A6B',
-    secondaryColor: '#163057',
+    primaryColor: '#1F2937',
+    secondaryColor: '#4B5563',
     backgroundColor: '#FFFFFF',
-    textColor: '#1A2332',
-    accentColor: '#2B6CB0',
-    buttonHoverColor: '#3B82F6',
+    textColor: '#1F2937',
+    accentColor: '#5B8FB5',
+    buttonHoverColor: '#4A7FA3',
     fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
     headingFontFamily: 'Cormorant Garamond, Georgia, serif',
   },
   header: {
-    backgroundColor: '#2B6CB0',
-    textColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
+    textColor: '#1F2937',
     logoUrl: '/images/cogi-logo.png',
     logoAlt: 'Companions of Grace International',
     logoHeight: 64,
@@ -125,6 +143,7 @@ const defaults: SiteConfig = {
     description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',
     copyright: '© Companions of Grace International. All rights reserved.',
     showSocial: true,
+    linkedinUrl: 'https://linkedin.com/company/coginternational',
   },
   seo: {
     metaTitle: 'COGI – Companions of Grace International',
@@ -136,6 +155,7 @@ const defaults: SiteConfig = {
   },
   headerNav: [],
   footerNav: [],
+  customPages: [],
   homepage: {
     heroHeadline: 'Equipping Healthcare Professionals for Kingdom Engagement',
     heroIntro:
@@ -147,10 +167,10 @@ const defaults: SiteConfig = {
     heroImageUrl: siteImages.heroCrowd,
     heroImageAlt: 'Healthcare professionals gathered in worship and mission',
     heroSlideDuration: 6,
-    mapOceanColor: '#F7FAFC',
-    mapLandColor: '#1B3A6B',
-    mapPinColor: '#2B6CB0',
-    mapActiveColor: '#3B82F6',
+    mapOceanColor: '#FFFFFF',
+    mapLandColor: '#D7E4EE',
+    mapPinColor: '#5B8FB5',
+    mapActiveColor: '#4A7FA3',
     heroSlides: [
       { id: 'hero', imageUrl: siteImages.heroCrowd, alt: 'Healthcare professionals gathered in worship and mission' },
     ],
@@ -161,10 +181,10 @@ const defaults: SiteConfig = {
       'Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God\'s love, and offer hope, healing, and wholeness through Jesus Christ.',
     missionScripture: 'Colossians 3:17  ·  Romans 12:2',
     impactStats: [
+      { id: 'patients', value: '1,000+', label: 'Patients served through partners' },
+      { id: 'volunteers', value: '200+', label: 'Volunteers & facilitators mobilized' },
       { id: 'countries', value: '10+', label: 'Countries engaged' },
       { id: 'professionals', value: '500+', label: 'Healthcare professionals equipped' },
-      { id: 'programs', value: '30+', label: 'Programs, workshops & formation experiences' },
-      { id: 'communities', value: '∞', label: 'Growing Communities of Grace' },
     ],
     sections: [
       { id: 'hero', label: 'Hero', enabled: true, order: 1, summary: 'Primary homepage introduction and call to action.' },
@@ -207,10 +227,11 @@ const defaults: SiteConfig = {
       { id: 'portfolio', label: 'Portfolio', enabled: true, order: 10, summary: 'Four ministry areas.' },
       { id: 'map', label: 'Where We Serve', enabled: true, order: 11, summary: 'Countries served.' },
       { id: 'stories', label: 'Featured Stories', enabled: true, order: 12, summary: 'Featured story teasers.' },
-      { id: 'events', label: 'Featured Event', enabled: true, order: 13, summary: 'Upcoming featured event.' },
-      { id: 'newsletter', label: 'Newsletter', enabled: true, order: 14, summary: 'Newsletter signup.' },
-      { id: 'donate', label: 'Donate CTA', enabled: true, order: 15, summary: 'Donate call to action.' },
-      { id: 'faith', label: 'Statement of faith', enabled: true, order: 16, summary: 'Closing faith statement.' },
+      { id: 'testimonials', label: 'Testimonials', enabled: true, order: 13, summary: 'Rotating quotes and clips.' },
+      { id: 'events', label: 'Featured Event', enabled: true, order: 14, summary: 'Upcoming featured event.' },
+      { id: 'newsletter', label: 'Newsletter', enabled: true, order: 15, summary: 'Newsletter signup.' },
+      { id: 'donate', label: 'Donate CTA', enabled: true, order: 16, summary: 'Donate call to action.' },
+      { id: 'faith', label: 'Statement of faith', enabled: true, order: 17, summary: 'Closing faith statement.' },
     ],
   },
   copy: defaultSiteCopy,
@@ -224,7 +245,7 @@ export function applyTheme(theme: SiteConfig['theme'], chrome?: Pick<SiteConfig,
   root.style.setProperty('--color-gold', theme.accentColor)
   root.style.setProperty('--color-gold-light', theme.buttonHoverColor || theme.accentColor)
   root.style.setProperty('--color-mist', theme.backgroundColor || '#ffffff')
-  root.style.setProperty('--color-mist-dark', '#e6eef7')
+  root.style.setProperty('--color-mist-dark', '#e8eef3')
   root.style.setProperty('--color-ink', theme.textColor)
   root.style.setProperty('--color-ink-muted', '#5a6a80')
   root.style.setProperty('--font-body', theme.fontFamily)
@@ -261,11 +282,21 @@ export async function fetchSiteConfig(): Promise<SiteConfig> {
     fetchSiteConfigFromStrapi(),
     fetchSiteConfigFile(),
   ])
-  if (fromStrapi) {
+  if (fromStrapi && fromFile) {
+    const fileWins = isNewer(fromFile.updatedAt, fromStrapi.updatedAt)
+    const primary = fileWins ? fromFile : fromStrapi
+    const secondary = fileWins ? fromStrapi : fromFile
     const merged = mergeSiteConfig({
-      ...fromFile,
-      ...fromStrapi,
-      homepage: { ...fromFile?.homepage, ...fromStrapi.homepage },
+      ...secondary,
+      ...primary,
+      homepage: { ...(secondary.homepage || {}), ...(primary.homepage || {}) } as SiteConfig['homepage'],
+      copy: { ...(secondary.copy || {}), ...(primary.copy || {}) } as SiteCopy,
+      headerNav: primary.headerNav?.length ? primary.headerNav : secondary.headerNav,
+      footerNav: primary.footerNav?.length ? primary.footerNav : secondary.footerNav,
+      customPages: mergeCustomPages(
+        fileWins ? fromFile.customPages : fromStrapi.customPages,
+        fileWins ? fromStrapi.customPages : fromFile.customPages,
+      ),
     })
     const slides = merged.homepage.heroSlides || []
     const unsplashOnly = slides.length > 0 && slides.every((slide) => slide.imageUrl?.includes('images.unsplash.com'))
@@ -275,8 +306,27 @@ export async function fetchSiteConfig(): Promise<SiteConfig> {
     }
     return merged
   }
+  if (fromStrapi) return fromStrapi
   if (fromFile) return mergeSiteConfig(fromFile)
   return defaults
+}
+
+function pageSlug(value?: string) {
+  return String(value || '').replace(/^\/+/, '').replace(/\/+$/, '')
+}
+
+function mergeCustomPages(primary?: PublicCustomPage[], secondary?: PublicCustomPage[]) {
+  const map = new Map<string, PublicCustomPage>()
+  for (const page of [...(secondary || []), ...(primary || [])]) {
+    const slug = pageSlug(page?.slug)
+    if (!slug) continue
+    map.set(slug, { ...page, slug })
+  }
+  return [...map.values()]
+}
+
+function isNewer(a?: string, b?: string) {
+  return (Date.parse(a || '') || 0) >= (Date.parse(b || '') || 0)
 }
 
 function mergeHomeSections(
@@ -317,6 +367,7 @@ function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
     copy,
     headerNav: data.headerNav?.length ? data.headerNav : defaults.headerNav,
     footerNav: data.footerNav?.length ? data.footerNav : defaults.footerNav,
+    customPages: mergeCustomPages(data.customPages, defaults.customPages),
   }
 }
 

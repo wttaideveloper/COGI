@@ -63,7 +63,7 @@ export type SiteCopy = {
     faithTitle: string
     faithStatement: string
   }
-  about: PageHeroCopy & { visionTitle: string; missionTitle: string }
+  about: PageHeroCopy & { visionTitle: string; visionBody: string; missionTitle: string; missionBody: string; scripture: string }
   story: {
     heroTitle: string
     heroSubtitle: string
@@ -101,17 +101,23 @@ export type SiteCopy = {
     legacyTitle: string
     legacyBody: string
     faqTitle: string
+    faqs: Array<{ id: string; question: string; answer: string }>
   }
   resources: {
     heroTitle: string
     heroSubtitle: string
+    imageUrl?: string
     cards: CopyBlock[]
   }
   contact: PageHeroCopy & { formTitle: string; infoTitle: string; socialTitle: string; mapNote: string }
   programs: PageHeroCopy & { learnMore: string; expressInterest: string }
   events: PageHeroCopy
-  board: PageHeroCopy
-  globalTeam: PageHeroCopy
+  board: PageHeroCopy & {
+    members: Array<{ id: string; name: string; title: string; country: string; bio: string; imageUrl?: string }>
+  }
+  globalTeam: PageHeroCopy & {
+    members: Array<{ id: string; name: string; title: string; region: string; country: string; bio: string; imageUrl?: string }>
+  }
   partners: PageHeroCopy
   storiesPage: PageHeroCopy
   testimonials: PageHeroCopy
@@ -144,7 +150,7 @@ export const defaultSiteCopy: SiteCopy = {
     mapTitle: 'Where we serve',
     mapSubtitle:
       'Explore current areas of engagement. Select a nation to see programs, communities, and partnerships on the ground.',
-    storiesTitle: 'Stories of transformation',
+    storiesTitle: 'Stories of change',
     storiesSubtitle: 'Featured video and written stories from healthcare professionals on the front lines.',
     watchStoriesCta: 'Watch stories',
     readStoriesCta: 'Read stories',
@@ -160,7 +166,12 @@ export const defaultSiteCopy: SiteCopy = {
     heroSubtitle: 'Equipping healthcare professionals for Kingdom engagement',
     imageUrl: siteImages.missionField,
     visionTitle: 'Our vision',
+    visionBody:
+      'The Global Christian Healthcare Community actively on Mission for God, reflecting His love, witnessing Christ in word and deed, ushering in God\'s Kingdom.',
     missionTitle: 'Our mission',
+    missionBody:
+      'Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God\'s love, and offer hope, healing, and wholeness through Jesus Christ.',
+    scripture: 'Colossians 3:17  ·  Romans 12:2',
   },
   story: {
     heroTitle: 'Our story',
@@ -218,6 +229,10 @@ export const defaultSiteCopy: SiteCopy = {
     legacyTitle: 'Planned legacy giving',
     legacyBody: 'Wills, retirement plans, charitable trusts, and other planned gifts can create a lasting legacy of biblical stewardship.',
     faqTitle: 'Frequently asked questions',
+    faqs: [
+      { id: 'donate-how', question: 'How do I donate to COGI?', answer: 'Visit our Donate page to give one-time or recurring gifts through our secure GiveLively integration.' },
+      { id: 'donate-mail', question: 'Where should I mail a check?', answer: 'Companions of Grace International · Northern New Jersey, United States. Email info@coginternational.org for mailing details.' },
+    ],
   },
   resources: {
     heroTitle: 'Resources',
@@ -253,11 +268,25 @@ export const defaultSiteCopy: SiteCopy = {
     heroTitle: 'Board members',
     heroSubtitle: 'Leaders committed to equipping healthcare professionals for Kingdom engagement',
     imageUrl: siteImages.healthcareTeam,
+    members: [
+      { id: 'abraham-thomas', name: 'Dr. Abraham Thomas', title: 'Chairman', country: 'United States', bio: 'Abe is a practicing pediatrician in Northern NJ. After completing medical education in India, he migrated to the US with his wife Ruby. Once empty nesters, God opened a pathway to partner with Mathew in discipleship amongst healthcare workers. He is privileged to serve as Chairman of the COGI Board.' },
+      { id: 'mathew-george', name: 'Dr. Mathew George', title: 'CEO', country: 'India', bio: 'Mathew is a dentist by profession who worked at Duncan Hospital, a unit of Emmanuel Hospital Association (EHA). He later served as Missions Secretary of EMFI. God called him to form COGI — a missions effort focused on helping healthcare professionals live lives that advance the Kingdom of God.' },
+      { id: 'charles-faust', name: 'Mr. Charles Faust', title: 'Secretary', country: 'United States', bio: 'Chuck is a retired business executive having served in chief operating and chief financial roles for multi-national companies. In 2013, God opened a pathway through a medical mission trip to Duncan Hospital where he met Mathew and formed a close Christian brotherhood that led to COGI.' },
+      { id: 'paul-east', name: 'Mr. Paul East', title: 'Board Member', country: 'United States', bio: 'Paul supports COGI because healthcare professionals have a unique opportunity to come alongside, care, and witness by action and words. Christian healthcare professionals need training and nurturing to grow in faith, be effective in their profession, and bless their families, patients, and communities.' },
+      { id: 'sunil-abraham', name: 'Dr. Sunil Abraham', title: 'Board Member', country: 'United States', bio: 'Dr. Sunil Abraham supports the work of COGI because of its vision to equip and strengthen the disciples of Christ in healthcare. Healthcare workers need encouragement, fellowship, and a fresh vision to perceive their work beyond their job.' },
+      { id: 'manoj-jacob', name: 'Dr. Manoj Jacob', title: 'Board Member', country: 'India', bio: 'Dr. Manoj Jacob served as General Secretary of the Evangelical Medical Fellowship of India (EMFI) while Mathew was Managing Director of Duncan Hospital. He joined the Board to lend support as the vision gained momentum — impressed by partnerships and geographical engagements formed in the first year.' },
+      { id: 'ted-lang', name: 'Ted Lang', title: 'Board Member', country: 'United States', bio: 'Bio pending. Please update when ministry provides full biography text.' },
+    ],
   },
   globalTeam: {
     heroTitle: 'Global team',
     heroSubtitle: 'Facilitators, mentors, and coordinators across our regions',
     imageUrl: siteImages.kenya,
+    members: [
+      { id: 'gt-africa', name: 'East Africa team', title: 'Regional facilitators', region: 'Americas & Africa', country: 'Kenya', bio: 'Facilitating programs, mentoring, and Communities of Grace across East Africa.' },
+      { id: 'gt-asia', name: 'Asia-Pacific team', title: 'Regional facilitators', region: 'Asia-Pacific', country: 'India', bio: 'Coordinating Kingdom of God seminars, missional training, and partnerships across Asia-Pacific.' },
+      { id: 'gt-americas', name: 'North America team', title: 'Regional coordinators', region: 'Americas & Africa', country: 'United States', bio: 'Supporting board leadership, fellowship, and North American healthcare community engagement.' },
+    ],
   },
   partners: {
     heroTitle: 'Our partners',
@@ -283,9 +312,35 @@ export const defaultSiteCopy: SiteCopy = {
   search: {
     heroTitle: 'Search',
     heroSubtitle: 'Find programs, articles, events, and pages',
+    imageUrl: siteImages.community,
     placeholder: 'Search the site…',
     button: 'Search',
   },
+}
+
+function preferText(value: string | undefined, fallback: string) {
+  return (value ?? '').trim() ? String(value).trim() : fallback
+}
+
+function preferUrl(value: string | undefined, fallback: string): string
+function preferUrl(value: string | undefined, fallback?: string): string | undefined
+function preferUrl(value: string | undefined, fallback?: string) {
+  if (value === undefined) return fallback
+  return value
+}
+
+export function stripHtml(value: string | undefined) {
+  return (value ?? '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
 
 export function mergeSiteCopy(partial?: Partial<SiteCopy> | null): SiteCopy {
@@ -293,7 +348,18 @@ export function mergeSiteCopy(partial?: Partial<SiteCopy> | null): SiteCopy {
   const p = partial ?? {}
   return {
     homepage: { ...d.homepage, ...p.homepage },
-    about: { ...d.about, ...p.about },
+    about: {
+      ...d.about,
+      ...p.about,
+      heroTitle: preferText(p.about?.heroTitle, d.about.heroTitle),
+      heroSubtitle: preferText(p.about?.heroSubtitle, d.about.heroSubtitle),
+      visionTitle: preferText(p.about?.visionTitle, d.about.visionTitle),
+      visionBody: preferText(p.about?.visionBody, d.about.visionBody),
+      missionTitle: preferText(p.about?.missionTitle, d.about.missionTitle),
+      missionBody: preferText(p.about?.missionBody, d.about.missionBody),
+      scripture: preferText(p.about?.scripture, d.about.scripture),
+      imageUrl: preferUrl(p.about?.imageUrl, d.about.imageUrl),
+    },
     story: {
       ...d.story,
       ...p.story,
@@ -307,23 +373,63 @@ export function mergeSiteCopy(partial?: Partial<SiteCopy> | null): SiteCopy {
     getInvolved: {
       ...d.getInvolved,
       ...p.getInvolved,
+      imageUrl: preferUrl(p.getInvolved?.imageUrl, d.getInvolved.imageUrl),
       pathways: p.getInvolved?.pathways?.length ? p.getInvolved.pathways : d.getInvolved.pathways,
     },
-    donate: { ...d.donate, ...p.donate },
+    donate: {
+      ...d.donate,
+      ...p.donate,
+      imageUrl: preferUrl(p.donate?.imageUrl, d.donate.imageUrl),
+      faqs: p.donate?.faqs?.length ? p.donate.faqs : d.donate.faqs,
+    },
     resources: {
       ...d.resources,
       ...p.resources,
+      imageUrl: preferUrl(p.resources?.imageUrl, d.resources.imageUrl),
       cards: p.resources?.cards?.length ? p.resources.cards : d.resources.cards,
     },
-    contact: { ...d.contact, ...p.contact },
-    programs: { ...d.programs, ...p.programs },
-    events: { ...d.events, ...p.events },
-    board: { ...d.board, ...p.board },
-    globalTeam: { ...d.globalTeam, ...p.globalTeam },
+    contact: {
+      ...d.contact,
+      ...p.contact,
+      imageUrl: preferUrl(p.contact?.imageUrl, d.contact.imageUrl),
+    },
+    programs: {
+      ...d.programs,
+      ...p.programs,
+      imageUrl: preferUrl(p.programs?.imageUrl, d.programs.imageUrl),
+    },
+    events: {
+      ...d.events,
+      ...p.events,
+      imageUrl: preferUrl(p.events?.imageUrl, d.events.imageUrl),
+    },
+    board: {
+      ...d.board,
+      ...p.board,
+      members: (p.board?.members?.length ? p.board.members : d.board.members).map((member) => ({
+        ...member,
+        name: stripHtml(member.name),
+        title: stripHtml(member.title),
+        country: stripHtml(member.country),
+        bio: stripHtml(member.bio),
+      })),
+    },
+    globalTeam: {
+      ...d.globalTeam,
+      ...p.globalTeam,
+      members: (p.globalTeam?.members?.length ? p.globalTeam.members : d.globalTeam.members).map((member) => ({
+        ...member,
+        name: stripHtml(member.name),
+        title: stripHtml(member.title),
+        region: stripHtml(member.region),
+        country: stripHtml(member.country),
+        bio: stripHtml(member.bio),
+      })),
+    },
     partners: { ...d.partners, ...p.partners },
-    storiesPage: { ...d.storiesPage, ...p.storiesPage },
-    testimonials: { ...d.testimonials, ...p.testimonials },
-    blog: { ...d.blog, ...p.blog },
-    search: { ...d.search, ...p.search },
+    storiesPage: { ...d.storiesPage, ...p.storiesPage, imageUrl: preferUrl(p.storiesPage?.imageUrl, d.storiesPage.imageUrl) },
+    testimonials: { ...d.testimonials, ...p.testimonials, imageUrl: preferUrl(p.testimonials?.imageUrl, d.testimonials.imageUrl) },
+    blog: { ...d.blog, ...p.blog, imageUrl: preferUrl(p.blog?.imageUrl, d.blog.imageUrl) },
+    search: { ...d.search, ...p.search, imageUrl: preferUrl(p.search?.imageUrl, d.search.imageUrl) },
   }
 }

@@ -1,4 +1,4 @@
-import type { FooterSettings, HeaderSettings, HomepageRecord, HomepageSection, NavItem, SeoSettings, ThemeSettings } from '@/types'
+import type { CustomPagePublic, FooterSettings, HeaderSettings, HomepageRecord, HomepageSection, NavItem, SeoSettings, ThemeSettings } from '@/types'
 import { mockFooter, mockHeader, mockSeo, mockTheme, mockFooterNavigation } from '@/data/siteSetup'
 import { mockHomepage, mockNavigation } from '@/data/mock'
 import { ensureBuiltinSections } from '@/data/homepageBlocks'
@@ -12,6 +12,7 @@ export type SiteConfig = {
   seo: SeoSettings
   headerNav: NavItem[]
   footerNav: NavItem[]
+  customPages: CustomPagePublic[]
   homepage: Pick<HomepageRecord, 'heroHeadline' | 'heroIntro' | 'heroHeadlineSize' | 'heroHeadlineCase' | 'heroMedia' | 'heroVideoUrl' | 'heroImageUrl' | 'heroImageAlt' | 'heroSlideDuration' | 'heroSlides' | 'primaryCtaLabel' | 'primaryCtaHref' | 'missionTitle' | 'missionStatement' | 'missionScripture' | 'mapOceanColor' | 'mapLandColor' | 'mapPinColor' | 'mapActiveColor'> & {
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
     sections?: HomepageSection[]
@@ -32,6 +33,7 @@ export function defaultSiteConfig(): SiteConfig {
     seo: { ...mockSeo },
     headerNav: structuredClone(mockNavigation[0].items),
     footerNav: structuredClone(mockFooterNavigation.items),
+    customPages: [],
     homepage: {
       heroHeadline: mockHomepage.heroHeadline,
       heroIntro: mockHomepage.heroIntro,
@@ -42,10 +44,10 @@ export function defaultSiteConfig(): SiteConfig {
       heroImageUrl: mockHomepage.heroImageUrl,
       heroImageAlt: mockHomepage.heroImageAlt,
       heroSlideDuration: mockHomepage.heroSlideDuration ?? 6,
-      mapOceanColor: mockHomepage.mapOceanColor ?? '#F7FAFC',
-      mapLandColor: mockHomepage.mapLandColor ?? '#1B3A6B',
-      mapPinColor: mockHomepage.mapPinColor ?? '#2B6CB0',
-      mapActiveColor: mockHomepage.mapActiveColor ?? '#3B82F6',
+      mapOceanColor: mockHomepage.mapOceanColor ?? '#FFFFFF',
+      mapLandColor: mockHomepage.mapLandColor ?? '#D7E4EE',
+      mapPinColor: mockHomepage.mapPinColor ?? '#5B8FB5',
+      mapActiveColor: mockHomepage.mapActiveColor ?? '#4A7FA3',
       heroSlides: structuredClone(mockHomepage.heroSlides || []),
       primaryCtaLabel: mockHomepage.primaryCtaLabel,
       primaryCtaHref: mockHomepage.primaryCtaHref,
@@ -76,6 +78,7 @@ function mergeConfig(partial: Partial<SiteConfig>): SiteConfig {
     },
     headerNav: partial.headerNav?.length ? partial.headerNav : base.headerNav,
     footerNav: partial.footerNav?.length ? partial.footerNav : base.footerNav,
+    customPages: Array.isArray(partial.customPages) ? partial.customPages : (base.customPages || []),
     copy: mergeSiteCopy(partial.copy),
     updatedAt: partial.updatedAt || base.updatedAt,
   }
@@ -284,13 +287,36 @@ async function prepareConfigForStrapi(config: SiteConfig): Promise<SiteConfig> {
       })),
     )
   }
+  next.copy = (await hydrateDataUrls(next.copy, 'copy')) as SiteCopy
   return next
+}
+
+async function hydrateDataUrls(value: unknown, key: string): Promise<unknown> {
+  if (typeof value === 'string' && value.startsWith('data:')) {
+    return ensureRemoteUrl(value, key)
+  }
+  if (Array.isArray(value)) {
+    return Promise.all(value.map((item, index) => hydrateDataUrls(item, `${key}-${index + 1}`)))
+  }
+  if (value && typeof value === 'object') {
+    const entries = await Promise.all(
+      Object.entries(value as Record<string, unknown>).map(async ([childKey, child]) => [childKey, await hydrateDataUrls(child, childKey)]),
+    )
+    return Object.fromEntries(entries)
+  }
+  return value
 }
 
 async function persistSiteConfigToStrapi(config: SiteConfig, status: 'draft' | 'published') {
   if (isDemoMode()) return
   await apiUpdateSingle('/site-config', { payload: config }, 'draft')
   if (status === 'published') await apiPublishSingle('/site-config')
+}
+
+function localIsNewer(local: SiteConfig, incoming: SiteConfig) {
+  if (!local.updatedAt) return false
+  if (!incoming.updatedAt) return true
+  return Date.parse(local.updatedAt) >= Date.parse(incoming.updatedAt)
 }
 
 export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
@@ -300,6 +326,10 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
     const record = await apiSingle<{ payload?: Partial<SiteConfig> }>('/site-config', { status: 'draft' })
     if (record?.payload && typeof record.payload === 'object') {
       const merged = mergeConfig(record.payload)
+      if (localIsNewer(local, merged)) {
+        void resolvePublishedSiteConfig()
+        return local
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
       void resolvePublishedSiteConfig()
       return merged
@@ -309,6 +339,10 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
       const record = await apiSingle<{ payload?: Partial<SiteConfig> }>('/site-config')
       if (record?.payload && typeof record.payload === 'object') {
         const merged = mergeConfig(record.payload)
+        if (localIsNewer(local, merged)) {
+          void resolvePublishedSiteConfig()
+          return local
+        }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
         void resolvePublishedSiteConfig()
         return merged
@@ -319,6 +353,30 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
   }
   void resolvePublishedSiteConfig()
   return local
+}
+
+const SNAPSHOT_PREFIX = 'cogi_draft_snapshot_'
+
+export function captureDraftSnapshot(scope: RevertScope) {
+  try {
+    sessionStorage.setItem(`${SNAPSHOT_PREFIX}${scope}`, JSON.stringify(loadSiteConfig()))
+  } catch {
+    // sessionStorage may be unavailable or full
+  }
+}
+
+export function restoreDraftSnapshot(scope: RevertScope): SiteConfig {
+  const raw = sessionStorage.getItem(`${SNAPSHOT_PREFIX}${scope}`)
+  if (!raw) {
+    throw new Error('Nothing to undo. Save a draft first, or use Revert to live.')
+  }
+  const snapshot = mergeConfig(JSON.parse(raw) as Partial<SiteConfig>)
+  const next = {
+    ...applyRevertScope(loadSiteConfig(), snapshot, scope),
+    updatedAt: new Date().toISOString(),
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  return next
 }
 
 function stripDataUrls(value: unknown): unknown {
@@ -349,11 +407,9 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
   }
 
   if (status === 'draft') {
-    try {
-      await persistSiteConfigToStrapi(stripDataUrls(structuredClone(next)) as SiteConfig, 'draft')
-    } catch {
+    void persistSiteConfigToStrapi(stripDataUrls(structuredClone(next)) as SiteConfig, 'draft').catch(() => {
       // Local draft is already saved; Strapi can catch up on the next publish.
-    }
+    })
     return next
   }
 
@@ -361,9 +417,45 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
   await writePublicFile(next)
   rememberPublishedSiteConfig(next)
-  await persistSiteConfigToStrapi(next, 'published')
   notifyPublished()
+  try {
+    await persistSiteConfigToStrapi(next, 'published')
+  } catch {
+    // Public file is already live for local preview; Strapi can be retried on the next publish.
+  }
   return next
+}
+
+function pageHref(page: CustomPagePublic) {
+  if (page.pageType === 'link' && page.externalUrl) return page.externalUrl
+  const slug = (page.slug || '').replace(/^\/+/, '')
+  return slug ? `/${slug}` : '/'
+}
+
+function withoutPageNav(items: NavItem[], page: CustomPagePublic): NavItem[] {
+  const ids = new Set([`custom-${page.id}`, `custom-${page.slug}`, `page-${page.slug}`])
+  return items.filter((item) => !ids.has(item.id))
+}
+
+export async function syncCustomPageToSite(page: CustomPagePublic, status: 'draft' | 'published'): Promise<void> {
+  const config = loadSiteConfig()
+  const live = status === 'published'
+  const href = pageHref(page)
+  const navId = `custom-${page.slug || page.id}`
+  const navItem: NavItem = { id: navId, label: page.title || 'Untitled page', href, visible: true }
+  const customPages = (config.customPages || []).filter((row) => row.slug !== page.slug && row.id !== page.id)
+  if (live && page.pageType !== 'link') {
+    customPages.push({ ...page, status: 'published' })
+  }
+  const headerBase = withoutPageNav(config.headerNav, page)
+  const footerBase = withoutPageNav(config.footerNav, page)
+  const headerNav = live && page.showInHeader !== false && !headerBase.some((item) => item.href === href || (item.children || []).some((child) => child.href === href))
+    ? [...headerBase, navItem]
+    : headerBase
+  const footerNav = live && Boolean(page.showInFooter) && !footerBase.some((item) => item.href === href)
+    ? [...footerBase, navItem]
+    : footerBase
+  await saveSiteConfig({ customPages, headerNav, footerNav }, live ? 'published' : 'draft')
 }
 
 export function readFileAsDataUrl(file: File): Promise<string> {

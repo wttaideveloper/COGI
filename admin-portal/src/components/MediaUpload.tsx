@@ -13,6 +13,13 @@ export function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
 }
 
+function shortFileName(name: string, max = 40) {
+  if (!name || name.length <= max) return name
+  const dot = name.lastIndexOf('.')
+  const ext = dot > 0 ? name.slice(dot) : ''
+  return `${name.slice(0, Math.max(12, max - ext.length - 1))}…${ext}`
+}
+
 export function validateMediaFile(
   file: File,
   kind: 'image' | 'video',
@@ -151,17 +158,17 @@ export function MediaUpload({
         </button>
       </div>
       {meta ? (
-        <p className="hp-upload-meta">
-          {meta.name} · {formatFileSize(meta.size)}
+        <p className="hp-upload-meta" title={meta.name}>
+          {shortFileName(meta.name)} · {formatFileSize(meta.size)}
         </p>
       ) : value && !value.startsWith('data:') ? (
-        <p className="hp-upload-meta">Using a link: {value}</p>
+        <p className="hp-upload-meta" title={value}>Using a link: {shortFileName(value, 48)}</p>
       ) : null}
       {error ? <p className="hp-upload-error" role="alert">{error}</p> : null}
       {warning && !error ? <p className="hp-upload-warn" role="status">{warning}</p> : null}
       {extra}
       {value && onClear ? (
-        <button type="button" className="btn-secondary" onClick={() => { setMeta(null); setError(''); setWarning(''); onClear() }}>
+        <button type="button" className="btn-secondary" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMeta(null); setError(''); setWarning(''); onClear() }}>
           Remove {item}
         </button>
       ) : null}

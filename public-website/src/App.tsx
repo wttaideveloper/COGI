@@ -15,6 +15,7 @@ import { ProgramsPage } from '@/pages/ProgramsPage'
 import { ProgramDetailPage } from '@/pages/ProgramDetailPage'
 import { ResourcesPage } from '@/pages/ResourcesPage'
 import { StoriesPage } from '@/pages/StoriesPage'
+import { StoryDetailPage } from '@/pages/StoryDetailPage'
 import { TestimonialsPage } from '@/pages/TestimonialsPage'
 import { BlogPage } from '@/pages/BlogPage'
 import { BlogDetailPage } from '@/pages/BlogDetailPage'
@@ -26,7 +27,6 @@ import { ContactPage } from '@/pages/ContactPage'
 import { SearchPage } from '@/pages/SearchPage'
 import { LegalPage } from '@/pages/LegalPage'
 import { CustomPage } from '@/pages/CustomPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,21 +59,24 @@ export default function App() {
               <Route path="programs/:slug" element={<ProgramDetailPage />} />
               <Route path="resources" element={<ResourcesPage />} />
               <Route path="resources/stories" element={<StoriesPage />} />
+              <Route path="resources/stories/:slug" element={<StoryDetailPage />} />
               <Route path="resources/testimonials" element={<TestimonialsPage />} />
               <Route path="resources/blog" element={<BlogPage />} />
               <Route path="resources/blog/:slug" element={<BlogDetailPage />} />
               <Route path="events" element={<EventsPage />} />
               <Route path="events/:slug" element={<EventDetailPage />} />
               <Route path="get-involved" element={<GetInvolvedPage />} />
+              <Route path="volunteer" element={<GetInvolvedPage />} />
+              <Route path="join-us" element={<GetInvolvedPage />} />
               <Route path="donate" element={<DonatePage />} />
               <Route path="contact" element={<ContactPage />} />
               <Route path="search" element={<SearchPage />} />
+              <Route path="privacy" element={<LegalPage />} />
               <Route path="privacy-policy" element={<LegalPage />} />
               <Route path="terms-of-use" element={<LegalPage />} />
               <Route path="cookie-notice" element={<LegalPage />} />
               <Route path="accessibility" element={<LegalPage />} />
-              <Route path=":slug" element={<CustomPage />} />
-              <Route path="*" element={<NotFoundPage />} />
+              <Route path="*" element={<CustomPage />} />
             </Route>
           </Routes>
           </BrowserRouter>

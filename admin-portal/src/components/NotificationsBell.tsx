@@ -63,7 +63,7 @@ export default function NotificationsBell() {
             ) : null}
           </div>
           {items.length === 0 ? (
-            <p className="admin-notify-empty">No subscriptions yet.</p>
+            <p className="admin-notify-empty">No new notices yet.</p>
           ) : (
             <ul>
               {items.slice(0, 12).map((item) => (
@@ -77,8 +77,8 @@ export default function NotificationsBell() {
               ))}
             </ul>
           )}
-          <Link className="admin-notify-foot" to="/newsletter" onClick={() => setOpen(false)}>
-            Open subscriber list
+          <Link className="admin-notify-foot" to="/enquiries" onClick={() => setOpen(false)}>
+            Open inbox
           </Link>
         </div>
       ) : null}

@@ -39,9 +39,9 @@ export async function getPrograms(): Promise<Program[]> {
     sort: 'order:asc',
     populate: '*',
   })
-  if (data === null) return fallbackPrograms
-  const rows = data.data ?? []
-  return rows.map(toProgram).filter((p) => p.title)
+  if (!data?.data?.length) return fallbackPrograms
+  const rows = data.data.map(toProgram).filter((p) => p.title)
+  return rows.length ? rows : fallbackPrograms
 }
 
 export async function getProgramBySlug(slug: string): Promise<Program | undefined> {
@@ -49,7 +49,6 @@ export async function getProgramBySlug(slug: string): Promise<Program | undefine
     'filters[slug][$eq]': slug,
     populate: '*',
   })
-  if (data === null) return fallbackPrograms.find((p) => p.slug === slug)
-  if (data.data?.[0]) return toProgram(data.data[0])
-  return undefined
+  if (!data?.data?.[0]) return fallbackPrograms.find((p) => p.slug === slug)
+  return toProgram(data.data[0])
 }

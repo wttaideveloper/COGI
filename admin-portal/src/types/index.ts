@@ -23,6 +23,22 @@ export interface PageRecord extends BaseRecord {
   seo?: SeoFields
   sections?: Array<{ id: string; type: string; title: string; content: string; imageUrl?: string; buttonLabel?: string; buttonHref?: string }>
 }
+
+export type CustomPagePublic = {
+  id: string
+  documentId?: string
+  title: string
+  slug: string
+  status: Status
+  pageType?: 'content' | 'link'
+  summary?: string
+  heroImageUrl?: string
+  externalUrl?: string
+  showInHeader?: boolean
+  showInFooter?: boolean
+  seo?: SeoFields
+  sections?: PageRecord['sections']
+}
 export type HomepageBlockKind = 'built-in' | 'text' | 'split' | 'cta' | 'quote' | 'banner' | 'image'
 export interface HomepageSection {
   id: string
@@ -105,6 +121,8 @@ export interface FooterSettings {
   facebookUrl?: string
   instagramUrl?: string
   youtubeUrl?: string
+  linkedinUrl?: string
+  whatsappUrl?: string
 }
 export interface SeoSettings {
   metaTitle: string
@@ -128,4 +146,4 @@ export interface SettingsRecord { organizationName: string; tagline: string; mis
 export interface AdminUserRecord { id: number; username: string; email: string; firstname?: string; lastname?: string; blocked: boolean; role?: { id: number; name: string; type: string } }
 export interface AuditRecord extends BaseRecord { actor: string; action: string; resourceType: string; recordId?: string; ip?: string; createdAt: string }
 export interface ModuleConfig<T extends BaseRecord> { key: ModuleKey; title: string; endpoint: string; route: string; singular: string; description: string; fields: FormField<T>[]; columns: Array<{ key: keyof T; label: string }> }
-export type FormField<T> = { name: keyof T; label: string; type: 'text' | 'textarea' | 'select' | 'number' | 'date' | 'checkbox' | 'richtext'; required?: boolean; options?: Array<{ label: string; value: string }> }
+export type FormField<T> = { name: keyof T; label: string; type: 'text' | 'textarea' | 'select' | 'number' | 'date' | 'checkbox' | 'richtext' | 'image'; required?: boolean; options?: Array<{ label: string; value: string }> }

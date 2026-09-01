@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { colorPresets, fontOptions, headingFontOptions } from '@/data/siteSetup'
-import { defaultSiteConfig, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type RevertScope, type SiteConfig } from '@/services/siteConfigStore'
+import { captureDraftSnapshot, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type RevertScope, type SiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
 import { LOGO_HINT, MediaUpload } from '@/components/MediaUpload'
-import { RevertToLiveButton } from '@/components/RevertButton'
+import { RevertToLiveButton, UndoDraftButton } from '@/components/RevertButton'
 import type { FooterSettings, HeaderSettings, SeoSettings, ThemeSettings } from '@/types'
 
 function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
@@ -75,21 +75,24 @@ function PublishActions({
       <button type="button" className="btn-primary" disabled={pending} onClick={() => onSave('published')}>
         {pending && pendingStatus === 'published' ? 'Publishing…' : 'Publish live'}
       </button>
+      <UndoDraftButton scope={scope} disabled={pending} onRestored={onReverted} />
       <RevertToLiveButton scope={scope} disabled={pending} onReverted={onReverted} />
     </div>
   )
 }
 
 export function ThemePage() {
-  const [theme, setTheme] = useState<ThemeSettings>(defaultSiteConfig().theme)
-  const [logoUrl, setLogoUrl] = useState(defaultSiteConfig().header.logoUrl)
-  const [logoAlt, setLogoAlt] = useState(defaultSiteConfig().header.logoAlt)
-  const [logoHeight, setLogoHeight] = useState(defaultSiteConfig().header.logoHeight ?? 48)
+  const initial = loadSiteConfig()
+  const [theme, setTheme] = useState<ThemeSettings>({ ...initial.theme, buttonHoverColor: initial.theme.buttonHoverColor || '#3B82F6' })
+  const [logoUrl, setLogoUrl] = useState(initial.header.logoUrl)
+  const [logoAlt, setLogoAlt] = useState(initial.header.logoAlt)
+  const [logoHeight, setLogoHeight] = useState(initial.header.logoHeight ?? 48)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    captureDraftSnapshot('theme')
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
       if (active) {
@@ -97,6 +100,7 @@ export function ThemePage() {
         setLogoUrl(config.header.logoUrl)
         setLogoAlt(config.header.logoAlt)
         setLogoHeight(config.header.logoHeight ?? 48)
+        captureDraftSnapshot('theme')
       }
     })
     return () => { active = false }
@@ -110,6 +114,7 @@ export function ThemePage() {
         theme,
         header: { ...loadSiteConfig().header, logoUrl, logoAlt, logoHeight },
       }, status)
+      if (status === 'draft') captureDraftSnapshot('theme')
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {
@@ -237,15 +242,22 @@ export function ThemePage() {
 }
 
 export function HeaderEditorPage() {
-  const [header, setHeader] = useState<HeaderSettings>(defaultSiteConfig().header)
+  const initial = loadSiteConfig()
+  const [header, setHeader] = useState<HeaderSettings>(initial.header)
+  const [logoUrlDraft, setLogoUrlDraft] = useState(initial.header.logoUrl.startsWith('data:') ? '' : initial.header.logoUrl)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    captureDraftSnapshot('header')
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
-      if (active) setHeader(config.header)
+      if (active) {
+        setHeader(config.header)
+        setLogoUrlDraft(config.header.logoUrl.startsWith('data:') ? '' : config.header.logoUrl)
+        captureDraftSnapshot('header')
+      }
     })
     return () => { active = false }
   }, [])
@@ -260,6 +272,8 @@ export function HeaderEditorPage() {
     try {
       const next = await saveSiteConfig({ header }, status)
       setHeader(next.header)
+      setLogoUrlDraft(next.header.logoUrl.startsWith('data:') ? '' : next.header.logoUrl)
+      if (status === 'draft') captureDraftSnapshot('header')
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {
@@ -276,6 +290,7 @@ export function HeaderEditorPage() {
         description="Save a private draft in Strapi, then Publish live to update the public header immediately."
         action={<PublishActions scope="header" pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
           setHeader(config.header)
+          setLogoUrlDraft(config.header.logoUrl.startsWith('data:') ? '' : config.header.logoUrl)
           setSavedAs(null)
         }} />}
       />
@@ -292,16 +307,45 @@ export function HeaderEditorPage() {
                 allowSvg
                 maxBytes={2 * 1024 * 1024}
                 recommendedBytes={500 * 1024}
-                value={header.logoUrl}
-                onLoaded={(url, file) => setHeader((prev) => ({ ...prev, logoUrl: url, logoAlt: prev.logoAlt || file.name.replace(/\.[^.]+$/, '') }))}
-                onClear={() => patch('logoUrl', '')}
+                value={header.logoUrl.startsWith('data:') ? header.logoUrl : ''}
+                onLoaded={(url, file) => {
+                  setHeader((prev) => ({ ...prev, logoUrl: url, logoAlt: prev.logoAlt || file.name.replace(/\.[^.]+$/, '') }))
+                  setLogoUrlDraft('')
+                }}
+                onClear={() => {
+                  patch('logoUrl', '')
+                  setLogoUrlDraft('')
+                }}
                 noun="logo"
-                extra={(
-                  <Field label="Or paste a logo URL">
-                    <input className="admin-input" value={header.logoUrl.startsWith('data:') ? '' : header.logoUrl} onChange={(e) => patch('logoUrl', e.target.value)} placeholder="https://…" />
-                  </Field>
-                )}
               />
+              <div className="mt-4 grid gap-3">
+                <Field label="Logo URL" hint="Paste a full image link, then click Apply. This replaces an uploaded logo.">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+                    <input
+                      className="admin-input admin-input-url min-w-0 flex-1"
+                      value={logoUrlDraft}
+                      onChange={(e) => setLogoUrlDraft(e.target.value)}
+                      placeholder="https://…"
+                    />
+                    <button
+                      type="button"
+                      className="btn-secondary shrink-0"
+                      onClick={() => {
+                        const next = normalizeLogoUrl(logoUrlDraft)
+                        setLogoUrlDraft(next)
+                        patch('logoUrl', next)
+                      }}
+                    >
+                      Apply URL
+                    </button>
+                  </div>
+                </Field>
+                {header.logoUrl ? (
+                  <button type="button" className="hp-danger w-fit" onClick={() => { patch('logoUrl', ''); setLogoUrlDraft('') }}>
+                    Remove logo
+                  </button>
+                ) : null}
+              </div>
             </div>
             <Field label="Logo alt text">
               <input className="admin-input" value={header.logoAlt} onChange={(e) => patch('logoAlt', e.target.value)} />
@@ -345,18 +389,21 @@ export function HeaderEditorPage() {
 }
 
 export function FooterEditorPage() {
-  const [footer, setFooter] = useState<FooterSettings>(defaultSiteConfig().footer)
-  const [logoUrlDraft, setLogoUrlDraft] = useState('')
+  const initial = loadSiteConfig()
+  const [footer, setFooter] = useState<FooterSettings>(initial.footer)
+  const [logoUrlDraft, setLogoUrlDraft] = useState(initial.footer.logoUrl.startsWith('data:') ? '' : initial.footer.logoUrl)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    captureDraftSnapshot('footer')
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
       if (active) {
         setFooter(config.footer)
         setLogoUrlDraft(config.footer.logoUrl.startsWith('data:') ? '' : config.footer.logoUrl)
+        captureDraftSnapshot('footer')
       }
     })
     return () => { active = false }
@@ -373,6 +420,7 @@ export function FooterEditorPage() {
       const next = await saveSiteConfig({ footer }, status)
       setFooter(next.footer)
       setLogoUrlDraft(next.footer.logoUrl.startsWith('data:') ? '' : next.footer.logoUrl)
+      if (status === 'draft') captureDraftSnapshot('footer')
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {
@@ -424,9 +472,9 @@ export function FooterEditorPage() {
               />
               <div className="mt-4 grid gap-3">
                 <Field label="Logo URL" hint="Paste a full image link, then click Apply. This replaces an uploaded logo.">
-                  <div className="flex flex-col gap-2 sm:flex-row">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
                     <input
-                      className="admin-input"
+                      className="admin-input admin-input-url min-w-0 flex-1"
                       value={logoUrlDraft}
                       onChange={(e) => setLogoUrlDraft(e.target.value)}
                       placeholder="https://…"
@@ -469,6 +517,8 @@ export function FooterEditorPage() {
                 <Field label="Facebook URL"><input className="admin-input" value={footer.facebookUrl || ''} onChange={(e) => patch('facebookUrl', e.target.value)} /></Field>
                 <Field label="Instagram URL"><input className="admin-input" value={footer.instagramUrl || ''} onChange={(e) => patch('instagramUrl', e.target.value)} /></Field>
                 <Field label="YouTube URL"><input className="admin-input" value={footer.youtubeUrl || ''} onChange={(e) => patch('youtubeUrl', e.target.value)} /></Field>
+                <Field label="LinkedIn URL"><input className="admin-input" value={footer.linkedinUrl || ''} onChange={(e) => patch('linkedinUrl', e.target.value)} /></Field>
+                <Field label="WhatsApp (number or wa.me link)" hint="Shows a chat button on the public site."><input className="admin-input" value={footer.whatsappUrl || ''} onChange={(e) => patch('whatsappUrl', e.target.value)} placeholder="+1…" /></Field>
               </>
             ) : null}
           </div>
@@ -488,15 +538,19 @@ export function FooterEditorPage() {
 }
 
 export function SeoEditorPage() {
-  const [seo, setSeo] = useState<SeoSettings>(defaultSiteConfig().seo)
+  const [seo, setSeo] = useState<SeoSettings>(loadSiteConfig().seo)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    captureDraftSnapshot('seo')
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
-      if (active) setSeo(config.seo)
+      if (active) {
+        setSeo(config.seo)
+        captureDraftSnapshot('seo')
+      }
     })
     return () => { active = false }
   }, [])
@@ -510,6 +564,7 @@ export function SeoEditorPage() {
     setError(null)
     try {
       await saveSiteConfig({ seo }, status)
+      if (status === 'draft') captureDraftSnapshot('seo')
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {

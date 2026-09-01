@@ -1,6 +1,6 @@
-import { fallbackFAQs } from '@/data/fallback'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
+import { NewsletterForm } from '@/components/forms/NewsletterForm'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 const giveLivelyUrl = import.meta.env.VITE_GIVELIVELY_URL || 'https://secure.givelively.org/donate/companions-of-grace-international'
@@ -46,15 +46,26 @@ export function DonatePage() {
           </Card>
         </div>
 
-        <h2 className="mb-6 font-display text-2xl text-teal-deep">{page.faqTitle}</h2>
-        <div className="space-y-4">
-          {fallbackFAQs.filter((f) => f.category === 'Donate' || f.category === 'Partnerships').map((faq) => (
-            <Card key={faq.id} as="article">
-              <h3 className="font-semibold text-teal-deep">{faq.question}</h3>
-              <p className="mt-2 text-ink-muted">{faq.answer}</p>
-            </Card>
-          ))}
-        </div>
+        {page.faqTitle ? (
+          <>
+            <h2 id="faqs" className="mb-6 font-display text-2xl text-teal-deep">{page.faqTitle}</h2>
+            <div className="space-y-4">
+              {(page.faqs?.length ? page.faqs : []).map((faq) => (
+                <Card key={faq.id} as="article">
+                  <h3 className="font-semibold text-teal-deep">{faq.question}</h3>
+                  <p className="mt-2 text-ink-muted">{faq.answer}</p>
+                </Card>
+              ))}
+            </div>
+          </>
+        ) : null}
+        <Card className="mt-12">
+          <h2 className="font-display text-2xl text-teal-deep">Stay connected</h2>
+          <p className="mt-2 text-ink-muted">Subscribe for stories of transformation and ways to give.</p>
+          <div className="mt-6 max-w-md">
+            <NewsletterForm />
+          </div>
+        </Card>
       </div>
     </>
   )

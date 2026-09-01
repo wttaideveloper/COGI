@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getGlobalSettings } from '@/api/globalSettings'
 import { NewsletterForm } from '@/components/forms/NewsletterForm'
+import { mergeCustomPageNav, resolveNavHref } from '@/components/layout/Header'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 const legalLinks = [
@@ -27,20 +28,42 @@ const socialIcons: Record<string, React.ReactNode> = {
       <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
     </svg>
   ),
+  linkedin: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  ),
+  whatsapp: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M20.52 3.48A11.86 11.86 0 0012.06 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.15 1.6 5.96L0 24l6.3-1.65a11.86 11.86 0 005.76 1.47h.01c6.56 0 11.9-5.34 11.9-11.9 0-3.18-1.24-6.17-3.45-8.44z" />
+    </svg>
+  ),
 }
 
 export function Footer() {
-  const { footer, footerNav } = useSiteConfig()
+  const { footer, footerNav, customPages } = useSiteConfig()
   const { data: settings } = useQuery({
     queryKey: ['globalSettings'],
     queryFn: getGlobalSettings,
   })
 
-  const menuLinks = footerNav.filter((item) => item.visible !== false)
+  const fallbackExplore: typeof footerNav = [
+    { id: '1', label: 'About Us', href: '/about' },
+    { id: '2', label: 'Programs', href: '/programs' },
+    { id: '3', label: 'Get Involved', href: '/get-involved' },
+    { id: '4', label: 'Contact', href: '/contact' },
+  ]
+  const menuLinks = mergeCustomPageNav(
+    (footerNav.length ? footerNav : fallbackExplore).filter((item) => item.visible !== false),
+    customPages,
+    'footer',
+  )
   const social = [
     footer.facebookUrl ? { platform: 'facebook', url: footer.facebookUrl, label: 'Facebook' } : null,
     footer.instagramUrl ? { platform: 'instagram', url: footer.instagramUrl, label: 'Instagram' } : null,
     footer.youtubeUrl ? { platform: 'youtube', url: footer.youtubeUrl, label: 'YouTube' } : null,
+    footer.linkedinUrl ? { platform: 'linkedin', url: footer.linkedinUrl, label: 'LinkedIn' } : null,
+    footer.whatsappUrl ? { platform: 'whatsapp', url: footer.whatsappUrl.startsWith('http') ? footer.whatsappUrl : `https://wa.me/${footer.whatsappUrl.replace(/[^\d]/g, '')}`, label: 'WhatsApp' } : null,
   ].filter(Boolean) as Array<{ platform: string; url: string; label: string }>
 
   const socialLinks = social.length ? social : settings?.socialLinks || []
@@ -92,17 +115,9 @@ export function Footer() {
         <div>
           <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gold">Explore</h3>
           <ul className="space-y-2">
-            {(menuLinks.length
-              ? menuLinks
-              : [
-                  { id: '1', label: 'About Us', href: '/about' },
-                  { id: '2', label: 'Programs', href: '/programs' },
-                  { id: '3', label: 'Get Involved', href: '/get-involved' },
-                  { id: '4', label: 'Contact', href: '/contact' },
-                ]
-            ).map((link) => (
+            {menuLinks.map((link) => (
               <li key={link.id || link.href}>
-                <Link to={link.href} className="text-sm opacity-80 hover:opacity-100">
+                <Link to={resolveNavHref(link)} className="text-sm opacity-80 hover:opacity-100">
                   {link.label}
                 </Link>
               </li>

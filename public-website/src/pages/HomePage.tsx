@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useQuery } from '@tanstack/react-query'
 import { getHomepage } from '@/api/homepage'
 import { getStories } from '@/api/stories'
+import { getTestimonials } from '@/api/testimonials'
 import { getFeaturedEvent } from '@/api/events'
 import { getLocations } from '@/api/locations'
 import { SEO } from '@/components/ui/SEO'
@@ -16,6 +17,7 @@ import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { HeroBackground } from '@/components/home/HeroBackground'
 import { WorldMap } from '@/components/home/WorldMap'
 import { CustomHomeSection, SplitBand, isCustomHomeSection, isSplitHomeSection } from '@/components/home/CustomSection'
+import { TestimonialCarousel } from '@/components/home/TestimonialCarousel'
 import { siteImages, siteVideos } from '@/data/siteCopy'
 import { VideoPlayer } from '@/components/ui/VideoPlayer'
 
@@ -28,6 +30,7 @@ export function HomePage() {
   const [searchParams] = useSearchParams()
   const { data: homepage, isLoading, isError, refetch } = useQuery({ queryKey: ['homepage'], queryFn: getHomepage })
   const { data: stories } = useQuery({ queryKey: ['stories'], queryFn: getStories })
+  const { data: testimonials } = useQuery({ queryKey: ['testimonials'], queryFn: getTestimonials })
   const { data: featuredEvent } = useQuery({ queryKey: ['featuredEvent'], queryFn: getFeaturedEvent })
   const { data: locations } = useQuery({ queryKey: ['locations'], queryFn: getLocations })
   const locationParam = searchParams.get('location')
@@ -108,7 +111,8 @@ export function HomePage() {
     { id: 'portfolio', label: 'Portfolio', enabled: true, order: 10, summary: '' },
     { id: 'map', label: 'Map', enabled: true, order: 11, summary: '' },
     { id: 'stories', label: 'Stories', enabled: true, order: 12, summary: '' },
-    { id: 'events', label: 'Events', enabled: true, order: 13, summary: '' },
+    { id: 'testimonials', label: 'Testimonials', enabled: true, order: 13, summary: '' },
+    { id: 'events', label: 'Events', enabled: true, order: 14, summary: '' },
     { id: 'newsletter', label: 'Newsletter', enabled: true, order: 14, summary: '' },
     { id: 'donate', label: 'Donate', enabled: true, order: 15, summary: '' },
     { id: 'faith', label: 'Faith', enabled: true, order: 16, summary: '' },
@@ -173,25 +177,29 @@ export function HomePage() {
         )
         if (section.id === 'newsletterBanner') return (
       <section key="newsletterBanner" className="border-y border-mist-dark bg-white py-16 text-teal-deep">
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.28em]">{copy.eyebrow}</p>
-          <h2 className="mt-3 font-display text-4xl font-bold italic md:text-5xl">{copy.newsletterBannerTitle}</h2>
-          <p className="mt-5 text-lg leading-relaxed">{copy.newsletterBannerBody}</p>
-          <ButtonLink to="/resources/stories" className="mt-8 rounded-sm bg-teal-deep uppercase tracking-[0.2em] text-white hover:bg-teal-mid">
-            {copy.newsletterBannerCta}
-          </ButtonLink>
+        <div className="mx-auto grid max-w-5xl gap-10 px-4 md:grid-cols-2 md:items-center">
+          <div className="text-center md:text-left">
+            <p className="text-xs font-bold uppercase tracking-[0.28em]">{copy.eyebrow}</p>
+            <h2 className="mt-3 font-display text-4xl font-bold italic md:text-5xl">{copy.newsletterBannerTitle}</h2>
+            <p className="mt-5 text-lg leading-relaxed">{copy.newsletterBannerBody}</p>
+            <ButtonLink to="/resources/stories" className="mt-8 rounded-sm uppercase tracking-[0.2em]">
+              {copy.newsletterBannerCta}
+            </ButtonLink>
+          </div>
+          <div className="border border-mist-dark bg-white p-6 text-left text-ink">
+            <p className="mb-4 text-sm font-semibold text-teal-deep">Subscribe for stories and events</p>
+            <NewsletterForm />
+          </div>
         </div>
       </section>
         )
         if (section.id === 'legacy' || section.id === 'video') return (
-      <section key="legacy-video" className="relative overflow-hidden py-14 md:py-20">
-        <img src={site.homepage.heroSlides?.[2]?.imageUrl || copy.videoImageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-white">
+      <section key="legacy-video" className="border-y border-mist-dark bg-white py-14 md:py-20">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-ink">
           {sectionEnabled('legacy') && (
             <>
-              <h2 className="font-display text-4xl font-bold uppercase tracking-wide md:text-6xl">{copy.legacyTitle}</h2>
-              <p className="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-white/90">{copy.legacyBody}</p>
+              <h2 className="font-display text-4xl font-bold uppercase tracking-wide text-teal-deep md:text-6xl">{copy.legacyTitle}</h2>
+              <p className="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-ink-muted">{copy.legacyBody}</p>
             </>
           )}
           {sectionEnabled('video') && (
@@ -201,7 +209,7 @@ export function HomePage() {
                 src={homepage.video.videoUrl && homepage.video.videoUrl !== '/videos/intro.mp4' ? homepage.video.videoUrl : (copy.videoUrl || siteVideos.intro)}
                 poster={copy.videoImageUrl}
                 title={copy.videoTitle}
-                className="relative aspect-video overflow-hidden bg-black shadow-2xl"
+                className="relative aspect-video overflow-hidden border border-mist-dark bg-white shadow-sm"
               />
             </div>
           )}
@@ -228,13 +236,12 @@ export function HomePage() {
           </h2>
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {homepage.methods.map((method, i) => (
-              <motion.div key={method.id} {...fadeUp} className="group relative min-h-[420px] overflow-hidden">
-                <img src={methodImages[i] || siteImages.missionField} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
-                <div className="relative z-10 flex h-full min-h-[420px] flex-col justify-end p-8 text-white">
+              <motion.div key={method.id} {...fadeUp} className="overflow-hidden rounded-xl border border-mist-dark bg-white">
+                <img src={methodImages[i] || siteImages.missionField} alt="" className="h-52 w-full object-cover" />
+                <div className="p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold">{method.title}</p>
-                  <h3 className="mt-2 font-display text-3xl">{method.subtitle}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-white/85">{method.description}</p>
+                  <h3 className="mt-2 font-display text-3xl text-teal-deep">{method.subtitle}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-muted">{method.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -265,13 +272,12 @@ export function HomePage() {
           <SectionHeading title={copy.portfolioTitle} subtitle={copy.portfolioSubtitle} />
           <div className="grid gap-6 md:grid-cols-2">
             {homepage.portfolio.map((area, i) => (
-              <Link key={area.id} to={`/programs/${area.programSlug}`} className="group relative min-h-[220px] overflow-hidden">
-                <img src={portfolioImages[i] || siteImages.clinic} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                <div className="relative z-10 flex h-full min-h-[220px] flex-col justify-end p-8 text-white">
-                  <h3 className="font-display text-3xl group-hover:text-gold">{area.title}</h3>
-                  <p className="mt-3 max-w-xl text-sm text-white/85">{area.summary}</p>
-                  <span className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-gold">Learn more</span>
+              <Link key={area.id} to={`/programs/${area.programSlug}`} className="group overflow-hidden rounded-xl border border-mist-dark bg-white">
+                <img src={portfolioImages[i] || siteImages.clinic} alt="" className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="p-6">
+                  <h3 className="font-display text-3xl text-teal-deep group-hover:text-gold">{area.title}</h3>
+                  <p className="mt-3 max-w-xl text-sm text-ink-muted">{area.summary}</p>
+                  <span className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-gold">Learn more</span>
                 </div>
               </Link>
             ))}
@@ -299,7 +305,7 @@ export function HomePage() {
                       type="button"
                       onClick={() => setActiveCountry(activeCountry === loc.country ? null : loc.country)}
                       className={`rounded-sm px-3 py-2 text-sm font-medium transition-colors ${
-                        activeCountry === loc.country ? 'bg-teal-deep text-white' : 'bg-white text-teal-deep hover:bg-teal-deep/10'
+                        activeCountry === loc.country ? 'bg-gold text-white' : 'bg-white text-teal-deep hover:bg-gold/10'
                       }`}
                       aria-pressed={activeCountry === loc.country}
                     >
@@ -333,8 +339,10 @@ export function HomePage() {
                 <div className="pt-5">
                   <span className="text-xs font-bold uppercase tracking-[0.18em] text-gold">{story.country} · {story.program}</span>
                   <h3 className="mt-2 font-display text-2xl text-teal-deep">{story.title}</h3>
-                  <p className="mt-2 text-ink-muted">{story.summary}</p>
-                  <Link to="/resources/stories" className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-teal-deep hover:text-gold">
+                  {story.summary ? (
+                    <blockquote className="mt-2 font-display text-lg italic text-teal-deep">“{story.summary}”</blockquote>
+                  ) : null}
+                  <Link to={`/resources/stories/${story.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-teal-deep hover:text-gold">
                     {story.type === 'video' ? 'Watch full story' : 'Read'}
                   </Link>
                 </div>
@@ -344,15 +352,27 @@ export function HomePage() {
         </div>
       </section>
         )
+        if (section.id === 'testimonials') return testimonials?.length ? (
+      <section key="testimonials" className="bg-mist-gradient py-14 md:py-20">
+        <div className="mx-auto max-w-7xl px-4">
+          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">Voices from the fellowship</p>
+          <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">From volunteers and partners</h2>
+          <div className="mt-12">
+            <TestimonialCarousel items={testimonials} />
+          </div>
+        </div>
+      </section>
+        ) : null
         if (section.id === 'events') return featuredEvent ? (
-        <section key="events" className="relative overflow-hidden py-20 text-white">
-          <img src={siteImages.historicGathering} alt="" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-black/75" />
-          <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
+        <section key="events" className="border-y border-mist-dark bg-white py-20 text-ink">
+          <div className="mx-auto max-w-4xl px-4 text-center">
+            {siteImages.historicGathering ? (
+              <img src={siteImages.historicGathering} alt="" className="mb-8 h-56 w-full rounded-xl object-cover" />
+            ) : null}
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">Featured Event</p>
-            <h2 className="mt-3 font-display text-4xl font-bold">{featuredEvent.title}</h2>
-            <p className="mt-2 text-white/80">{formatDate(featuredEvent.startDate)} · {featuredEvent.location}</p>
-            <p className="mt-4 text-white/90">{featuredEvent.summary}</p>
+            <h2 className="mt-3 font-display text-4xl font-bold text-teal-deep">{featuredEvent.title}</h2>
+            <p className="mt-2 text-ink-muted">{formatDate(featuredEvent.startDate)} · {featuredEvent.location}</p>
+            <p className="mt-4 text-ink-muted">{featuredEvent.summary}</p>
             <ButtonLink to={`/events/${featuredEvent.slug}`} className="mt-6 rounded-sm uppercase tracking-[0.2em]">View Event Details</ButtonLink>
           </div>
         </section>
@@ -366,12 +386,13 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'donate') return (
-      <section key="donate" className="relative overflow-hidden py-14 text-white md:py-20">
-        <img src={siteImages.give} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="relative z-10 mx-auto max-w-3xl px-4 text-center">
-          <h2 className="font-display text-4xl uppercase tracking-wide md:text-5xl">{homepage.donateCta.title}</h2>
-          <p className="mt-5 text-lg text-white/90">{homepage.donateCta.description}</p>
+      <section key="donate" className="border-y border-mist-dark bg-white py-14 text-ink md:py-20">
+        <div className="mx-auto max-w-3xl px-4 text-center">
+          {siteImages.give ? (
+            <img src={siteImages.give} alt="" className="mb-8 h-52 w-full rounded-xl object-cover" />
+          ) : null}
+          <h2 className="font-display text-4xl uppercase tracking-wide text-teal-deep md:text-5xl">{homepage.donateCta.title}</h2>
+          <p className="mt-5 text-lg text-ink-muted">{homepage.donateCta.description}</p>
           <ButtonLink to="/donate" size="lg" className="mt-8 rounded-sm uppercase tracking-[0.22em]">{homepage.donateCta.buttonLabel}</ButtonLink>
         </div>
       </section>

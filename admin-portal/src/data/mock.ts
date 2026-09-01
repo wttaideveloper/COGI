@@ -17,10 +17,10 @@ export const mockHomepage: HomepageRecord = {
   heroImageUrl: siteImages.heroCrowd,
   heroImageAlt: 'People gathered in worship and mission',
   heroSlideDuration: 6,
-  mapOceanColor: '#F7FAFC',
-  mapLandColor: '#1B3A6B',
-  mapPinColor: '#2B6CB0',
-  mapActiveColor: '#3B82F6',
+  mapOceanColor: '#FFFFFF',
+  mapLandColor: '#D7E4EE',
+  mapPinColor: '#5B8FB5',
+  mapActiveColor: '#4A7FA3',
   heroSlides: [
     { id: 'hero', imageUrl: siteImages.heroCrowd, alt: 'People gathered in worship and mission' },
   ],
@@ -29,7 +29,7 @@ export const mockHomepage: HomepageRecord = {
   missionTitle: 'Our Mission',
   missionStatement: 'Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God\'s love, and offer hope, healing, and wholeness through Jesus Christ.',
   missionScripture: 'Colossians 3:17  ·  Romans 12:2',
-  stats: [{ value: '10+', label: 'Countries engaged' }, { value: '500+', label: 'Healthcare professionals equipped' }, { value: '30+', label: 'Programs, workshops & formation experiences' }, { value: '∞', label: 'Growing Communities of Grace' }],
+  stats: [{ value: '1,000+', label: 'Patients served through partners' }, { value: '200+', label: 'Volunteers & facilitators mobilized' }, { value: '10+', label: 'Countries engaged' }, { value: '500+', label: 'Healthcare professionals equipped' }],
   sections: [
     { id: 'hero', label: 'Hero', enabled: true, order: 1, summary: 'Primary homepage introduction and call to action.' },
     { id: 'newsletterBanner', label: 'Newsletter banner', enabled: true, order: 2, summary: 'Lead story / newsletter callout.' },
@@ -168,10 +168,10 @@ export const mockTeam: TeamRecord[] = [
 ]
 export const mockPartners: PartnerRecord[] = [
   { id: '1', name: 'Emmanuel Hospital Association (EHA)', description: 'Partner hospital network in India.', url: 'https://www.eha-health.org/', region: 'India', order: 1, status: 'published' },
-  { id: '2', name: 'Evangelical Medical Fellowship of India (EMFI)', description: 'Medical missions training and mentoring partner.', url: 'https://www.emfiindia.org/', region: 'India', order: 2, status: 'published' },
+  { id: '2', name: 'Evangelical Medical Fellowship of India (EMFI)', description: 'Medical missions training and mentoring partner.', url: 'https://emfi.in/', region: 'India', order: 2, status: 'published' },
   { id: '3', name: 'Duncan Hospital', description: 'Raxaul, Bihar — founding partnership location.', url: 'https://coginternational.org/', region: 'India', order: 3, status: 'published' },
   { id: '4', name: 'Global Advance', description: 'Mission training and church partnership network.', url: 'https://globaladvance.org/', region: 'International', order: 4, status: 'published' },
-  { id: '5', name: 'Healthcare Missions Network', description: 'Placeholder — upload logo via admin.', url: '', region: 'International', order: 5, status: 'published' },
+  { id: '5', name: 'Healthcare Missions Network', description: 'A collaborative network of healthcare mission partners walking with COGI.', url: 'https://coginternational.org/', region: 'International', order: 5, status: 'published' },
 ]
 export const mockLocations: LocationRecord[] = [
   { id: '1', country: 'United States', region: 'Americas & Africa', summary: 'Board leadership and North American healthcare fellowship.', programs: 'Kingdom of God Studies & Seminars, Care for the Caregiver', latitude: 40.7128, longitude: -74.006, status: 'published' },

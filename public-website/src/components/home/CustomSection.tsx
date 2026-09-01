@@ -83,13 +83,12 @@ export function CustomHomeSection({ section }: { section: HomeSection }) {
 
   if (kind === 'banner') {
     return (
-      <section className="relative overflow-hidden py-14 text-white md:py-20" aria-label={title}>
-        {section.imageUrl ? <img src={section.imageUrl} alt={section.imageAlt || ''} className="absolute inset-0 h-full w-full object-cover" /> : null}
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
+      <section className="border-y border-mist-dark bg-white py-14 text-ink md:py-20" aria-label={title}>
+        {section.imageUrl ? <img src={section.imageUrl} alt={section.imageAlt || ''} className="mx-auto mb-8 h-56 max-w-4xl rounded-xl object-cover px-4" /> : null}
+        <div className="mx-auto max-w-4xl px-4 text-center">
           {section.eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">{section.eyebrow}</p> : null}
-          <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-wide md:text-5xl">{title}</h2>
-          {body ? <p className="mt-5 text-lg text-white/90">{body}</p> : null}
+          <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-wide text-teal-deep md:text-5xl">{title}</h2>
+          {body ? <p className="mt-5 text-lg text-ink-muted">{body}</p> : null}
           {button}
         </div>
       </section>

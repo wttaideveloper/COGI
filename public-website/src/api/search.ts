@@ -69,5 +69,16 @@ export async function searchSite(query: string): Promise<SearchResult[]> {
 }
 
 export function getLegalPage(slug: string) {
-  return fallbackLegalPages.find((p) => p.slug === slug)
+  const key = slug.replace(/^\//, '')
+  const aliases: Record<string, string> = {
+    privacy: 'privacy-policy',
+    'privacy-policy': 'privacy-policy',
+    terms: 'terms-of-use',
+    'terms-of-use': 'terms-of-use',
+    cookies: 'cookie-notice',
+    'cookie-notice': 'cookie-notice',
+    accessibility: 'accessibility',
+  }
+  const resolved = aliases[key] || key
+  return fallbackLegalPages.find((p) => p.slug === resolved)
 }

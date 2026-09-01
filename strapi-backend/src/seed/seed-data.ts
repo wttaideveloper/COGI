@@ -79,10 +79,10 @@ export const homepageData = {
     },
   ],
   impactStats: [
+    { value: '1,000', suffix: '+', label: 'Patients served through partners' },
+    { value: '200', suffix: '+', label: 'Volunteers & facilitators mobilized' },
     { value: '10', suffix: '+', label: 'Countries engaged' },
     { value: '500', suffix: '+', label: 'Healthcare professionals equipped' },
-    { value: '30', suffix: '+', label: 'Programs, workshops & formation experiences' },
-    { value: '∞', label: 'Growing Communities of Grace' },
   ],
   portfolioAreas: [
     {
@@ -289,10 +289,10 @@ export const teamMembersData = [
 
 export const partnersData = [
   { name: 'Emmanuel Hospital Association (EHA)', slug: 'eha', region: 'India', order: 1, url: 'https://www.eha-health.org/', description: 'Partner hospital network in India.' },
-  { name: 'Evangelical Medical Fellowship of India (EMFI)', slug: 'emfi', region: 'India', order: 2, url: 'https://www.emfiindia.org/', description: 'Medical missions training and mentoring partner.' },
+  { name: 'Evangelical Medical Fellowship of India (EMFI)', slug: 'emfi', region: 'India', order: 2, url: 'https://emfi.in/', description: 'Medical missions training and mentoring partner.' },
   { name: 'Duncan Hospital', slug: 'duncan-hospital', region: 'India', order: 3, url: 'https://coginternational.org/', description: 'Raxaul, Bihar — founding partnership location.' },
   { name: 'Global Advance', slug: 'global-advance', region: 'International', order: 4, url: 'https://globaladvance.org/', description: 'Mission training and church partnership network.' },
-  { name: 'Healthcare Missions Network', slug: 'healthcare-missions', region: 'International', order: 5, description: 'Placeholder — upload logo via admin.' },
+  { name: 'Healthcare Missions Network', slug: 'healthcare-missions', region: 'International', order: 5, url: 'https://coginternational.org/', description: 'A collaborative network of healthcare mission partners walking with COGI.' },
 ];
 
 export const testimonialsData = [

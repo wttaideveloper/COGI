@@ -1,17 +1,17 @@
 {
   "theme": {
-    "primaryColor": "#8B4513",
-    "secondaryColor": "#3D2914",
-    "backgroundColor": "#FAF6F1",
-    "textColor": "#2A2118",
-    "accentColor": "#D4A017",
-    "buttonHoverColor": "#D4B88A",
-    "fontFamily": "Lato, Arial, sans-serif",
-    "headingFontFamily": "Playfair Display, Georgia, serif"
+    "primaryColor": "#1F2937",
+    "secondaryColor": "#4B5563",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#1F2937",
+    "accentColor": "#5B8FB5",
+    "buttonHoverColor": "#4A7FA3",
+    "fontFamily": "Plus Jakarta Sans, system-ui, sans-serif",
+    "headingFontFamily": "Cormorant Garamond, Georgia, serif"
   },
   "header": {
-    "backgroundColor": "#000000",
-    "textColor": "#FFFFFF",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#1F2937",
     "logoUrl": "",
     "logoAlt": "Companions of Grace International",
     "logoHeight": 48,
@@ -20,8 +20,8 @@
     "sticky": true
   },
   "footer": {
-    "backgroundColor": "#12362C",
-    "textColor": "#E8F0EC",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#1F2937",
     "logoUrl": "",
     "logoHeight": 40,
     "description": "Equipping healthcare professionals for Kingdom engagement around the world.",
@@ -29,7 +29,8 @@
     "showSocial": true,
     "facebookUrl": "https://facebook.com",
     "instagramUrl": "https://instagram.com",
-    "youtubeUrl": "https://youtube.com"
+    "youtubeUrl": "https://youtube.com",
+    "linkedinUrl": "https://linkedin.com/company/coginternational"
   },
   "seo": {
     "metaTitle": "Companions of Grace International",
@@ -156,9 +157,9 @@
     "heroImageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
     "heroImageAlt": "Healthcare professionals collaborating in a clinic",
     "heroSlideDuration": 6,
-    "mapOceanColor": "#E7F1EE",
-    "mapLandColor": "#1B4D3E",
-    "mapPinColor": "#1B4D3E",
+    "mapOceanColor": "#FFFFFF",
+    "mapLandColor": "#D7E4EE",
+    "mapPinColor": "#5B8FB5",
     "mapActiveColor": "#C4A574",
     "heroSlides": [
       {
@@ -184,24 +185,24 @@
     "missionScripture": "",
     "impactStats": [
       {
-        "id": "Countries",
+        "id": "patients",
+        "value": "1,000+",
+        "label": "Patients served through partners"
+      },
+      {
+        "id": "volunteers",
+        "value": "200+",
+        "label": "Volunteers & facilitators mobilized"
+      },
+      {
+        "id": "countries",
         "value": "10+",
-        "label": "Countries"
+        "label": "Countries engaged"
       },
       {
-        "id": "Healthcare Professionals",
+        "id": "professionals",
         "value": "500+",
-        "label": "Healthcare Professionals"
-      },
-      {
-        "id": "Programs Delivered",
-        "value": "30+",
-        "label": "Programs Delivered"
-      },
-      {
-        "id": "Communities of Grace",
-        "value": "∞",
-        "label": "Communities of Grace"
+        "label": "Healthcare professionals equipped"
       }
     ],
     "sections": [
@@ -369,7 +370,7 @@
       "portfolioSubtitle": "Our programs are organized around four interconnected areas of ministry, each designed to inspire and prepare healthcare professionals for faithful Kingdom engagement.",
       "mapTitle": "Where we serve",
       "mapSubtitle": "Explore current areas of engagement. Select a nation to see programs, communities, and partnerships on the ground.",
-      "storiesTitle": "Stories of transformation",
+      "storiesTitle": "Stories of change",
       "storiesSubtitle": "Featured video and written stories from healthcare professionals on the front lines.",
       "watchStoriesCta": "Watch stories",
       "readStoriesCta": "Read stories",
@@ -582,5 +583,5 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-08-30T08:01:45.546Z"
+  "updatedAt": "2026-08-31T17:50:00.000Z"
 }

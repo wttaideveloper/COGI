@@ -6,10 +6,10 @@ import { mockHomepage } from '@/data/mock'
 import { CUSTOM_BLOCK_OPTIONS, createHomepageBlock, ensureBuiltinSections, isCustomSection, isSplitSection, SECTION_HINTS } from '@/data/homepageBlocks'
 import { mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
-import { hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
+import { captureDraftSnapshot, ensureRemoteUrl, hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import { MediaUpload, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
-import { RevertToLiveButton } from '@/components/RevertButton'
+import { RevertToLiveButton, UndoDraftButton } from '@/components/RevertButton'
 import type { HeroHeadlineCase, HeroMedia, HeroSlide, HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
 
 const HOMEPAGE_DRAFT_KEY = 'cogi_homepage_draft'
@@ -119,6 +119,14 @@ function sampleOrEmpty(value: string | undefined, samples: string | string[]) {
   return list.some((sample) => text === sample.trim()) ? '' : (value ?? '')
 }
 
+function shortName(name: string, max = 32) {
+  if (!name || name.length <= max) return name
+  const dot = name.lastIndexOf('.')
+  const ext = dot > 0 ? name.slice(dot) : ''
+  const keep = Math.max(10, max - ext.length - 1)
+  return `${name.slice(0, keep)}…${ext}`
+}
+
 function loadHomepageDraft(): HomepageDraftPayload | null {
   try {
     const raw = localStorage.getItem(HOMEPAGE_DRAFT_KEY)
@@ -141,8 +149,8 @@ export default function HomepageManagerPage() {
   const query = useQuery({ queryKey: ['homepage'], queryFn: () => apiSingle<HomepageRecord>('/homepage'), enabled: !isDemoMode() })
   const stored = loadSiteConfig()
   const existingDraft = loadHomepageDraft()
-  const [hydrated, setHydrated] = useState<HomepageRecord | null>(null)
-  const data = existingDraft?.values ?? hydrated ?? query.data ?? { ...mockHomepage, ...stored.homepage }
+  const [hydrated, setHydrated] = useState<HomepageRecord>(() => homepageFromConfig(stored))
+  const data = existingDraft?.values ?? hydrated
   const safeData: HomepageRecord = {
     ...mockHomepage,
     ...data,
@@ -154,11 +162,11 @@ export default function HomepageManagerPage() {
     heroMedia: data.heroMedia === 'video' ? 'video' : 'images',
     heroVideoUrl: data.heroVideoUrl ?? '',
     heroSlideDuration: data.heroSlideDuration ?? mockHomepage.heroSlideDuration ?? 6,
-    heroSlides: (Array.isArray(data.heroSlides) && data.heroSlides.length
+    heroSlides: Array.isArray(data.heroSlides)
       ? data.heroSlides
       : data.heroImageUrl
         ? [{ id: 'hero', imageUrl: data.heroImageUrl, alt: data.heroImageAlt || 'Hero image' }]
-        : mockHomepage.heroSlides),
+        : mockHomepage.heroSlides,
     mapOceanColor: data.mapOceanColor ?? mockHomepage.mapOceanColor,
     mapLandColor: data.mapLandColor ?? mockHomepage.mapLandColor,
     mapPinColor: data.mapPinColor ?? mockHomepage.mapPinColor,
@@ -183,11 +191,13 @@ export default function HomepageManagerPage() {
   const [sectionQuery, setSectionQuery] = useState('')
 
   useEffect(() => {
+    captureDraftSnapshot('homepage')
     let active = true
     hydrateSiteConfigFromStrapi().then((config) => {
       if (!active) return
       setHydrated(homepageFromConfig(config))
       if (!loadHomepageDraft()?.copy) setCopyHome(mergeSiteCopy(config.copy).homepage)
+      captureDraftSnapshot('homepage')
     })
     return () => { active = false }
   }, [])
@@ -203,8 +213,8 @@ export default function HomepageManagerPage() {
         heroMedia: values.heroMedia === 'video' ? 'video' : 'images',
         heroVideoUrl: values.heroVideoUrl || '',
         heroSlideDuration: Number(values.heroSlideDuration) || 6,
-        heroImageUrl: first?.imageUrl || values.heroImageUrl || '',
-        heroImageAlt: first?.alt || values.heroImageAlt || '',
+        heroImageUrl: first?.imageUrl || '',
+        heroImageAlt: first?.alt || '',
         heroSlides: slides,
       }
       localStorage.setItem(
@@ -241,12 +251,23 @@ export default function HomepageManagerPage() {
       if (status === 'published') localStorage.removeItem(HOMEPAGE_DRAFT_KEY)
       return { values: payload, status }
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: ({ values: payload }, variables) => {
+      form.reset(payload)
+      if (variables.status === 'draft') captureDraftSnapshot('homepage')
       setSavedAs(variables.status)
       setHasDraft(variables.status === 'draft')
       window.setTimeout(() => setSavedAs(null), 3000)
     },
   })
+
+  async function promoteRemoteUrl(localUrl: string, alt: string) {
+    try {
+      return await ensureRemoteUrl(localUrl, alt)
+    } catch (error) {
+      setHeroUploadError(`Could not upload the file (${getErrorMessage(error)}). Try a smaller file, then publish again.`)
+      return localUrl
+    }
+  }
 
   async function onHeroFile(file: File | undefined, replaceIndex?: number) {
     if (!file) return
@@ -256,16 +277,20 @@ export default function HomepageManagerPage() {
       return
     }
     setHeroUploadError('')
-    const url = await readFileAsDataUrl(file)
+    const localUrl = await readFileAsDataUrl(file)
     const alt = file.name.replace(/\.[^.]+$/, '')
-    const nextSlide: HeroSlide = { id: `hero-${Date.now()}`, imageUrl: url, alt }
+    const nextSlide: HeroSlide = { id: `hero-${Date.now()}`, imageUrl: localUrl, alt }
     const current = currentSlides()
     const next = replaceIndex != null && current[replaceIndex]
-      ? current.map((slide, index) => (index === replaceIndex ? { ...slide, imageUrl: url, alt: slide.alt || alt } : slide))
+      ? current.map((slide, index) => (index === replaceIndex ? { ...slide, imageUrl: localUrl, alt: slide.alt || alt } : slide))
       : [...current, nextSlide]
     setHeroSlides(next)
     setActiveSlide(replaceIndex != null ? replaceIndex : next.length - 1)
-    setHeroMeta(await readImageMeta(file, url))
+    setHeroMeta(await readImageMeta(file, localUrl))
+    const remote = await promoteRemoteUrl(localUrl, alt)
+    if (remote !== localUrl) {
+      setHeroSlides(currentSlides().map((slide) => (slide.imageUrl === localUrl ? { ...slide, imageUrl: remote } : slide)))
+    }
   }
 
   async function onHeroVideoFile(file: File | undefined) {
@@ -276,15 +301,17 @@ export default function HomepageManagerPage() {
       return
     }
     setHeroUploadError(check.warning || '')
-    const url = await readFileAsDataUrl(file)
-    form.setValue('heroVideoUrl', url, { shouldDirty: true })
+    const localUrl = await readFileAsDataUrl(file)
+    form.setValue('heroVideoUrl', localUrl, { shouldDirty: true })
     form.setValue('heroMedia', 'video', { shouldDirty: true })
     setHeroMeta({ name: file.name, size: file.size })
+    const remote = await promoteRemoteUrl(localUrl, file.name.replace(/\.[^.]+$/, '') || 'Hero video')
+    if (remote !== localUrl) form.setValue('heroVideoUrl', remote, { shouldDirty: true })
   }
 
   function currentSlides(): HeroSlide[] {
-    const slides = (form.getValues('heroSlides') || []).filter((slide) => Boolean(slide.imageUrl))
-    if (slides.length) return slides
+    const raw = form.getValues('heroSlides')
+    if (Array.isArray(raw)) return raw.filter((slide) => Boolean(slide.imageUrl))
     const url = form.getValues('heroImageUrl')
     return url ? [{ id: 'hero', imageUrl: url, alt: form.getValues('heroImageAlt') || 'Hero image' }] : []
   }
@@ -343,8 +370,9 @@ export default function HomepageManagerPage() {
 
   const sections = form.watch('sections') || []
   const heroImageUrl = form.watch('heroImageUrl')
-  const heroSlides = (form.watch('heroSlides') || []).filter((slide) => Boolean(slide.imageUrl))
-  const bannerSlides = heroSlides.length
+  const watchedSlides = form.watch('heroSlides')
+  const heroSlides = (Array.isArray(watchedSlides) ? watchedSlides : []).filter((slide) => Boolean(slide.imageUrl))
+  const bannerSlides = Array.isArray(watchedSlides)
     ? heroSlides
     : heroImageUrl
       ? [{ id: 'hero', imageUrl: heroImageUrl, alt: form.watch('heroImageAlt') || 'Hero image' }]
@@ -453,6 +481,23 @@ export default function HomepageManagerPage() {
           <button type="button" className="btn-primary" disabled={mutation.isPending} onClick={() => save('published')}>
             {mutation.isPending && mutation.variables?.status === 'published' ? 'Publishing…' : 'Publish live'}
           </button>
+          <UndoDraftButton
+            scope="homepage"
+            disabled={mutation.isPending}
+            onRestored={(config) => {
+              const restored = homepageFromConfig(config)
+              const copy = mergeSiteCopy(config.copy).homepage
+              form.reset(restored)
+              setHydrated(restored)
+              setCopyHome(copy)
+              localStorage.setItem(
+                HOMEPAGE_DRAFT_KEY,
+                JSON.stringify({ values: restored, copy, savedAt: new Date().toISOString() } satisfies HomepageDraftPayload),
+              )
+              setHasDraft(true)
+              setSavedAs(null)
+            }}
+          />
           <RevertToLiveButton
             scope="homepage"
             disabled={mutation.isPending}
@@ -616,7 +661,7 @@ export default function HomepageManagerPage() {
                     <input className="admin-input" value={copyHome.secondaryCtaHref} onChange={(e) => patchCopy('secondaryCtaHref', e.target.value)} />
                   </Field>
                 </div>
-                <Field label="Photo description" hint="Read aloud for visitors who cannot see the image.">
+                <Field label="Photo description" hint="Alt text for screen readers and search. If you leave this blank, the file name is used.">
                   <input className="admin-input" {...form.register('heroImageAlt')} />
                 </Field>
               </div>
@@ -696,12 +741,14 @@ export default function HomepageManagerPage() {
                       kind="video"
                       label="Or upload a video file"
                       value={isFileVideo(heroVideoUrl) ? heroVideoUrl : ''}
-                      onLoaded={(url, file) => {
+                      onLoaded={async (url, file) => {
                         form.setValue('heroVideoUrl', url, { shouldDirty: true })
                         form.setValue('heroMedia', 'video', { shouldDirty: true })
                         setHeroVideoInput('')
                         setHeroMeta({ name: file.name, size: file.size })
                         setHeroUploadError('')
+                        const remote = await promoteRemoteUrl(url, file.name.replace(/\.[^.]+$/, '') || 'Hero video')
+                        if (remote !== url) form.setValue('heroVideoUrl', remote, { shouldDirty: true })
                       }}
                       onClear={() => {
                         form.setValue('heroVideoUrl', '', { shouldDirty: true })
@@ -744,10 +791,15 @@ export default function HomepageManagerPage() {
                   label={heroMedia === 'video' ? 'Optional poster photo' : 'Upload banner photo'}
                   onLoaded={async (url, file) => {
                     setHeroUploadError('')
-                    const next = [...currentSlides(), { id: `hero-${Date.now()}`, imageUrl: url, alt: file.name.replace(/\.[^.]+$/, '') }]
+                    const alt = file.name.replace(/\.[^.]+$/, '')
+                    const next = [...currentSlides(), { id: `hero-${Date.now()}`, imageUrl: url, alt }]
                     setHeroSlides(next)
                     setActiveSlide(next.length - 1)
                     setHeroMeta(await readImageMeta(file, url))
+                    const remote = await promoteRemoteUrl(url, alt)
+                    if (remote !== url) {
+                      setHeroSlides(currentSlides().map((slide) => (slide.imageUrl === url ? { ...slide, imageUrl: remote } : slide)))
+                    }
                   }}
                   extra={(
                     <div className="hp-url-row">
@@ -759,7 +811,7 @@ export default function HomepageManagerPage() {
                 {heroUploadError ? <p className="hp-upload-error" role="alert">{heroUploadError}</p> : null}
                 {heroMeta ? (
                   <div className="hp-meta">
-                    <span className="hp-chip">{heroMeta.name}</span>
+                    <span className="hp-chip" title={heroMeta.name}>{shortName(heroMeta.name)}</span>
                     <span className="hp-chip">{formatFileSize(heroMeta.size)}</span>
                     {heroMeta.width && heroMeta.height ? <span className="hp-chip">{heroMeta.width} × {heroMeta.height} px</span> : null}
                   </div>
@@ -829,14 +881,22 @@ export default function HomepageManagerPage() {
                   kind="image"
                   label="Thumbnail photo"
                   value={copyHome.videoImageUrl}
-                  onLoaded={(url) => patchCopy('videoImageUrl', url)}
+                  onLoaded={async (url) => {
+                    patchCopy('videoImageUrl', url)
+                    const remote = await promoteRemoteUrl(url, 'Video thumbnail')
+                    if (remote !== url) patchCopy('videoImageUrl', remote)
+                  }}
                   onClear={() => patchCopy('videoImageUrl', '')}
                 />
                 <MediaUpload
                   kind="video"
                   label="Video file"
                   value={copyHome.videoUrl?.startsWith('data:video') ? copyHome.videoUrl : ''}
-                  onLoaded={(url) => patchCopy('videoUrl', url)}
+                  onLoaded={async (url) => {
+                    patchCopy('videoUrl', url)
+                    const remote = await promoteRemoteUrl(url, 'Homepage video')
+                    if (remote !== url) patchCopy('videoUrl', remote)
+                  }}
                   onClear={() => patchCopy('videoUrl', '')}
                   extra={(
                     <Field label="Or paste a video link" hint="YouTube, Vimeo, or a direct MP4 URL.">
@@ -946,8 +1006,8 @@ export default function HomepageManagerPage() {
                 <textarea className="admin-input min-h-24" value={copyHome.mapSubtitle} onChange={(e) => patchCopy('mapSubtitle', e.target.value)} />
               </Field>
               <div className="hp-map-preview" style={{ background: form.watch('mapOceanColor') || '#F7FAFC' }}>
-                <div className="hp-map-land" style={{ background: form.watch('mapLandColor') || '#1B3A6B' }} />
-                <span className="hp-map-pin" style={{ background: form.watch('mapPinColor') || '#2B6CB0' }} />
+                <div className="hp-map-land" style={{ background: form.watch('mapLandColor') || '#D7E4EE' }} />
+                <span className="hp-map-pin" style={{ background: form.watch('mapPinColor') || '#5B8FB5' }} />
                 <span className="hp-map-pin hp-map-pin-on" style={{ background: form.watch('mapActiveColor') || '#3B82F6' }} />
                 <p>Ocean, land, and pin colors update the public map.</p>
               </div>
@@ -960,14 +1020,14 @@ export default function HomepageManagerPage() {
                 </Field>
                 <Field label="Land color">
                   <div className="hp-color">
-                    <input type="color" value={form.watch('mapLandColor') || '#1B3A6B'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapLandColor') || '#1B3A6B'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
+                    <input type="color" value={form.watch('mapLandColor') || '#D7E4EE'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapLandColor') || '#D7E4EE'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
                   </div>
                 </Field>
                 <Field label="Pin color">
                   <div className="hp-color">
-                    <input type="color" value={form.watch('mapPinColor') || '#2B6CB0'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapPinColor') || '#2B6CB0'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
+                    <input type="color" value={form.watch('mapPinColor') || '#5B8FB5'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
+                    <input className="admin-input" value={form.watch('mapPinColor') || '#5B8FB5'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
                   </div>
                 </Field>
                 <Field label="Selected pin color">
@@ -1065,10 +1125,15 @@ export default function HomepageManagerPage() {
                     kind="image"
                     label="Photo"
                     value={activeSection.imageUrl}
-                    onLoaded={(url, file) => patchSection(activeSection.id, { imageUrl: url, imageAlt: activeSection.imageAlt || file.name.replace(/\.[^.]+$/, '') })}
+                    onLoaded={async (url, file) => {
+                      const alt = activeSection.imageAlt || file.name.replace(/\.[^.]+$/, '')
+                      patchSection(activeSection.id, { imageUrl: url, imageAlt: alt })
+                      const remote = await promoteRemoteUrl(url, alt)
+                      if (remote !== url) patchSection(activeSection.id, { imageUrl: remote, imageAlt: alt })
+                    }}
                     onClear={() => patchSection(activeSection.id, { imageUrl: '' })}
                   />
-                  <Field label="Photo description">
+                  <Field label="Photo description" hint="Alt text for screen readers and search. Defaults to the file name when you upload.">
                     <input className="admin-input" value={activeSection.imageAlt || ''} onChange={(e) => patchSection(activeSection.id, { imageAlt: e.target.value })} />
                   </Field>
                 </>

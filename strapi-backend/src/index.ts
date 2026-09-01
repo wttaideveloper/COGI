@@ -184,10 +184,10 @@ const SEED_HOMEPAGE = {
     },
   ],
   impactStats: [
-    { value: '10', suffix: '+', label: 'Countries' },
-    { value: '500', suffix: '+', label: 'Healthcare Professionals' },
-    { value: '30', suffix: '+', label: 'Programs' },
-    { value: '∞', label: 'Communities of Grace' },
+    { value: '1,000', suffix: '+', label: 'Patients served through partners' },
+    { value: '200', suffix: '+', label: 'Volunteers & facilitators mobilized' },
+    { value: '10', suffix: '+', label: 'Countries engaged' },
+    { value: '500', suffix: '+', label: 'Healthcare professionals equipped' },
   ],
   portfolioAreas: [
     {

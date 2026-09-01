@@ -60,11 +60,12 @@ export function BootSplash() {
       }
     }
 
-    if (header.backgroundColor || theme.accentColor) {
-      const headerColor = header.backgroundColor || theme.accentColor || '#2B6CB0'
+    if (header.backgroundColor || theme.backgroundColor || theme.accentColor) {
+      const headerColor = header.backgroundColor || theme.backgroundColor || '#ffffff'
       el.style.background = headerColor
+      el.style.color = header.textColor || theme.textColor || '#1f2937'
       if (scrim) scrim.style.background = headerColor
-      el.style.setProperty('--splash-accent', '#ffffff')
+      el.style.setProperty('--splash-accent', theme.accentColor || '#5b8fb5')
     }
   }, [header.logoUrl, header.logoAlt, header.backgroundColor, footer.logoUrl, theme.accentColor])
 

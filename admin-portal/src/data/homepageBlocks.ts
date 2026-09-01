@@ -13,6 +13,7 @@ export const BUILTIN_SECTION_IDS = [
   'portfolio',
   'map',
   'stories',
+  'testimonials',
   'events',
   'newsletter',
   'donate',
@@ -60,10 +61,11 @@ export const DEFAULT_BUILTIN_SECTIONS: HomepageSection[] = [
   { id: 'portfolio', label: 'What we do', enabled: true, order: 10, summary: 'Ministry areas', kind: 'built-in' },
   { id: 'map', label: 'Where we serve', enabled: true, order: 11, summary: 'Map of countries', kind: 'built-in' },
   { id: 'stories', label: 'Featured stories', enabled: true, order: 12, summary: 'Story cards from the library', kind: 'built-in' },
-  { id: 'events', label: 'Next event', enabled: true, order: 13, summary: 'The upcoming featured event', kind: 'built-in' },
-  { id: 'newsletter', label: 'Email signup', enabled: true, order: 14, summary: 'Newsletter form', kind: 'built-in' },
-  { id: 'donate', label: 'Give', enabled: true, order: 15, summary: 'Invite people to donate', kind: 'built-in' },
-  { id: 'faith', label: 'Statement of faith', enabled: true, order: 16, summary: 'Closing faith statement', kind: 'built-in' },
+  { id: 'testimonials', label: 'Testimonials', enabled: true, order: 13, summary: 'Rotating quotes and short clips', kind: 'built-in' },
+  { id: 'events', label: 'Next event', enabled: true, order: 14, summary: 'The upcoming featured event', kind: 'built-in' },
+  { id: 'newsletter', label: 'Email signup', enabled: true, order: 15, summary: 'Newsletter form', kind: 'built-in' },
+  { id: 'donate', label: 'Give', enabled: true, order: 16, summary: 'Invite people to donate', kind: 'built-in' },
+  { id: 'faith', label: 'Statement of faith', enabled: true, order: 17, summary: 'Closing faith statement', kind: 'built-in' },
 ]
 
 export const SECTION_HINTS: Record<string, string> = {
@@ -79,6 +81,7 @@ export const SECTION_HINTS: Record<string, string> = {
   portfolio: 'Four ministry areas',
   map: 'Interactive world map',
   stories: 'Two featured stories',
+  testimonials: 'Rotating quotes and clips',
   events: 'Picked from Events',
   newsletter: 'Signup form',
   donate: 'Give button',

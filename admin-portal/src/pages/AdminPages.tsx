@@ -1,23 +1,24 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useRef, type FormEvent, type ReactNode } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { z } from 'zod'
+import { IMAGE_HINT, MediaUpload } from '@/components/MediaUpload'
 import MenuSwapper from '@/components/MenuSwapper'
 import RichTextEditor from '@/components/RichTextEditor'
 import { useAuth } from '@/contexts/AuthContext'
 import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomepage, mockLocations, mockMedia, mockNavigation, mockPages, mockPartners, mockPrograms, mockSettings, mockStats, mockStories, mockTeam, mockTestimonials } from '@/data/mock'
 import { mockFooterNavigation } from '@/data/siteSetup'
-import { hydrateSiteConfigFromStrapi, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
+import { hydrateSiteConfigFromStrapi, captureDraftSnapshot, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
 import { apiCreate, apiDelete, apiGetOne, apiList, apiListAll, apiSingle, apiPublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
-import { fetchLeads, removeSubscriber, type LeadSubscriber } from '@/services/leads'
+import { fetchLeads, addSubscriber, removeSubscriber, type LeadSubscriber } from '@/services/leads'
 import { COGI_LOGO } from '@/lib/brand'
-import { getPreviewUrl } from '@/utils/preview'
-import { RevertToLiveButton } from '@/components/RevertButton'
+import { getLiveUrl, getPreviewUrl } from '@/utils/preview'
+import { RevertToLiveButton, UndoDraftButton } from '@/components/RevertButton'
 import type { AuditRecord, BaseRecord, EnquiryRecord, EnquiryStatus, FormField, HomepageRecord, MediaFile, ModuleConfig, ModuleKey, SettingsRecord } from '@/types'
 
 type AnyRecord = BaseRecord & Record<string, unknown>
@@ -31,10 +32,10 @@ const moduleData: Record<string, AnyRecord[]> = {
 export const moduleConfigs: Record<string, ModuleConfig<AnyRecord>> = {
   pages: { key: 'pages', title: 'Custom pages', endpoint: '/pages', route: '/pages', singular: 'Page', description: 'Extra pages beyond the main site. Edit About, Donate, Contact, and other live wording under Site pages.', columns: [{ key: 'title', label: 'Title' }, { key: 'slug', label: 'URL' }, { key: 'status', label: 'Status' }, { key: 'updatedAt', label: 'Updated' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   programs: { key: 'programs', title: 'Programs', endpoint: '/programs', route: '/programs', singular: 'Program', description: 'The training and ministry areas listed on the Programs page.', columns: [{ key: 'title', label: 'Title' }, { key: 'area', label: 'Area' }, { key: 'status', label: 'Status' }, { key: 'order', label: 'Order' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'area', label: 'Area', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }, { name: 'order', label: 'Order', type: 'number' }] },
-  blog: { key: 'blog', title: 'Blog / News', endpoint: '/news-articles', route: '/blog', singular: 'Article', description: 'News and articles that appear in Resources → Blog.', columns: [{ key: 'title', label: 'Title' }, { key: 'category', label: 'Category' }, { key: 'author', label: 'Author' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'body', label: 'Body', type: 'richtext' }, { name: 'author', label: 'Author', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  events: { key: 'events', title: 'Events', endpoint: '/events', route: '/events', singular: 'Event', description: 'Upcoming gatherings shown on the Events page and homepage.', columns: [{ key: 'title', label: 'Title' }, { key: 'startDate', label: 'Starts' }, { key: 'venue', label: 'Venue' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'startDate', label: 'Start date', type: 'date' }, { name: 'endDate', label: 'End date', type: 'date' }, { name: 'venue', label: 'Venue', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  stories: { key: 'stories', title: 'Stories', endpoint: '/stories', route: '/stories', singular: 'Story', description: 'Video and written stories of transformation.', columns: [{ key: 'title', label: 'Title' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'type', label: 'Type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'imageUrl', label: 'Thumbnail URL', type: 'text' }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  testimonials: { key: 'testimonials', title: 'Testimonials', endpoint: '/testimonials', route: '/testimonials', singular: 'Testimonial', description: 'Quotes from board members and the healthcare community.', columns: [{ key: 'author', label: 'Author' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'quote', label: 'Quote', type: 'textarea', required: true }, { name: 'author', label: 'Author', type: 'text', required: true }, { name: 'mediaType', label: 'Media type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  blog: { key: 'blog', title: 'Blog / News', endpoint: '/news-articles', route: '/blog', singular: 'Article', description: 'News and articles that appear in Resources → Blog.', columns: [{ key: 'title', label: 'Title' }, { key: 'category', label: 'Category' }, { key: 'author', label: 'Author' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'body', label: 'Body', type: 'richtext', required: true }, { name: 'imageUrl', label: 'Article photo', type: 'image' }, { name: 'author', label: 'Author', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  events: { key: 'events', title: 'Events', endpoint: '/events', route: '/events', singular: 'Event', description: 'Upcoming gatherings shown on the Events page and homepage.', columns: [{ key: 'title', label: 'Title' }, { key: 'startDate', label: 'Starts' }, { key: 'venue', label: 'Venue' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'startDate', label: 'Start date', type: 'date', required: true }, { name: 'endDate', label: 'End date', type: 'date' }, { name: 'venue', label: 'Venue', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  stories: { key: 'stories', title: 'Stories', endpoint: '/stories', route: '/stories', singular: 'Story', description: 'Video and written stories of transformation.', columns: [{ key: 'title', label: 'Title' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Quote / summary', type: 'textarea' }, { name: 'body', label: 'Story', type: 'richtext' }, { name: 'type', label: 'Type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'imageUrl', label: 'Photo', type: 'image' }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  testimonials: { key: 'testimonials', title: 'Testimonials', endpoint: '/testimonials', route: '/testimonials', singular: 'Testimonial', description: 'Quotes from board members and the healthcare community.', columns: [{ key: 'author', label: 'Author' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'quote', label: 'Quote', type: 'textarea', required: true }, { name: 'author', label: 'Author', type: 'text', required: true }, { name: 'mediaType', label: 'Media type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   team: { key: 'team', title: 'Team Members', endpoint: '/team-members', route: '/team', singular: 'Team member', description: 'Board and global team profiles shown on the public site.', columns: [{ key: 'name', label: 'Name' }, { key: 'title', label: 'Title' }, { key: 'role', label: 'Role' }, { key: 'status', label: 'Status' }, { key: 'publicVisibility', label: 'Visible' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'title', label: 'Title', type: 'text' }, { name: 'role', label: 'Role', type: 'select', options: ['board', 'global-team', 'staff', 'advisor'].map((v) => ({ label: v, value: v })) }, { name: 'region', label: 'Region', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'bio', label: 'Bio', type: 'textarea' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'publicVisibility', label: 'Public visibility', type: 'select', options: yesNo }] },
   partners: { key: 'partners', title: 'Partners', endpoint: '/partners', route: '/partners', singular: 'Partner', description: 'Partner names, logos, and links on the Partners page.', columns: [{ key: 'name', label: 'Name' }, { key: 'region', label: 'Region' }, { key: 'url', label: 'URL' }, { key: 'status', label: 'Status' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'url', label: 'URL', type: 'text' }, { name: 'region', label: 'Region', type: 'text' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   locations: { key: 'locations', title: 'Locations', endpoint: '/locations', route: '/locations', singular: 'Location', description: 'Country pins for the Where we serve map.', columns: [{ key: 'country', label: 'Country' }, { key: 'region', label: 'Region' }, { key: 'latitude', label: 'Lat' }, { key: 'longitude', label: 'Lng' }], fields: [{ name: 'country', label: 'Country', type: 'text', required: true }, { name: 'region', label: 'Region', type: 'text' }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'programs', label: 'Programs (comma-separated)', type: 'text' }, { name: 'latitude', label: 'Latitude', type: 'number' }, { name: 'longitude', label: 'Longitude', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
@@ -59,37 +60,99 @@ function StatusBadge({ value }: { value: unknown }) {
 }
 function ErrorNotice({ error }: { error: unknown }) { return error ? <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">Strapi request failed: {getErrorMessage(error)}. Showing local demo data so the UI remains usable.</div> : null }
 function schemaFor(fields: FormField<AnyRecord>[]) { const shape: Record<string, z.ZodTypeAny> = {}; for (const f of fields) shape[String(f.name)] = f.required ? z.coerce.string().min(1, `${f.label} is required`) : z.any().optional(); return z.object(shape).passthrough() }
-function normalizeForForm(record: AnyRecord | undefined, fields: FormField<AnyRecord>[]) { const value: Record<string, unknown> = {}; for (const field of fields) { const name = String(field.name); if (name === 'sectionsText' && record?.sections) value[name] = JSON.stringify(record.sections, null, 2); else if (name === 'itemsText' && record?.items) value[name] = (record.items as Array<{ label: string; href: string }>).map((i) => `${i.label} | ${i.href}`).join('\n'); else value[name] = record?.[name] ?? (field.type === 'number' ? 0 : field.type === 'select' ? field.options?.[0]?.value : '') } return value }
-function formatDate(value: unknown): string { const text = String(value ?? ''); if (!text) return ''; const parsed = new Date(text); return Number.isNaN(parsed.getTime()) ? text : parsed.toISOString().slice(0, 10) }
+function normalizeForForm(record: AnyRecord | undefined, fields: FormField<AnyRecord>[]) {
+  const value: Record<string, unknown> = {}
+  const today = new Date().toISOString().slice(0, 10)
+  for (const field of fields) {
+    const name = String(field.name)
+    if (name === 'sectionsText' && record?.sections) value[name] = JSON.stringify(record.sections, null, 2)
+    else if (name === 'itemsText' && record?.items) value[name] = (record.items as Array<{ label: string; href: string }>).map((i) => `${i.label} | ${i.href}`).join('\n')
+    else if (name === 'imageUrl') value[name] = mediaToUrl(record?.imageUrl) || mediaToUrl(record?.thumbnail) || mediaToUrl(record?.featuredImage) || ''
+    else if (record?.[name] != null && record[name] !== '') value[name] = record[name]
+    else if (field.type === 'number') value[name] = 0
+    else if (field.type === 'select') value[name] = field.options?.[0]?.value
+    else if (field.type === 'date' && name === 'startDate' && !record) value[name] = today
+    else value[name] = ''
+  }
+  return value
+}
+function formatDate(value: unknown): string {
+  const text = String(value ?? '')
+  if (!text) return ''
+  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(text)
+  if (iso) return `${Number(iso[2])}/${Number(iso[3])}/${iso[1]}`
+  const parsed = new Date(text)
+  return Number.isNaN(parsed.getTime()) ? text : parsed.toLocaleDateString('en-US')
+}
 function cleanPayload(values: Record<string, unknown>) { const out: Record<string, unknown> = { ...values }; for (const [key, value] of Object.entries(out)) { if (value === 'true') out[key] = true; if (value === 'false') out[key] = false; if (key.endsWith('Text')) out[key] = value } return out }
 const schemaFieldMap: Record<string, Record<string, string>> = {
   '/pages': { title: 'title', slug: 'slug', status: 'status', pageType: 'pageType', summary: 'summary', heroImageUrl: 'heroImageUrl', externalUrl: 'externalUrl', showInHeader: 'showInHeader', showInFooter: 'showInFooter', templateId: 'templateId', sections: 'sections', seo: 'seo' },
   '/programs': { title: 'title', slug: 'slug', summary: 'summary', description: 'body', area: 'area', order: 'order', featured: 'featured' },
   '/news-articles': { title: 'title', slug: 'slug', summary: 'summary', body: 'body', author: 'author', tags: 'tags', featured: 'featured' },
   '/events': { title: 'title', slug: 'slug', summary: 'summary', description: 'body', startDate: 'startDate', endDate: 'endDate', venue: 'venue', featured: 'featured' },
-  '/stories': { title: 'title', slug: 'slug', summary: 'summary', country: 'country', featured: 'featured', type: 'type', program: 'program', imageUrl: 'imageUrl', videoUrl: 'videoUrl' },
-  '/testimonials': { quote: 'quote', author: 'author', mediaType: 'mediaType', country: 'country', featured: 'featured' },
+  '/stories': { title: 'title', slug: 'slug', summary: 'summary', body: 'body', country: 'country', featured: 'featured', type: 'type', program: 'program', videoUrl: 'videoUrl' },
+  '/testimonials': { quote: 'quote', author: 'author', mediaType: 'mediaType', country: 'country', featured: 'featured', videoUrl: 'videoUrl' },
   '/team-members': { name: 'name', title: 'title', role: 'role', region: 'region', bio: 'bio', order: 'order', publicVisibility: 'publicVisibility' },
   '/partners': { name: 'name', description: 'description', url: 'url', region: 'region', order: 'order' },
   '/locations': { country: 'country', region: 'region', summary: 'summary', latitude: 'latitude', longitude: 'longitude' },
+}
+function slugifyTitle(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+function toDateTime(value: unknown) {
+  const text = String(value ?? '').trim()
+  if (!text) return text
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return `${text}T12:00:00.000Z`
+  return text
 }
 function toDecimal(value: unknown): number | undefined {
   if (value === '' || value == null) return undefined
   const n = typeof value === 'number' ? value : Number(value)
   return Number.isFinite(n) ? n : undefined
 }
+function mediaToUrl(value: unknown): string {
+  if (!value) return ''
+  if (typeof value === 'string') {
+    if (!value) return ''
+    return value.startsWith('http') || value.startsWith('/') || value.startsWith('data:') ? value : `${getStrapiUrl()}${value}`
+  }
+  if (typeof value !== 'object') return ''
+  const record = value as Record<string, unknown>
+  if (typeof record.url === 'string') return mediaToUrl(record.url)
+  if (record.data && typeof record.data === 'object') {
+    const nested = record.data as Record<string, unknown>
+    return mediaToUrl(nested.attributes || nested)
+  }
+  return ''
+}
+function dataUrlToUploadFile(dataUrl: string, name: string) {
+  const [meta, encoded] = dataUrl.split(',')
+  const mime = /data:(.*?);/.exec(meta)?.[1] || 'image/jpeg'
+  const binary = atob(encoded || '')
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+  const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg'
+  return new File([bytes], `${name || 'image'}.${ext}`, { type: mime })
+}
 function buildPayload(endpoint: string, values: Record<string, unknown>, _status: 'draft' | 'published') {
   const cleaned = cleanPayload(values)
   const map = schemaFieldMap[endpoint]
   const out: Record<string, unknown> = {}
   for (const [formKey, apiKey] of Object.entries(map)) {
-    if (cleaned[formKey] === undefined) continue
+    if (cleaned[formKey] === undefined || cleaned[formKey] === '') continue
     if (apiKey === 'latitude' || apiKey === 'longitude' || apiKey === 'order') {
       const n = toDecimal(cleaned[formKey])
       if (n !== undefined) out[apiKey] = n
       continue
     }
-    out[apiKey] = cleaned[formKey]
+    out[apiKey] = apiKey === 'startDate' || apiKey === 'endDate' ? toDateTime(cleaned[formKey]) : cleaned[formKey]
   }
   return out
 }
@@ -99,7 +162,9 @@ function locationPreviewUrl(country?: unknown) {
 }
 function recordPreviewUrl(moduleKey: ModuleKey, values: Record<string, unknown>, row?: AnyRecord) {
   if (moduleKey === 'locations') return locationPreviewUrl(values.country || row?.country)
-  return getPreviewUrl(String(values.slug || row?.slug || ''))
+  const path = String(values.slug || row?.slug || '')
+  if (moduleKey === 'pages' && String(values.status || row?.status || '') === 'published') return getLiveUrl(path)
+  return getPreviewUrl(path)
 }
 function createdDocumentId(created: unknown): string {
   if (!created || typeof created !== 'object') return ''
@@ -189,14 +254,14 @@ export function DashboardPage() {
         <div className="admin-card flex flex-col p-5">
           <h3 className="mb-4 font-bold">Content mix</h3>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={chart}><CartesianGrid strokeDasharray="3 3" stroke="#d5e4f3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="value" fill="#2B6CB0" radius={[8, 8, 0, 0]} /></BarChart>
+            <BarChart data={chart}><CartesianGrid strokeDasharray="3 3" stroke="#e8eef3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Bar dataKey="value" fill="#5B8FB5" radius={[8, 8, 0, 0]} /></BarChart>
           </ResponsiveContainer>
         </div>
         <div className="admin-card flex flex-col p-5">
           <h3 className="mb-4 font-bold">Engagement trend</h3>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={[{ name: 'Apr', value: 120 }, { name: 'May', value: 220 }, { name: 'Jun', value: 310 }, { name: 'Jul', value: 420 }]}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#d5e4f3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Line type="monotone" dataKey="value" stroke="#1B3A6B" strokeWidth={3} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e8eef3" /><XAxis dataKey="name" /><YAxis /><Tooltip /><Line type="monotone" dataKey="value" stroke="#5B8FB5" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -368,19 +433,22 @@ export function HomepagePage() {
 }
 
 export function NavigationPage() {
+  const stored = loadSiteConfig()
   const [tab, setTab] = useState<'header' | 'footer'>('header')
   const [headerMenu, setHeaderMenu] = useState(mockNavigation[0])
   const [footerMenu, setFooterMenu] = useState(mockFooterNavigation)
-  const [headerItems, setHeaderItems] = useState(mockNavigation[0].items)
-  const [footerItems, setFooterItems] = useState(mockFooterNavigation.items)
+  const [headerItems, setHeaderItems] = useState(stored.headerNav)
+  const [footerItems, setFooterItems] = useState(stored.footerNav)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
+    captureDraftSnapshot('menus')
     hydrateSiteConfigFromStrapi().then((config) => {
       setHeaderItems(config.headerNav)
       setFooterItems(config.footerNav)
+      captureDraftSnapshot('menus')
     })
   }, [])
 
@@ -389,6 +457,13 @@ export function NavigationPage() {
   const menu = tab === 'header' ? headerMenu : footerMenu
   const setMenu = tab === 'header' ? setHeaderMenu : setFooterMenu
 
+  function scrollToLatestMenu() {
+    window.requestAnimationFrame(() => {
+      const rows = document.querySelectorAll('[data-menu-id]')
+      rows[rows.length - 1]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
   async function saveMenu(status: 'draft' | 'published') {
     if (tab === 'header') setHeaderMenu({ ...headerMenu, items: headerItems })
     else setFooterMenu({ ...footerMenu, items: footerItems })
@@ -396,6 +471,10 @@ export function NavigationPage() {
     setSaveError(null)
     try {
       await saveSiteConfig({ headerNav: headerItems, footerNav: footerItems }, status)
+      if (status === 'draft') {
+        captureDraftSnapshot('menus')
+        scrollToLatestMenu()
+      }
       setSavedAs(status)
       window.setTimeout(() => setSavedAs(null), 4000)
     } catch (err) {
@@ -418,6 +497,15 @@ export function NavigationPage() {
             <button type="button" className="btn-primary" disabled={Boolean(pending)} onClick={() => saveMenu('published')}>
               {pending === 'published' ? 'Publishing…' : 'Publish live'}
             </button>
+            <UndoDraftButton
+              scope="menus"
+              disabled={Boolean(pending)}
+              onRestored={(config) => {
+                setHeaderItems(config.headerNav)
+                setFooterItems(config.footerNav)
+                setSavedAs(null)
+              }}
+            />
             <RevertToLiveButton
               scope="menus"
               disabled={Boolean(pending)}
@@ -486,6 +574,17 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
   const current = params.id === 'new' ? undefined : rows.find((row) => row.id === params.id || row.documentId === params.id)
   const dateFieldKeys = new Set(config.fields.filter((f) => f.type === 'date').map((f) => String(f.name)))
   const form = useForm<Record<string, unknown>>({ resolver: zodResolver(schemaFor(config.fields)), values: normalizeForForm(current, config.fields) })
+  const titleWatch = form.watch('title')
+  useEffect(() => {
+    if (params.id !== 'new') return
+    if (!config.fields.some((field) => String(field.name) === 'slug')) return
+    const next = slugifyTitle(String(titleWatch || ''))
+    if (next && String(form.getValues('slug') || '') !== next) form.setValue('slug', next)
+  }, [titleWatch, params.id, config.fields, form])
+  const draftSnap = useRef<Record<string, unknown> | null>(null)
+  useEffect(() => {
+    draftSnap.current = form.getValues()
+  }, [params.id, current?.id])
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const hasStatusField = config.fields.some((field) => String(field.name) === 'status')
   const visible = rows.filter((row) => {
@@ -496,7 +595,29 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
   const save = useMutation({
     mutationFn: async ({ values, status }: { values: Record<string, unknown>; status: 'draft' | 'published' }) => {
       const payload = buildPayload(config.endpoint, values, status)
-      if (isDemoMode() || query.isError) {
+      if (!payload.slug && values.title) payload.slug = slugifyTitle(String(values.title))
+      if (!payload.slug && config.fields.some((field) => String(field.name) === 'slug')) payload.slug = `${config.singular.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`
+      if (config.endpoint === '/events' && !payload.startDate) payload.startDate = toDateTime(new Date().toISOString().slice(0, 10))
+      if (config.endpoint === '/news-articles' && !payload.body) payload.body = String(values.summary || values.title || 'Article')
+      if (config.endpoint === '/stories') {
+        const program = payload.program
+        if (typeof program === 'string' && !/^\d+$/.test(program)) delete payload.program
+        if (!payload.body) payload.body = String(values.summary || values.title || 'Story')
+      }
+      const imageValue = String(values.imageUrl || '')
+      if (imageValue.startsWith('data:') && !isDemoMode()) {
+        if (config.endpoint === '/news-articles') {
+          const uploaded = await uploadMedia(dataUrlToUploadFile(imageValue, String(payload.slug || 'article')), String(values.title || 'Article photo'))
+          const mediaId = Number(uploaded.id)
+          payload.featuredImage = Number.isFinite(mediaId) ? mediaId : uploaded.id
+        }
+        if (config.endpoint === '/stories') {
+          const uploaded = await uploadMedia(dataUrlToUploadFile(imageValue, String(payload.slug || 'story')), String(values.title || 'Story photo'))
+          const mediaId = Number(uploaded.id)
+          payload.thumbnail = Number.isFinite(mediaId) ? mediaId : uploaded.id
+        }
+      }
+      const saveLocal = () => {
         const id = String(current?.id || current?.documentId || Date.now())
         const record = {
           ...current,
@@ -514,20 +635,31 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
         })
         return record
       }
-      const id = current?.documentId || current?.id || String(params.id)
-      if (params.id === 'new') {
-        const created = await apiCreate<Record<string, unknown>>(config.endpoint, payload, 'draft')
-        const createdId = createdDocumentId(created)
-        if (createdId && status === 'published') await apiPublish(config.endpoint, createdId)
-        return { id: createdId, documentId: createdId }
+      if (isDemoMode() || query.isError) {
+        return saveLocal()
       }
-      await apiUpdate<Record<string, unknown>>(config.endpoint, id, payload, 'draft')
-      if (status === 'published') await apiPublish(config.endpoint, id)
-      return {}
+      const id = current?.documentId || current?.id || String(params.id)
+      try {
+        if (params.id === 'new') {
+          const created = await apiCreate<Record<string, unknown>>(config.endpoint, payload, 'draft')
+          const createdId = createdDocumentId(created)
+          if (createdId && status === 'published') await apiPublish(config.endpoint, createdId)
+          return { id: createdId, documentId: createdId }
+        }
+        await apiUpdate<Record<string, unknown>>(config.endpoint, id, payload, 'draft')
+        if (status === 'published') await apiPublish(config.endpoint, id)
+        return {}
+      } catch (error) {
+        if (config.endpoint === '/events' || config.endpoint === '/news-articles' || config.endpoint === '/stories') {
+          return saveLocal()
+        }
+        throw error
+      }
     },
     onSuccess: (data, variables) => {
       qc.invalidateQueries({ queryKey: [moduleKey] })
       setSavedAs(variables.status)
+      if (variables.status === 'draft') draftSnap.current = { ...form.getValues(), ...variables.values }
       if (hasStatusField) form.setValue('status', variables.status)
       if (variables.status === 'published') notifyPublished()
       const createdId = data && typeof data === 'object' && 'id' in data ? String((data as AnyRecord).id) : ''
@@ -590,6 +722,22 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
             <button
               type="button"
               className="btn-secondary"
+              disabled={save.isPending}
+              onClick={() => {
+                if (!draftSnap.current) {
+                  window.alert('Nothing to undo.')
+                  return
+                }
+                if (!window.confirm('Undo unsaved edits on this screen and restore the last saved draft?')) return
+                form.reset(draftSnap.current)
+                setSavedAs(null)
+              }}
+            >
+              Undo draft
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
               disabled={save.isPending || params.id === 'new'}
               onClick={() => {
                 if (!window.confirm('Revert this record to the last published version? Draft edits will be discarded.')) return
@@ -633,7 +781,9 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
         />
         <p className="admin-toolbar-count">{visible.length} {visible.length === 1 ? config.singular.toLowerCase() : 'records'}</p>
       </div>
-      {rows.length === 0 ? (
+      {query.isLoading && !isDemoMode() && !query.data ? (
+        <div className="admin-card p-10 text-center text-sm text-slate-600">Loading custom pages…</div>
+      ) : rows.length === 0 ? (
         <EmptyState label={config.title} action={<Link className="btn-primary" to={`${config.route}/new`}>Create {config.singular}</Link>} />
       ) : visible.length === 0 ? (
         <div className="admin-card p-10 text-center">
@@ -650,7 +800,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
               {visible.map((row) => (
                 <tr key={row.id}>
                   {config.columns.map((col) => (
-                    <td key={String(col.key)}>
+                    <td key={String(col.key)} className={String(col.key) === 'slug' ? 'data-table-url' : undefined} title={String(col.key) === 'slug' ? String(row[col.key] ?? '') : undefined}>
                       {String(col.key).toLowerCase().includes('status') || typeof row[col.key] === 'boolean'
                         ? <StatusBadge value={row[col.key]} />
                         : String(col.key).toLowerCase().includes('updated') || String(col.key).toLowerCase().includes('created') || dateFieldKeys.has(String(col.key))
@@ -684,7 +834,39 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
     </>
   )
 }
-function FormControl({ field, form }: { field: FormField<AnyRecord>; form: ReturnType<typeof useForm<Record<string, unknown>>> }) { const name = String(field.name); const error = form.formState.errors[name]?.message; return <Field label={field.label} error={error}>{field.type === 'textarea' ? <textarea className="admin-input min-h-28" {...form.register(name)} /> : field.type === 'select' ? <select className="admin-input" {...form.register(name)}>{field.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select> : field.type === 'richtext' ? <Controller control={form.control} name={name} render={({ field }) => <RichTextEditor value={String(field.value || '')} onChange={field.onChange} />} /> : <input className="admin-input" type={field.type} {...form.register(name, field.type === 'number' ? { valueAsNumber: true } : undefined)} />}</Field> }
+function FormControl({ field, form }: { field: FormField<AnyRecord>; form: ReturnType<typeof useForm<Record<string, unknown>>> }) {
+  const name = String(field.name)
+  const error = form.formState.errors[name]?.message
+  if (field.type === 'image') {
+    return (
+      <div>
+        <MediaUpload
+          kind="image"
+          label={field.label}
+          value={String(form.watch(name) || '')}
+          hint={IMAGE_HINT}
+          noun="photo"
+          onLoaded={(dataUrl) => form.setValue(name, dataUrl, { shouldDirty: true })}
+          onClear={() => form.setValue(name, '', { shouldDirty: true })}
+        />
+        {error ? <span className="admin-help">{String(error)}</span> : null}
+      </div>
+    )
+  }
+  return (
+    <Field label={field.label} error={error}>
+      {field.type === 'textarea' ? (
+        <textarea className="admin-input min-h-28" {...form.register(name)} />
+      ) : field.type === 'select' ? (
+        <select className="admin-input" {...form.register(name)}>{field.options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+      ) : field.type === 'richtext' ? (
+        <Controller control={form.control} name={name} render={({ field }) => <RichTextEditor value={String(field.value || '')} onChange={field.onChange} />} />
+      ) : (
+        <input className="admin-input" type={field.type} {...form.register(name, field.type === 'number' ? { valueAsNumber: true } : undefined)} />
+      )}
+    </Field>
+  )
+}
 function EmptyState({ label, action }: { label: string; action?: ReactNode }) { return <div className="admin-card p-10 text-center"><h3 className="text-lg font-bold">No {label.toLowerCase()} yet</h3><p className="mt-2 text-sm text-slate-600">Create the first record to get started.</p>{action ? <div className="mt-4 flex justify-center">{action}</div> : null}</div> }
 
 export function MediaPage() {
@@ -779,6 +961,32 @@ export function EnquiriesPage() {
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [message, setMessage] = useState('')
+  useEffect(() => {
+    let active = true
+    async function refresh() {
+      const data = await fetchLeads()
+      if (!active) return
+      if (data.enquiries.length) {
+        const mapped = data.enquiries.map((item) => ({
+          id: item.id,
+          name: item.name,
+          email: item.email,
+          type: item.roleArea ? `${item.type} · ${item.roleArea}` : item.type,
+          message: item.message,
+          status: item.status,
+          notes: item.notes,
+          createdAt: item.createdAt,
+        }))
+        setRows(mapped as typeof rows)
+      }
+    }
+    void refresh()
+    const timer = window.setInterval(() => { void refresh() }, 4000)
+    return () => {
+      active = false
+      window.clearInterval(timer)
+    }
+  }, [])
   const visible = rows.filter((item) => {
     if (filter !== 'all' && item.status !== filter) return false
     const q = search.trim().toLowerCase()
@@ -798,7 +1006,7 @@ export function EnquiriesPage() {
     <>
       <PageHeader
         title="Enquiries"
-        description="Triage contact and get-involved messages, add notes, and export a CSV."
+        description="Contact, volunteer, and get-involved messages. New forms land here and email the team when SMTP is configured."
         action={<button className="btn-secondary" onClick={() => exportCsv(visible as unknown as Record<string, unknown>[], [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'type', label: 'Type' }, { key: 'status', label: 'Status' }], 'cogi-enquiries.csv')}>Export CSV</button>}
       />
       {message ? <p className="admin-flash">{message}</p> : null}
@@ -843,6 +1051,11 @@ export function NewsletterPage() {
   const [mailNote, setMailNote] = useState('')
   const [strapiReachable, setStrapiReachable] = useState<boolean | null>(null)
   const [removingId, setRemovingId] = useState('')
+  const [addName, setAddName] = useState('')
+  const [addEmail, setAddEmail] = useState('')
+  const [addWhatsapp, setAddWhatsapp] = useState('')
+  const [addNote, setAddNote] = useState<{ ok: boolean; text: string } | null>(null)
+  const [adding, setAdding] = useState(false)
   async function load() {
     const data = await fetchLeads()
     setSubscribers(data.subscribers)
@@ -876,16 +1089,51 @@ export function NewsletterPage() {
     setRemovingId('')
     await load()
   }
+  async function onAdd(e: FormEvent) {
+    e.preventDefault()
+    setAdding(true)
+    setAddNote(null)
+    const result = await addSubscriber({ name: addName, email: addEmail, whatsapp: addWhatsapp })
+    setAddNote({ ok: result.ok, text: result.message })
+    if (result.ok) {
+      setAddName('')
+      setAddEmail('')
+      setAddWhatsapp('')
+      await load()
+    }
+    setAdding(false)
+  }
   return (
     <>
       <PageHeader
         title="Newsletter subscribers"
-        description="People who signed up on the website. Each signup is saved in Strapi, listed here, and sent a confirmation email when SMTP is configured."
+        description="People who signed up on the public website, plus anyone you add here. The public footer Subscribe form writes to this list even when Strapi is offline."
         action={<button className="btn-secondary" onClick={() => exportCsv(rows as unknown as Array<Record<string, unknown>>, [{ key: 'name', label: 'Name' }, { key: 'email', label: 'Email' }, { key: 'whatsapp', label: 'WhatsApp' }, { key: 'source', label: 'Source' }, { key: 'subscriberMail', label: 'Confirmation email' }], 'cogi-newsletter.csv')}>Export CSV</button>}
       />
       {strapiReachable === true ? <p className="hp-flash hp-flash-ok">New signups are saved in Strapi and in this list.</p> : null}
-      {strapiReachable === false ? <p className="hp-flash hp-flash-warn">Strapi is not reachable. Signups are still saved here; they will sync when Strapi is running.</p> : null}
+      {strapiReachable === false ? (
+        <p className="hp-flash hp-flash-warn">
+          Strapi is offline, so this list is the local copy. You can still add subscribers below, and visitors can still subscribe on the website. Records sync to Strapi when it is running again.
+        </p>
+      ) : null}
       {mailNote ? <p className="hp-flash hp-flash-warn">{mailNote}</p> : null}
+
+      <form className="admin-card mb-4 grid gap-3 p-5 md:grid-cols-[1fr_1fr_1fr_auto]" onSubmit={(e) => void onAdd(e)}>
+        <label className="block">
+          <span className="admin-label">Name</span>
+          <input className="admin-input" value={addName} onChange={(e) => setAddName(e.target.value)} placeholder="Full name" required minLength={2} />
+        </label>
+        <label className="block">
+          <span className="admin-label">Email</span>
+          <input className="admin-input" type="email" value={addEmail} onChange={(e) => setAddEmail(e.target.value)} placeholder="name@example.com" required />
+        </label>
+        <label className="block">
+          <span className="admin-label">WhatsApp (optional)</span>
+          <input className="admin-input" value={addWhatsapp} onChange={(e) => setAddWhatsapp(e.target.value)} placeholder="+1…" />
+        </label>
+        <button type="submit" className="btn-primary self-end" disabled={adding}>{adding ? 'Adding…' : 'Add subscriber'}</button>
+        {addNote ? <p className={`md:col-span-4 text-sm font-semibold ${addNote.ok ? 'text-emerald-700' : 'text-red-700'}`}>{addNote.text}</p> : null}
+      </form>
       <div className="admin-toolbar">
         <input className="admin-input admin-toolbar-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search subscribers…" aria-label="Search subscribers" />
         <p className="admin-toolbar-count">{rows.length} {rows.length === 1 ? 'subscriber' : 'subscribers'}</p>

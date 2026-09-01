@@ -43,9 +43,25 @@ export type LeadSubscriber = {
   strapiSaved: boolean
 }
 
+export type LeadEnquiry = {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  type: string
+  pathway?: string
+  roleArea?: string
+  programInterest?: string
+  message: string
+  status: 'new' | 'in_progress' | 'resolved' | 'spam'
+  notes?: string
+  createdAt: string
+  adminMail?: 'sent' | 'queued' | 'failed'
+}
+
 export type LeadNotification = {
   id: string
-  type: 'newsletter'
+  type: 'newsletter' | 'enquiry'
   title: string
   body: string
   href: string
@@ -67,6 +83,7 @@ type LeadsFile = {
   subscribers: LeadSubscriber[]
   notifications: LeadNotification[]
   mails: LeadMail[]
+  enquiries: LeadEnquiry[]
 }
 
 type StrapiEntry = {
@@ -84,7 +101,7 @@ type StrapiEntry = {
 let cachedJwt: { token: string; expiresAt: number } | null = null
 
 function emptyLeads(): LeadsFile {
-  return { subscribers: [], notifications: [], mails: [] }
+  return { subscribers: [], notifications: [], mails: [], enquiries: [] }
 }
 
 function readLeads(): LeadsFile {
@@ -97,6 +114,7 @@ function readLeads(): LeadsFile {
         : [],
       notifications: Array.isArray(parsed.notifications) ? parsed.notifications : [],
       mails: Array.isArray(parsed.mails) ? parsed.mails : [],
+      enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : [],
     }
   } catch {
     return emptyLeads()
@@ -374,7 +392,11 @@ async function addSubscriber(input: { name?: string; email?: string; whatsapp?: 
     return {
       ok: true as const,
       status: 200,
-      body: { success: true, already: true, message: 'You are already subscribed. Thank you.' },
+      body: {
+        success: true,
+        already: true,
+        message: source === 'admin' ? 'That email is already on the list.' : 'You are already subscribed. Thank you.',
+      },
     }
   }
 
@@ -424,6 +446,7 @@ async function addSubscriber(input: { name?: string; email?: string; whatsapp?: 
   writeLeads(data)
 
   const mailed = confirmResult.status === 'sent'
+  const adminAdded = source === 'admin'
   return {
     ok: true as const,
     status: 201,
@@ -431,9 +454,92 @@ async function addSubscriber(input: { name?: string; email?: string; whatsapp?: 
       success: true,
       strapiSaved: subscriber.strapiSaved,
       mailed,
-      message: mailed
-        ? 'Thank you for subscribing. Please check your inbox for a confirmation email.'
-        : 'Thank you for subscribing. You are on the list, and a confirmation email has been queued.',
+      message: adminAdded
+        ? (subscriber.strapiSaved
+          ? 'Subscriber added to this list.'
+          : 'Subscriber added here. They will sync to Strapi when it is running.')
+        : mailed
+          ? 'Thank you for subscribing. Please check your inbox for a confirmation email.'
+          : 'Thank you for subscribing. You are on the list, and a confirmation email has been queued.',
+    },
+  }
+}
+
+function enquiryEmail(row: LeadEnquiry) {
+  const subject = `New ${row.type} from ${row.name}`
+  const text = `A new form submission arrived on the COGI website.\n\nName: ${row.name}\nEmail: ${row.email}\nPhone: ${row.phone || '—'}\nType: ${row.type}\nPathway: ${row.pathway || '—'}\nRole: ${row.roleArea || '—'}\nProgram: ${row.programInterest || '—'}\n\n${row.message}\n\nOpen Admin → Inbox → Messages to follow up.`
+  const html = `<div style="font-family:Georgia,serif;line-height:1.6;color:#1A2332"><p>A new form submission arrived on the COGI website.</p><ul><li><strong>Name:</strong> ${escapeHtml(row.name)}</li><li><strong>Email:</strong> ${escapeHtml(row.email)}</li><li><strong>Phone:</strong> ${escapeHtml(row.phone || '—')}</li><li><strong>Type:</strong> ${escapeHtml(row.type)}</li><li><strong>Pathway:</strong> ${escapeHtml(row.pathway || '—')}</li><li><strong>Role:</strong> ${escapeHtml(row.roleArea || '—')}</li><li><strong>Program:</strong> ${escapeHtml(row.programInterest || '—')}</li></ul><p>${escapeHtml(row.message)}</p></div>`
+  return { subject, text, html }
+}
+
+async function addEnquiry(input: {
+  name?: string
+  email?: string
+  phone?: string
+  type?: string
+  pathway?: string
+  roleArea?: string
+  programInterest?: string
+  message?: string
+}) {
+  const name = String(input.name || '').trim()
+  const email = String(input.email || '').trim().toLowerCase()
+  const message = String(input.message || '').trim()
+  if (name.length < 2) return { ok: false as const, status: 400, body: { success: false, message: 'Please enter your name.' } }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false as const, status: 400, body: { success: false, message: 'Please enter a valid email address.' } }
+
+  const createdAt = new Date().toISOString()
+  const enquiry: LeadEnquiry = {
+    id: `enq-${Date.now()}`,
+    name,
+    email,
+    phone: String(input.phone || '').trim() || undefined,
+    type: String(input.type || 'join').trim() || 'join',
+    pathway: String(input.pathway || '').trim() || undefined,
+    roleArea: String(input.roleArea || '').trim() || undefined,
+    programInterest: String(input.programInterest || '').trim() || undefined,
+    message: message || [input.pathway, input.roleArea, input.programInterest].filter(Boolean).join(' · ') || 'No message provided.',
+    status: 'new',
+    createdAt,
+    adminMail: 'queued',
+  }
+  const alert = enquiryEmail(enquiry)
+  const mail = await deliverMail(mailSettings().admin, alert.subject, alert.text, alert.html)
+  enquiry.adminMail = mail.status
+
+  const data = readLeads()
+  data.enquiries = data.enquiries || []
+  data.enquiries.unshift(enquiry)
+  data.notifications.unshift({
+    id: `note-${Date.now()}`,
+    type: 'enquiry',
+    title: `${name} sent a ${enquiry.type} form`,
+    body: `${email}${enquiry.roleArea ? ` · ${enquiry.roleArea}` : ''}`,
+    href: '/enquiries',
+    createdAt,
+    read: false,
+  })
+  data.mails.unshift({
+    id: `mail-${Date.now()}-enq`,
+    to: mailSettings().admin,
+    subject: alert.subject,
+    text: alert.text,
+    createdAt,
+    status: mail.status,
+    error: mail.error,
+  })
+  data.notifications = data.notifications.slice(0, 50)
+  data.mails = data.mails.slice(0, 100)
+  data.enquiries = data.enquiries.slice(0, 200)
+  writeLeads(data)
+
+  return {
+    ok: true as const,
+    status: 201,
+    body: {
+      success: true,
+      mailed: mail.status === 'sent',
+      message: 'Thank you. Our team will be in touch shortly.',
     },
   }
 }
@@ -469,6 +575,19 @@ function attach(server: { middlewares: { use: (fn: (req: { method?: string; url?
       void mergedLeads()
         .then((data) => json(res, 200, data))
         .catch(() => json(res, 200, { ...readLeads(), strapi: { reachable: false } }))
+      return
+    }
+
+    if (req.method === 'POST' && url === '/__leads/enquiry') {
+      void readBody(req).then(async (raw) => {
+        try {
+          const parsed = JSON.parse(raw || '{}') as Record<string, string>
+          const result = await addEnquiry(parsed)
+          json(res, result.status, result.body)
+        } catch (error) {
+          json(res, 400, { success: false, message: error instanceof Error ? error.message : 'Could not send that message.' })
+        }
+      })
       return
     }
 

@@ -16,6 +16,7 @@ export function EventsPage() {
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/events" />
       <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-4xl px-4 py-16 space-y-6">
+        <Link to="/" className="inline-block text-sm font-semibold text-teal-deep hover:text-gold">← Back to home</Link>
         {events?.map((event) => (
           <Card key={event.id} as="article">
             <div className="flex flex-wrap items-start justify-between gap-4">

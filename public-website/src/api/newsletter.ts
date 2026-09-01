@@ -14,9 +14,23 @@ export async function submitNewsletter(data: NewsletterFormData): Promise<Subscr
         source: typeof window !== 'undefined' ? window.location.pathname : 'website',
       }),
     })
-    const body = (await response.json()) as SubscribeResponse
-    if (body?.message) return body
-    return { success: false, message: 'We could not complete your subscription. Please try again in a moment.' }
+    const text = await response.text()
+    let body: SubscribeResponse | null = null
+    try {
+      body = text ? JSON.parse(text) as SubscribeResponse : null
+    } catch {
+      body = null
+    }
+    if (body?.success || body?.message) {
+      return {
+        success: body.success !== false && response.ok,
+        message: body.message || (response.ok ? 'Thank you for subscribing.' : 'We could not complete your subscription. Please try again in a moment.'),
+      }
+    }
+    if (!response.ok) {
+      return { success: false, message: 'Newsletter signup is not available right now. Please email info@coginternational.org.' }
+    }
+    return { success: true, message: 'Thank you for subscribing.' }
   } catch {
     return { success: false, message: 'We could not complete your subscription. Please try again in a moment.' }
   }

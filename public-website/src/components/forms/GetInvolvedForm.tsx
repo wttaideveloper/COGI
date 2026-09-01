@@ -6,33 +6,42 @@ import { submitGetInvolved } from '@/api/getInvolved'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 
+const ROLE_AREAS = ['Medical', 'Dental', 'Nursing', 'Logistics', 'Administration', 'Prayer support', 'Other'] as const
+
 const schema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Valid email required'),
   phone: z.string().optional(),
   pathway: z.enum(['pray', 'participate', 'partner']),
+  roleArea: z.string().optional(),
   programInterest: z.string().optional(),
   message: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.pathway !== 'pray' && !data.roleArea) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Select a role / area', path: ['roleArea'] })
+  }
 })
 
 type FormData = z.infer<typeof schema>
 
 export function GetInvolvedForm({ defaultPathway }: { defaultPathway?: FormData['pathway'] }) {
-  const [status, setStatus] = useState<string | null>(null)
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null)
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { pathway: defaultPathway ?? 'participate' },
   })
+  const pathway = watch('pathway')
 
   const onSubmit = async (data: FormData) => {
     setStatus(null)
     const result = await submitGetInvolved(data)
-    setStatus(result.message)
+    setStatus({ ok: result.success, text: result.message })
     if (result.success) reset({ pathway: data.pathway })
   }
 
@@ -76,15 +85,24 @@ export function GetInvolvedForm({ defaultPathway }: { defaultPathway?: FormData[
           <input id="gi-phone" type="tel" className={fieldClass(false)} {...register('phone')} />
         </div>
         <div>
-          <label htmlFor="gi-program" className="mb-1 block text-sm font-medium text-ink">Program Interest</label>
-          <select id="gi-program" className={fieldClass(false)} {...register('programInterest')}>
-            <option value="">Select a program</option>
-            <option value="kingdom-of-god">Kingdom of God</option>
-            <option value="missional-training">Missional Training</option>
-            <option value="care-for-the-caregiver">Care for the Caregiver</option>
-            <option value="missional-church-healthcare">Missional Church & Healthcare</option>
+          <label htmlFor="gi-role" className="mb-1 block text-sm font-medium text-ink">Role / area preference {pathway !== 'pray' ? <span className="text-red-500">*</span> : null}</label>
+          <select id="gi-role" className={fieldClass(!!errors.roleArea)} {...register('roleArea')}>
+            <option value="">{pathway === 'pray' ? 'Prayer support (optional)' : 'Select an area'}</option>
+            {ROLE_AREAS.map((role) => <option key={role} value={role}>{role}</option>)}
           </select>
+          {errors.roleArea && <p className="mt-1 text-sm text-red-600" role="alert">{errors.roleArea.message}</p>}
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="gi-program" className="mb-1 block text-sm font-medium text-ink">Program interest</label>
+        <select id="gi-program" className={fieldClass(false)} {...register('programInterest')}>
+          <option value="">Select a program</option>
+          <option value="kingdom-of-god">Kingdom of God</option>
+          <option value="missional-training">Missional Training</option>
+          <option value="care-for-the-caregiver">Care for the Caregiver</option>
+          <option value="missional-church-healthcare">Missional Church & Healthcare</option>
+        </select>
       </div>
 
       <div>
@@ -92,7 +110,11 @@ export function GetInvolvedForm({ defaultPathway }: { defaultPathway?: FormData[
         <textarea id="gi-message" rows={4} className={fieldClass(false)} {...register('message')} />
       </div>
 
-      {status && <p className="rounded-md bg-green-50 p-3 text-sm text-green-800" role="status">{status}</p>}
+      {status && (
+        <p className={`rounded-md p-3 text-sm ${status.ok ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`} role="status">
+          {status.text}
+        </p>
+      )}
 
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Submitting…' : 'Join the Movement'}

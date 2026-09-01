@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { mockPages } from '@/data/mock'
-import { PAGE_SECTION_OPTIONS, PAGE_TEMPLATES, createSection, sectionsFromTemplate, slugify, type PageSection, type PageSectionType, type PageTemplateId } from '@/data/pageTemplates'
+import { PAGE_SECTION_OPTIONS, PAGE_TEMPLATES, createSection, sectionPlaceholders, sectionsFromTemplate, slugify, type PageSection, type PageSectionType, type PageTemplateId } from '@/data/pageTemplates'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
 import { apiCreate, apiGetOne, apiListAll, apiPublish, apiUnpublish, apiUpdate, getErrorMessage, isDemoMode } from '@/services/strapi'
-import { notifyPublished } from '@/services/siteConfigStore'
-import { getPreviewUrl } from '@/utils/preview'
+import { notifyPublished, syncCustomPageToSite } from '@/services/siteConfigStore'
+import { getLiveUrl, getPreviewUrl } from '@/utils/preview'
 import type { PageRecord } from '@/types'
 
 const emptyPage = (): PageRecord & { sections: PageSection[] } => ({
@@ -32,6 +32,7 @@ export default function PageEditorPage() {
   const qc = useQueryClient()
   const [step, setStep] = useState<'template' | 'editor'>(isNew ? 'template' : 'editor')
   const [page, setPage] = useState<PageRecord & { sections: PageSection[] }>(emptyPage)
+  const [draftSnap, setDraftSnap] = useState<(PageRecord & { sections: PageSection[] }) | null>(null)
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [localRows, setLocalRows] = useState(() => loadLocalRecords('pages', mockPages as PageRecord[]))
 
@@ -47,7 +48,7 @@ export default function PageEditorPage() {
     if (isNew) return
     const found = rows.find((row) => row.id === id || row.documentId === id)
     if (!found) return
-    setPage({
+    const next = {
       ...emptyPage(),
       ...found,
       pageType: found.pageType || 'content',
@@ -70,13 +71,23 @@ export default function PageEditorPage() {
         buttonLabel: section.buttonLabel,
         buttonHref: section.buttonHref,
       })) as PageSection[],
-    })
+    }
+    setPage(next)
+    setDraftSnap(structuredClone(next))
     setStep('editor')
   }, [id, isNew, rows])
 
   const selectedTemplate = useMemo(
     () => PAGE_TEMPLATES.find((item) => item.id === page.templateId) || PAGE_TEMPLATES[0],
     [page.templateId],
+  )
+  const titleQuery = page.title.trim().toLowerCase()
+  const visibleTemplates = useMemo(
+    () => PAGE_TEMPLATES.filter((template) => {
+      if (!titleQuery) return true
+      return `${template.label} ${template.description}`.toLowerCase().includes(titleQuery)
+    }),
+    [titleQuery],
   )
 
   function patch<K extends keyof PageRecord>(key: K, value: PageRecord[K]) {
@@ -105,6 +116,16 @@ export default function PageEditorPage() {
     setStep('editor')
   }
 
+  function undoDraft() {
+    if (!draftSnap) {
+      window.alert('Nothing to undo.')
+      return
+    }
+    if (!window.confirm('Undo unsaved edits on this screen and restore the last saved draft?')) return
+    setPage(structuredClone(draftSnap))
+    setSavedAs(null)
+  }
+
   function updateSection(sectionId: string, patchValue: Partial<PageSection>) {
     setPage((prev) => ({
       ...prev,
@@ -129,7 +150,7 @@ export default function PageEditorPage() {
         ...page,
         status,
         title: page.title.trim() || 'Untitled page',
-        slug: page.slug.trim() || slugify(page.title || 'untitled'),
+        slug: slugify(page.slug.trim() || page.title || 'untitled'),
         updatedAt: new Date().toISOString().slice(0, 10),
         seo: {
           metaTitle: page.seo?.metaTitle || page.title,
@@ -150,28 +171,52 @@ export default function PageEditorPage() {
           saveLocalRecords('pages', next)
           return next
         })
+        try {
+          await syncCustomPageToSite(record, status)
+        } catch {
+          // Page is saved locally; menus can be confirmed under Pages & Menus.
+        }
         return record
       }
       if (isNew) {
         const created = await apiCreate('/pages', body, 'draft')
-        const createdId = (created as { data?: { documentId?: string } })?.data?.documentId
+        const createdId = (created as { data?: { documentId?: string; id?: string } })?.data?.documentId
+          || (created as { data?: { id?: string } })?.data?.id
         if (createdId && status === 'published') await apiPublish('/pages', createdId)
-        return created
+        try {
+          await syncCustomPageToSite({ ...payload, id: String(createdId || payload.slug), documentId: createdId }, status)
+        } catch {
+          // Page is in Strapi; menus can be confirmed under Pages & Menus.
+        }
+        return { ...payload, id: String(createdId || ''), documentId: createdId }
       }
       const documentId = page.documentId || page.id || String(id)
       await apiUpdate('/pages', documentId, body, 'draft')
       if (status === 'published') await apiPublish('/pages', documentId)
       else await apiUnpublish('/pages', documentId)
-      return payload
+      try {
+        await syncCustomPageToSite({ ...payload, id: documentId, documentId }, status)
+      } catch {
+        // Page is in Strapi; menus can be confirmed under Pages & Menus.
+      }
+      return { ...payload, id: documentId, documentId }
     },
-    onSuccess: (_data, status) => {
+    onSuccess: (data, status) => {
       qc.invalidateQueries({ queryKey: ['pages'] })
       setSavedAs(status)
+      if (status === 'draft') setDraftSnap(structuredClone(page))
       if (status === 'published') notifyPublished()
-      window.setTimeout(() => {
-        setSavedAs(null)
-        if (status === 'published') navigate('/pages')
-      }, status === 'published' ? 900 : 1800)
+      const createdId = (data as { documentId?: string; id?: string } | undefined)?.documentId
+        || (data as { id?: string } | undefined)?.id
+      if (isNew && createdId) {
+        navigate(`/pages/${createdId}`, { replace: true })
+      }
+      if (status === 'published') {
+        window.setTimeout(() => {
+          setSavedAs(null)
+          navigate('/pages')
+        }, 900)
+      }
     },
   })
 
@@ -183,7 +228,10 @@ export default function PageEditorPage() {
             <h2 className="text-2xl font-extrabold text-[var(--color-primary)]">Create a new page</h2>
           <p className="mt-1 text-sm text-slate-600">Pick a layout, then add the words and photos. Main site pages such as About and Donate are edited under Site pages.</p>
           </div>
-          <Link className="btn-secondary" to="/pages">Back to pages</Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link className="btn-secondary" to="/pages">Back to pages</Link>
+            <button type="button" className="btn-primary" onClick={startFromTemplate}>Continue to editor</button>
+          </div>
         </div>
 
         <div className="admin-card mb-4 space-y-3 p-5">
@@ -196,13 +244,13 @@ export default function PageEditorPage() {
                 const title = e.target.value
                 setPage((prev) => ({ ...prev, title, slug: prev.slug || slugify(title) }))
               }}
-              placeholder="e.g. Care for the Caregiver, About Us, Retreat 2026"
+              placeholder="Search layouts or type a title, e.g. Care for the Caregiver"
             />
           </label>
         </div>
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {PAGE_TEMPLATES.map((template) => (
+          {visibleTemplates.map((template) => (
             <button
               key={template.id}
               type="button"
@@ -218,9 +266,11 @@ export default function PageEditorPage() {
             </button>
           ))}
         </div>
+        {visibleTemplates.length === 0 ? (
+          <p className="mb-4 text-sm text-slate-600">No layouts match that title. Clear the search or pick another phrase.</p>
+        ) : null}
 
         <div className="flex flex-wrap gap-3">
-          <button type="button" className="btn-primary" onClick={startFromTemplate}>Continue to editor</button>
           <Link className="btn-secondary" to="/pages">Cancel</Link>
         </div>
       </>
@@ -237,12 +287,15 @@ export default function PageEditorPage() {
         <div className="flex flex-wrap gap-2">
           {isNew ? <button type="button" className="btn-secondary" onClick={() => setStep('template')}>Change template</button> : null}
           <Link className="btn-secondary" to="/pages">Back</Link>
-          <a className="btn-secondary" href={getPreviewUrl(page.slug || '')} target="_blank" rel="noreferrer">Preview</a>
+          <a className="btn-secondary" href={page.status === 'published' ? getLiveUrl(page.slug || '') : getPreviewUrl(page.slug || '')} target="_blank" rel="noreferrer">Preview</a>
           <button type="button" className="btn-secondary" disabled={save.isPending} onClick={() => save.mutate('draft')}>
             {save.isPending && save.variables === 'draft' ? 'Saving draft…' : 'Save as draft'}
           </button>
           <button type="button" className="btn-primary" disabled={save.isPending} onClick={() => save.mutate('published')}>
             {save.isPending && save.variables === 'published' ? 'Publishing…' : 'Publish live'}
+          </button>
+          <button type="button" className="btn-secondary" disabled={save.isPending} onClick={undoDraft}>
+            Undo draft
           </button>
           {!isNew ? (
             <button
@@ -292,8 +345,16 @@ export default function PageEditorPage() {
         </div>
       </div>
 
-      {savedAs === 'draft' ? <p className="mb-4 text-sm font-semibold text-amber-700">Draft saved — not live on the public site yet.</p> : null}
-      {savedAs === 'published' ? <p className="mb-4 text-sm font-semibold text-emerald-700">Published live — the public page updates immediately.</p> : null}
+      {savedAs === 'draft' ? (
+        <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+          Draft saved. This page is not live on the public site until you click Publish live.
+        </p>
+      ) : null}
+      {savedAs === 'published' ? (
+        <p className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+          Published live — open {getLiveUrl(page.slug || '')} (and the header/footer if those boxes are checked).
+        </p>
+      ) : null}
       {save.error ? <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{getErrorMessage(save.error)}</p> : null}
 
       <div className="mb-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-sm text-slate-600">
@@ -374,7 +435,9 @@ export default function PageEditorPage() {
 
               {!page.sections.length ? <p className="text-sm text-slate-500">No sections yet — add a block above.</p> : null}
 
-              {page.sections.map((section, index) => (
+              {page.sections.map((section, index) => {
+                const hints = sectionPlaceholders((section.type as PageSectionType) || 'text')
+                return (
                 <div key={section.id} className="rounded-xl border border-[var(--color-border)] p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <span className="rounded-full bg-[var(--color-mist)] px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-[var(--color-primary)]">
@@ -387,20 +450,21 @@ export default function PageEditorPage() {
                     </div>
                   </div>
                   <div className="grid gap-3">
-                    <input className="admin-input" value={section.title} onChange={(e) => updateSection(section.id, { title: e.target.value })} placeholder="Section title" />
-                    <textarea className="admin-input min-h-24" value={section.content} onChange={(e) => updateSection(section.id, { content: e.target.value })} placeholder="Section content" />
+                    <input className="admin-input" value={section.title} onChange={(e) => updateSection(section.id, { title: e.target.value })} placeholder={hints.title} />
+                    <textarea className="admin-input min-h-24" value={section.content} onChange={(e) => updateSection(section.id, { content: e.target.value })} placeholder={hints.content} />
                     {['banner', 'image', 'split'].includes(section.type) ? (
                       <input className="admin-input" value={section.imageUrl || ''} onChange={(e) => updateSection(section.id, { imageUrl: e.target.value })} placeholder="Image URL" />
                     ) : null}
                     {section.type === 'cta' ? (
                       <div className="grid gap-3 md:grid-cols-2">
-                        <input className="admin-input" value={section.buttonLabel || ''} onChange={(e) => updateSection(section.id, { buttonLabel: e.target.value })} placeholder="Button label" />
-                        <input className="admin-input" value={section.buttonHref || ''} onChange={(e) => updateSection(section.id, { buttonHref: e.target.value })} placeholder="Button link" />
+                        <input className="admin-input" value={section.buttonLabel || ''} onChange={(e) => updateSection(section.id, { buttonLabel: e.target.value })} placeholder={hints.buttonLabel || 'Button label'} />
+                        <input className="admin-input" value={section.buttonHref || ''} onChange={(e) => updateSection(section.id, { buttonHref: e.target.value })} placeholder={hints.buttonHref || 'Button link'} />
                       </div>
                     ) : null}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           ) : null}
         </div>
@@ -449,6 +513,9 @@ export default function PageEditorPage() {
             </button>
             <button type="button" className="btn-primary w-full" disabled={save.isPending} onClick={() => save.mutate('published')}>
               Publish live
+            </button>
+            <button type="button" className="btn-secondary w-full" disabled={save.isPending} onClick={undoDraft}>
+              Undo draft
             </button>
             {!isNew ? (
               <button

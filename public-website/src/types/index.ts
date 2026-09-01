@@ -126,7 +126,7 @@ export interface TeamMember {
   id: string
   name: string
   title: string
-  role: 'board' | 'global'
+  role: 'board' | 'global' | 'global-team'
   region?: string
   country?: string
   bio: string
@@ -165,6 +165,8 @@ export interface Testimonial {
   country?: string
   program?: string
   featured: boolean
+  mediaType?: 'written' | 'video'
+  videoUrl?: string
 }
 
 export interface BlogPost {
@@ -176,6 +178,7 @@ export interface BlogPost {
   author: string
   category: string
   publishedAt: string
+  imageUrl?: string
   imageAlt?: string
 }
 
@@ -231,6 +234,7 @@ export interface GetInvolvedFormData {
   email: string
   phone?: string
   pathway: 'pray' | 'participate' | 'partner'
+  roleArea?: string
   message?: string
   programInterest?: string
 }

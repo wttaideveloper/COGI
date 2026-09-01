@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getStories } from '@/api/stories'
 import { getPrograms } from '@/api/programs'
@@ -56,9 +57,17 @@ export function StoriesPage() {
                 <span className="rounded-full bg-teal-deep/10 px-3 py-1 text-xs font-semibold text-teal-deep">{story.type}</span>
                 <span className="text-xs text-ink-muted">{story.country} · {story.program}</span>
               </div>
-              <h2 className="mt-3 font-display text-xl text-teal-deep">{story.title}</h2>
-              <p className="mt-2 text-ink-muted">{story.summary}</p>
-              {story.content && <p className="mt-4 text-sm leading-relaxed text-ink-muted">{story.content}</p>}
+              <h2 className="mt-3 font-display text-xl text-teal-deep">
+                <Link to={`/resources/stories/${story.slug}`} className="hover:text-gold">{story.title}</Link>
+              </h2>
+              {story.summary ? (
+                <blockquote className="mt-3 font-display text-lg italic text-teal-deep">“{story.summary}”</blockquote>
+              ) : (
+                <p className="mt-2 text-ink-muted">{story.summary}</p>
+              )}
+              <Link to={`/resources/stories/${story.slug}`} className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-gold">
+                {story.type === 'video' ? 'Watch story →' : 'Read story →'}
+              </Link>
               </div>
             </Card>
           ))}

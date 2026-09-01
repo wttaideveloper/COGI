@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { NavItem } from '@/types'
 
 type Props = {
@@ -26,6 +26,14 @@ export default function MenuSwapper({ items, onChange, title = 'Menu items' }: P
   const [dragId, setDragId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const pendingScrollId = useRef<string | null>(null)
+
+  useEffect(() => {
+    const id = pendingScrollId.current
+    if (!id) return
+    pendingScrollId.current = null
+    document.querySelector(`[data-menu-id="${id}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [items])
 
   function reorder(fromId: string, toId: string) {
     if (fromId === toId) return
@@ -48,10 +56,12 @@ export default function MenuSwapper({ items, onChange, title = 'Menu items' }: P
 
   function addItem() {
     if (!draftLabel.trim() || !draftHref.trim()) return
+    const id = `nav-${Date.now()}`
+    pendingScrollId.current = id
     onChange([
       ...items,
       {
-        id: `nav-${Date.now()}`,
+        id,
         label: draftLabel.trim(),
         href: draftHref.trim(),
         visible: true,
@@ -70,13 +80,14 @@ export default function MenuSwapper({ items, onChange, title = 'Menu items' }: P
               ...item,
               children: [
                 ...(item.children || []),
-                { id: `nav-child-${Date.now()}`, label: 'New submenu', href: '/', visible: true },
+                { id: `nav-child-${Date.now()}`, label: '', href: '', visible: true },
               ],
             }
           : item,
       ),
     )
     setEditingId(parentId)
+    pendingScrollId.current = parentId
   }
 
   function updateChild(parentId: string, childId: string, patch: Partial<NavItem>) {
@@ -113,7 +124,7 @@ export default function MenuSwapper({ items, onChange, title = 'Menu items' }: P
           const visible = item.visible !== false
           const isEditing = editingId === item.id
           return (
-            <div key={item.id} className="space-y-2">
+            <div key={item.id} className="space-y-2" data-menu-id={item.id}>
               <div
                 className={`menu-row${overId === item.id ? ' menu-row-over' : ''}${!visible ? ' menu-row-hidden' : ''}`}
                 draggable

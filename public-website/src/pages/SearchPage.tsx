@@ -27,8 +27,8 @@ export function SearchPage() {
   return (
     <>
       <SEO title={page.heroTitle} path="/search" />
-      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} />
-      <div className="mx-auto max-w-3xl px-4 py-16">
+      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-6">
         <form onSubmit={handleSearch} className="flex gap-3" role="search">
           <label htmlFor="search-input" className="sr-only">Search</label>
           <input

@@ -57,20 +57,25 @@ export function slugify(value: string) {
   return value
     .toLowerCase()
     .trim()
+    .replace(/^\/+|\/+$/g, '')
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+export function sectionPlaceholders(type: PageSectionType) {
+  return sampleCopy[type]
 }
 
 export function createSection(type: PageSectionType): PageSection {
-  const sample = sampleCopy[type]
   return {
     id: `sec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     type,
-    title: sample.title,
-    content: sample.content,
-    buttonLabel: sample.buttonLabel,
-    buttonHref: sample.buttonHref,
+    title: '',
+    content: '',
+    buttonLabel: '',
+    buttonHref: type === 'cta' ? '/get-involved' : '',
     imageUrl: '',
   }
 }

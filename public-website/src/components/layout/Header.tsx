@@ -3,7 +3,8 @@ import { Link, NavLink } from 'react-router-dom'
 import { clsx } from 'clsx'
 import { ButtonLink } from '@/components/ui/Button'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
-import type { SiteNavItem } from '@/lib/siteConfig'
+import type { PublicCustomPage, SiteNavItem } from '@/lib/siteConfig'
+import { isLightColor } from '@/lib/utils'
 
 const fallbackNav: SiteNavItem[] = [
   {
@@ -26,6 +27,67 @@ const fallbackNav: SiteNavItem[] = [
   { id: 'contact', label: 'Contact', href: '/contact' },
 ]
 
+const LABEL_HREF: Record<string, string> = {
+  contact: '/contact',
+  about: '/about',
+  'about us': '/about',
+  programs: '/programs',
+  resources: '/resources',
+  events: '/events',
+  'get involved': '/get-involved',
+  volunteer: '/get-involved',
+  'join us': '/get-involved',
+  privacy: '/privacy-policy',
+  'privacy policy': '/privacy-policy',
+}
+
+const PATH_ALIASES: Record<string, string> = {
+  '/privacy': '/privacy-policy',
+  '/privacy-policy': '/privacy-policy',
+  '/terms': '/terms-of-use',
+  '/terms-of-use': '/terms-of-use',
+  '/cookies': '/cookie-notice',
+  '/cookie-notice': '/cookie-notice',
+  '/accessibility': '/accessibility',
+}
+
+export function resolveNavHref(item: { href?: string; label: string }): string {
+  const raw = (item.href || '').trim()
+  let path = '/'
+  if (raw.startsWith('http://') || raw.startsWith('https://') || raw.startsWith('mailto:')) return raw
+  if (raw.startsWith('/')) path = raw
+  else if (raw.startsWith('#')) return raw
+  else if (raw) path = `/${raw.replace(/^\/+/, '')}`
+  else path = LABEL_HREF[item.label.trim().toLowerCase()] || '/'
+  return PATH_ALIASES[path.toLowerCase()] || path
+}
+
+function flattenHrefs(items: SiteNavItem[]): Set<string> {
+  const hrefs = new Set<string>()
+  for (const item of items) {
+    hrefs.add(resolveNavHref(item))
+    for (const child of item.children || []) hrefs.add(resolveNavHref(child))
+  }
+  return hrefs
+}
+
+export function mergeCustomPageNav(items: SiteNavItem[], pages: PublicCustomPage[] | undefined, where: 'header' | 'footer'): SiteNavItem[] {
+  const extras = (pages || [])
+    .filter((page) => page.status === 'published' && page.pageType !== 'link')
+    .filter((page) => (where === 'header' ? page.showInHeader !== false : Boolean(page.showInFooter)))
+    .map((page) => ({
+      id: `custom-${page.slug}`,
+      label: page.title,
+      href: `/${String(page.slug || '').replace(/^\/+/, '')}`,
+      visible: true,
+    }))
+  const existing = flattenHrefs(items)
+  return [
+    ...items,
+    ...extras.filter((item) => item.href && item.href !== '/' && !existing.has(item.href)),
+  ]
+}
+
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   clsx(
     'rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em]',
@@ -33,16 +95,21 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   )
 
 export function Header() {
-  const { header, headerNav } = useSiteConfig()
+  const { header, headerNav, customPages } = useSiteConfig()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
-  const items = (headerNav.length ? headerNav : fallbackNav).filter((item) => item.visible !== false)
+  const items = mergeCustomPageNav(
+    (headerNav.length ? headerNav : fallbackNav).filter((item) => item.visible !== false),
+    customPages,
+    'header',
+  )
   const sticky = header.sticky !== false
+  const light = isLightColor(header.backgroundColor || '#FFFFFF')
 
   return (
     <header
-      className={clsx('z-40 border-b border-white/15', sticky ? 'sticky top-0' : 'relative')}
-      style={{ backgroundColor: header.backgroundColor || '#2B6CB0', color: header.textColor || '#ffffff' }}
+      className={clsx('z-40 border-b', light ? 'border-mist-dark shadow-sm' : 'border-white/15', sticky ? 'sticky top-0' : 'relative')}
+      style={{ backgroundColor: header.backgroundColor || '#FFFFFF', color: header.textColor || '#1F2937' }}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:py-4">
         <Link to="/" className="flex min-w-0 items-center gap-3" aria-label="Companions of Grace International — Home">
@@ -63,6 +130,7 @@ export function Header() {
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
           {items.map((item) => {
+            const href = resolveNavHref(item)
             const children = (item.children || []).filter((child) => child.visible !== false)
             if (children.length) {
               const open = openId === item.id
@@ -73,22 +141,28 @@ export function Header() {
                   onMouseEnter={() => setOpenId(item.id)}
                   onMouseLeave={() => setOpenId(null)}
                 >
-                  <button
-                    type="button"
+                  <NavLink
+                    to={href}
                     className="flex items-center gap-1 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-current"
                     aria-expanded={open}
                     aria-haspopup="true"
+                    onClick={() => setOpenId(null)}
                   >
                     {item.label}
                     <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
                       <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" fill="none" />
                     </svg>
-                  </button>
+                  </NavLink>
                   {open ? (
                     <ul className="absolute left-0 top-full min-w-[200px] rounded-lg border border-mist-dark bg-white py-2 shadow-lg" role="menu">
                       {children.map((child) => (
                         <li key={child.id} role="none">
-                          <NavLink to={child.href} className="block px-4 py-2 text-sm text-ink" role="menuitem">
+                          <NavLink
+                            to={resolveNavHref(child)}
+                            className="block px-4 py-2 text-sm text-ink hover:bg-mist"
+                            role="menuitem"
+                            onClick={() => setOpenId(null)}
+                          >
                             {child.label}
                           </NavLink>
                         </li>
@@ -99,7 +173,7 @@ export function Header() {
               )
             }
             return (
-              <NavLink key={item.id} to={item.href} className={navLinkClass}>
+              <NavLink key={item.id} to={href} className={navLinkClass}>
                 {item.label}
               </NavLink>
             )
@@ -115,8 +189,7 @@ export function Header() {
           <ButtonLink
             to={header.ctaLink || '/donate'}
             size="sm"
-            className="rounded-sm bg-white uppercase tracking-[0.2em] hover:bg-white/90"
-            style={{ color: header.backgroundColor || '#2B6CB0', backgroundColor: '#ffffff' }}
+            className="rounded-sm uppercase tracking-[0.2em]"
           >
             {header.ctaText || 'Donate'}
           </ButtonLink>
@@ -147,11 +220,11 @@ export function Header() {
           <ul className="space-y-1">
             {items.map((item) => (
               <li key={item.id}>
-                <NavLink to={item.href} className={navLinkClass} onClick={() => setMobileOpen(false)}>
+                <NavLink to={resolveNavHref(item)} className={navLinkClass} onClick={() => setMobileOpen(false)}>
                   {item.label}
                 </NavLink>
                 {(item.children || []).filter((c) => c.visible !== false).map((child) => (
-                  <NavLink key={child.id} to={child.href} className={navLinkClass} onClick={() => setMobileOpen(false)}>
+                  <NavLink key={child.id} to={resolveNavHref(child)} className={navLinkClass} onClick={() => setMobileOpen(false)}>
                     {child.label}
                   </NavLink>
                 ))}
@@ -160,8 +233,7 @@ export function Header() {
             <li className="pt-2">
               <ButtonLink
                 to={header.ctaLink || '/donate'}
-                className="w-full bg-white hover:bg-white/90"
-                style={{ color: header.backgroundColor || '#2B6CB0', backgroundColor: '#ffffff' }}
+                className="w-full"
                 onClick={() => setMobileOpen(false)}
               >
                 {header.ctaText || 'Donate'}

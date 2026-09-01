@@ -37,6 +37,7 @@ export function ProgramsPage() {
                   ))}
                 </ul>
                 <div className="mt-6 flex gap-3">
+                  {/* Learn more opens this program’s own page: /programs/{slug}. Express interest goes to the Get Involved form. */}
                   <ButtonLink to={`/programs/${program.slug}`} size="sm">{page.learnMore}</ButtonLink>
                   <ButtonLink to="/get-involved" variant="outline" size="sm">{page.expressInterest}</ButtonLink>
                 </div>

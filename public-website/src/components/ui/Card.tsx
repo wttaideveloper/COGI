@@ -8,7 +8,7 @@ interface CardProps {
 
 export function Card({ children, className, as: Tag = 'div' }: CardProps) {
   return (
-    <Tag className={cn('rounded-xl border border-mist-dark bg-white/80 p-6 shadow-sm backdrop-blur-sm', className)}>
+    <Tag className={cn('rounded-xl border border-mist-dark bg-white/80 shadow-sm backdrop-blur-sm', className?.includes('p-0') || className?.includes('!p-0') ? '' : 'p-6', className)}>
       {children}
     </Tag>
   )
@@ -65,23 +65,14 @@ export function SectionHeading({
 }
 
 export function PageHero({ title, subtitle, imageUrl }: { title: string; subtitle?: string; imageUrl?: string }) {
-  if (imageUrl) {
-    return (
-      <section className="relative min-h-[42vh] overflow-hidden md:min-h-[52vh]">
-        <img src={imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-teal-deep/55" />
-        <div className="relative z-10 mx-auto flex min-h-[42vh] max-w-4xl flex-col items-center justify-center px-4 py-16 text-center text-white md:min-h-[52vh] md:py-24">
-          <h1 className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
-          {subtitle && <p className="mt-4 text-lg text-white/90">{subtitle}</p>}
-        </div>
-      </section>
-    )
-  }
   return (
-    <section className="border-b border-mist-dark bg-white py-16 text-teal-deep md:py-24">
+    <section className="border-b border-mist-dark bg-white py-16 text-teal-deep md:py-20">
       <div className="mx-auto max-w-4xl px-4 text-center">
-        <h1 className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
+        <h1 id="page-heading" className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
         {subtitle && <p className="mt-4 text-lg text-ink-muted">{subtitle}</p>}
+        {imageUrl ? (
+          <img src={imageUrl} alt="" className="mt-10 h-52 w-full rounded-xl object-cover md:h-64" />
+        ) : null}
       </div>
     </section>
   )

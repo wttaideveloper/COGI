@@ -5,6 +5,10 @@ export function getPreviewUrl(pathOrSlug = '', token = 'draft'): string {
     ? (trimmed || '/')
     : `/${trimmed}`
   const url = new URL(path, base.endsWith('/') ? base : `${base}/`)
-  url.searchParams.set('preview', token)
+  if (token) url.searchParams.set('preview', token)
   return url.toString()
+}
+
+export function getLiveUrl(pathOrSlug = ''): string {
+  return getPreviewUrl(pathOrSlug, '')
 }

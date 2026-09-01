@@ -40,21 +40,21 @@ export function NewsletterForm({ compact = false }: { compact?: boolean }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3" noValidate>
       <div>
-        <label htmlFor="newsletter-name" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-ink')}>
+        <label htmlFor="newsletter-name" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-teal-deep')}>
           Name
         </label>
         <input id="newsletter-name" className={inputClass(!!errors.name)} {...register('name')} autoComplete="name" />
         {errors.name && <p className="mt-1 text-xs text-red-600" role="alert">{errors.name.message}</p>}
       </div>
       <div>
-        <label htmlFor="newsletter-email" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-ink')}>
+        <label htmlFor="newsletter-email" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-teal-deep')}>
           Email
         </label>
         <input id="newsletter-email" type="email" className={inputClass(!!errors.email)} {...register('email')} autoComplete="email" />
         {errors.email && <p className="mt-1 text-xs text-red-600" role="alert">{errors.email.message}</p>}
       </div>
       <div>
-        <label htmlFor="newsletter-whatsapp" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-ink')}>
+        <label htmlFor="newsletter-whatsapp" className={cn('mb-1 block text-sm font-medium', compact ? 'text-white/90' : 'text-teal-deep')}>
           WhatsApp (optional)
         </label>
         <input id="newsletter-whatsapp" type="tel" className={inputClass(false)} {...register('whatsapp')} autoComplete="tel" />

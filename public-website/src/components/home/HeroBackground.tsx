@@ -62,7 +62,7 @@ export function HeroBackground({ mode, videoUrl, poster, slides, intervalMs, red
           playsInline
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/15" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/10" />
       {!yt && !vimeo ? (
         <button
           type="button"
