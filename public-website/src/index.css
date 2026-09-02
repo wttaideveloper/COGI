@@ -38,6 +38,10 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+
+    .map-pin-glow {
+      animation: none;
+    }
   }
 
   body {
@@ -82,6 +86,44 @@
 
   .bg-teal-gradient {
     background: linear-gradient(135deg, #f4f8fb 0%, #e8f1f7 100%);
+  }
+
+  .map-pin-glow {
+    animation: map-glow 2.6s ease-in-out infinite;
+  }
+
+  .map-arc-dash {
+    stroke-dashoffset: 0;
+    animation: map-arc 18s linear infinite;
+  }
+
+  @keyframes map-glow {
+    0%,
+    100% {
+      opacity: 0.34;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.72;
+      transform: scale(1.28);
+    }
+  }
+
+  @keyframes map-arc {
+    to {
+      stroke-dashoffset: -48;
+    }
+  }
+
+  @keyframes map-ring {
+    0% {
+      opacity: 0.55;
+      transform: scale(0.7);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.1);
+    }
   }
 
   .text-balance {

@@ -1,12 +1,77 @@
 import { useMemo, useState } from 'react'
 import type { Location } from '@/types'
-import { useSiteConfig } from '@/contexts/SiteConfigContext'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
+
+type Pin = { loc: Location; x: number; y: number }
+type Side = 'left' | 'right' | 'top' | 'bottom'
+
+const PIN = '#5BA8E0'
+const PIN_DEEP = '#2E7CB5'
+const LAND = '#3A4A5C'
+const LAND_LIGHT = '#5A6E84'
+const OCEAN_TOP = '#141A22'
+const OCEAN_BOTTOM = '#0B1016'
 
 function project(lat: number, lng: number) {
   return {
     x: ((lng + 180) / 360) * 100,
     y: ((90 - lat) / 180) * 100,
   }
+}
+
+function nearestArcs(pins: Pin[]) {
+  const seen = new Set<string>()
+  const arcs: Array<[Pin, Pin]> = []
+  for (const a of pins) {
+    const nearest = pins
+      .filter((b) => b.loc.id !== a.loc.id)
+      .map((b) => ({ b, d: (a.x - b.x) ** 2 + (a.y - b.y) ** 2 }))
+      .sort((left, right) => left.d - right.d)
+      .slice(0, 2)
+    for (const { b } of nearest) {
+      const key = [a.loc.id, b.loc.id].sort().join(':')
+      if (seen.has(key)) continue
+      seen.add(key)
+      arcs.push([a, b])
+    }
+  }
+  const india = pins.find((p) => /india/i.test(p.loc.country))
+  const usa = pins.find((p) => /united states|usa/i.test(p.loc.country))
+  if (india && usa) {
+    const key = [india.loc.id, usa.loc.id].sort().join(':')
+    if (!seen.has(key)) arcs.push([usa, india])
+  }
+  return arcs
+}
+
+function arcPath(a: Pin, b: Pin) {
+  const dx = b.x - a.x
+  const dy = b.y - a.y
+  const dist = Math.hypot(dx, dy) || 1
+  const bulge = Math.min(16, Math.max(5, dist * 0.24))
+  const cx = (a.x + b.x) / 2 - (dy / dist) * bulge
+  const cy = (a.y + b.y) / 2 + (dx / dist) * bulge
+  return `M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`
+}
+
+const LABEL_SIDE: Record<string, Side> = {
+  'United States': 'left',
+  Uganda: 'left',
+  Kenya: 'right',
+  Rwanda: 'left',
+  Tanzania: 'bottom',
+  India: 'top',
+  Philippines: 'left',
+  Singapore: 'left',
+  Australia: 'left',
+  'New Zealand': 'left',
+}
+
+function labelClass(side: Side) {
+  if (side === 'left') return 'right-[26px] top-[10px]'
+  if (side === 'top') return 'bottom-[38px] left-1/2 -translate-x-1/2'
+  if (side === 'bottom') return 'top-[38px] left-1/2 -translate-x-1/2'
+  return 'left-[26px] top-[10px]'
 }
 
 type Props = {
@@ -16,12 +81,9 @@ type Props = {
 }
 
 export function WorldMap({ locations, activeCountry, onSelect }: Props) {
-  const { homepage, theme } = useSiteConfig()
-  const ocean = homepage.mapOceanColor || theme.backgroundColor || '#F7FAFC'
-  const land = homepage.mapLandColor || '#D7E4EE'
-  const pin = homepage.mapPinColor || theme.accentColor || '#5B8FB5'
-  const active = homepage.mapActiveColor || theme.buttonHoverColor || '#3B82F6'
+  const reduced = useReducedMotion()
   const [hovered, setHovered] = useState<string | null>(null)
+
   const pins = useMemo(
     () =>
       locations
@@ -29,17 +91,29 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
         .map((loc) => ({ loc, ...project(loc.lat as number, loc.lng as number) })),
     [locations],
   )
+  const arcs = useMemo(() => nearestArcs(pins), [pins])
   const selected = locations.find((loc) => loc.country === activeCountry)
-  const tooltip = locations.find((loc) => loc.country === hovered && loc.country !== activeCountry)
-  const tooltipPin = pins.find((item) => item.loc.country === tooltip?.country)
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-black/5 shadow-[0_24px_60px_rgba(18,54,44,0.12)]">
-      <div className="relative aspect-[2/1] w-full overflow-hidden" style={{ background: ocean }}>
+    <div className="overflow-hidden rounded-3xl border border-[#1c2530] bg-[#0B1016] shadow-[0_24px_60px_rgba(11,16,22,0.28)]">
+      <div
+        className="relative aspect-[2.05/1] w-full overflow-hidden"
+        style={{ background: `radial-gradient(ellipse at 50% 42%, #1a2430 0%, ${OCEAN_TOP} 48%, ${OCEAN_BOTTOM} 100%)` }}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.14]"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgba(91,168,224,0.22) 1px, transparent 1px), linear-gradient(to bottom, rgba(91,168,224,0.22) 1px, transparent 1px)',
+            backgroundSize: '8.33% 16.66%',
+          }}
+          aria-hidden="true"
+        />
+
         <div
           className="absolute inset-0"
           style={{
-            backgroundColor: land,
+            backgroundColor: LAND,
             WebkitMaskImage: 'url(/images/world-equirectangular.svg)',
             maskImage: 'url(/images/world-equirectangular.svg)',
             WebkitMaskSize: 'contain',
@@ -53,17 +127,54 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
         />
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: `radial-gradient(ellipse at 50% 40%, transparent 45%, color-mix(in srgb, ${ocean} 55%, black) 140%)` }}
+          style={{
+            background: `linear-gradient(180deg, ${LAND_LIGHT} 0%, transparent 55%)`,
+            WebkitMaskImage: 'url(/images/world-equirectangular.svg)',
+            maskImage: 'url(/images/world-equirectangular.svg)',
+            WebkitMaskSize: 'contain',
+            maskSize: 'contain',
+            WebkitMaskRepeat: 'no-repeat',
+            maskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center',
+            maskPosition: 'center',
+            opacity: 0.55,
+          }}
+          aria-hidden="true"
         />
+
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <filter id="map-arc-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="0.55" />
+            </filter>
+          </defs>
+          {arcs.map(([a, b]) => (
+            <g key={`${a.loc.id}-${b.loc.id}`}>
+              <path d={arcPath(a, b)} fill="none" stroke={PIN} strokeWidth="1.1" opacity="0.16" filter="url(#map-arc-glow)" />
+              <path
+                d={arcPath(a, b)}
+                fill="none"
+                stroke={PIN}
+                strokeWidth="0.42"
+                strokeDasharray="1.4 1.6"
+                strokeLinecap="round"
+                opacity="0.7"
+                className={reduced ? undefined : 'map-arc-dash'}
+              />
+            </g>
+          ))}
+        </svg>
 
         {pins.map(({ loc, x, y }) => {
           const isSelected = activeCountry === loc.country
           const isHovered = hovered === loc.country
+          const lit = isSelected || isHovered
+          const side = LABEL_SIDE[loc.country] || (x > 72 ? 'left' : 'right')
           return (
             <button
               key={loc.id}
               type="button"
-              className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
+              className="group absolute z-10 -translate-x-1/2 -translate-y-full"
               style={{ left: `${x}%`, top: `${y}%` }}
               aria-pressed={isSelected}
               aria-label={loc.country}
@@ -73,77 +184,77 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
               onFocus={() => setHovered(loc.country)}
               onBlur={() => setHovered(null)}
             >
-              <span className="relative flex h-9 w-9 items-center justify-center">
-                {isSelected ? (
-                  <span className="absolute inset-1 animate-ping rounded-full opacity-70" style={{ background: active }} />
-                ) : null}
+              <span className="relative block h-11 w-8">
                 <span
-                  className="relative block rounded-full border-2 border-white shadow-lg transition-transform"
-                  style={{
-                    width: isSelected || isHovered ? 16 : 12,
-                    height: isSelected || isHovered ? 16 : 12,
-                    background: isSelected || isHovered ? active : pin,
-                    transform: isSelected || isHovered ? 'scale(1.15)' : 'scale(1)',
-                  }}
+                  className={`absolute left-1/2 top-[22px] h-5 w-9 -translate-x-1/2 rounded-full blur-[7px] ${reduced ? '' : 'map-pin-glow'}`}
+                  style={{ background: PIN, opacity: lit ? 0.7 : 0.42 }}
                 />
+                {isSelected && !reduced ? (
+                  <span className="absolute left-1/2 top-[14px] -translate-x-1/2">
+                    <span className="block h-6 w-6 rounded-full border border-[#5BA8E0]/70" style={{ animation: 'map-ring 1.8s ease-out infinite' }} />
+                  </span>
+                ) : null}
+                <svg viewBox="0 0 24 34" className={`relative h-11 w-8 transition-transform duration-200 ${lit ? 'scale-110' : 'group-hover:scale-105'}`} aria-hidden="true">
+                  <defs>
+                    <linearGradient id={`pin-fill-${loc.id}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#8EC8F0" />
+                      <stop offset="100%" stopColor={PIN_DEEP} />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M12 1.4c-5.5 0-9.8 4.4-9.8 9.7 0 7.3 9.8 21.6 9.8 21.6s9.8-14.3 9.8-21.6C21.8 5.8 17.5 1.4 12 1.4z"
+                    fill={`url(#pin-fill-${loc.id})`}
+                    stroke="#fff"
+                    strokeWidth="1.6"
+                  />
+                  <circle cx="12" cy="11" r="3.6" fill="#fff" />
+                </svg>
               </span>
-              {isSelected ? (
-                <span
-                  className="absolute left-1/2 top-8 z-20 -translate-x-1/2 whitespace-nowrap rounded-full px-3 py-1 text-xs font-bold text-white shadow-lg"
-                  style={{ background: land }}
-                >
-                  {loc.country}
-                </span>
-              ) : null}
+              <span
+                className={`pointer-events-none absolute z-20 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] shadow-sm ${labelClass(side)} ${
+                  lit ? 'opacity-100' : 'hidden md:inline-flex'
+                }`}
+                style={
+                  lit
+                    ? { background: PIN, color: '#fff', boxShadow: '0 8px 20px rgba(91,168,224,0.35)' }
+                    : { background: 'rgba(12,16,22,0.88)', color: '#fff', border: '1px solid rgba(255,255,255,0.14)' }
+                }
+              >
+                {loc.country}
+              </span>
             </button>
           )
         })}
-
-        {tooltip && tooltipPin ? (
-          <div
-            className="pointer-events-none absolute z-20 w-56 -translate-x-1/2 rounded-2xl bg-white/95 px-3 py-2 text-left shadow-xl backdrop-blur"
-            style={{
-              left: `${tooltipPin.x}%`,
-              top: `${Math.min(tooltipPin.y + 4, 78)}%`,
-            }}
-            role="tooltip"
-          >
-            <p className="text-sm font-bold" style={{ color: land }}>{tooltip.country}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em]" style={{ color: active }}>{tooltip.region}</p>
-            <p className="mt-1 line-clamp-3 text-xs text-ink">{tooltip.summary}</p>
-          </div>
-        ) : null}
       </div>
 
-      <div className="grid gap-0 bg-white lg:grid-cols-[1fr_340px]">
-        <div className="p-5 md:p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.2em]" style={{ color: active }}>Click a nation</p>
-          <p className="mt-1 text-sm text-ink">The country name appears on the map. Details and programs show in the panel.</p>
-        </div>
-        <aside className="border-t border-black/5 p-5 md:p-6 lg:border-l lg:border-t-0" style={{ background: `color-mix(in srgb, ${ocean} 70%, white)` }} aria-live="polite">
-          {selected ? (
-            <>
-              <h3 className="font-display text-2xl font-bold" style={{ color: land }}>{selected.country}</h3>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em]" style={{ color: active }}>{selected.region}</p>
-              <p className="mt-3 text-sm leading-relaxed text-ink">{selected.summary}</p>
+      <aside className="border-t border-white/10 bg-[#10161e] px-5 py-6 md:px-8" aria-live="polite">
+        {selected ? (
+          <div className="mx-auto grid max-w-4xl gap-3 md:grid-cols-[auto_1fr] md:items-center md:gap-6">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#5BA8E0]/15 md:mx-0">
+              <svg viewBox="0 0 24 34" className="h-7 w-5" aria-hidden="true">
+                <path d="M12 1.4c-5.5 0-9.8 4.4-9.8 9.7 0 7.3 9.8 21.6 9.8 21.6s9.8-14.3 9.8-21.6C21.8 5.8 17.5 1.4 12 1.4z" fill={PIN} />
+                <circle cx="12" cy="11" r="3.4" fill="#fff" />
+              </svg>
+            </span>
+            <div className="text-center md:text-left">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#5BA8E0]">{selected.region}</p>
+              <h3 className="mt-1 font-display text-2xl font-bold text-white">{selected.country}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-white/70">{selected.summary}</p>
               {selected.programs.length ? (
-                <div className="mt-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: land }}>Programs & initiatives</p>
-                  <ul className="mt-2 space-y-1">
-                    {selected.programs.map((program) => (
-                      <li key={program} className="text-sm font-medium text-ink">
-                        {program}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="mt-3 flex flex-wrap justify-center gap-2 md:justify-start">
+                  {selected.programs.map((program) => (
+                    <span key={program} className="rounded-full bg-[#5BA8E0]/15 px-3 py-1 text-xs font-semibold text-[#8EC8F0]">
+                      {program}
+                    </span>
+                  ))}
                 </div>
               ) : null}
-            </>
-          ) : (
-            <p className="text-sm font-medium text-ink">Select a country on the map to explore COGI’s work on the ground.</p>
-          )}
-        </aside>
-      </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-center text-sm text-white/60">Select a pin to see COGI’s work in that nation.</p>
+        )}
+      </aside>
     </div>
   )
 }

@@ -286,10 +286,16 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'map') return (
-      <section key="map" id="map" className="scroll-mt-28 bg-white py-14 md:py-20" style={{ background: site.homepage.mapOceanColor || '#ffffff' }}>
+      <section key="map" id="map" className="scroll-mt-28 bg-gradient-to-b from-white via-[#f7fbfe] to-white py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">Where we serve</p>
-          <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">{copy.mapTitle}</h2>
+          <div className="flex items-center justify-center gap-4">
+            <span className="h-px w-10 bg-[#3D7EAD]/40 sm:w-16" aria-hidden="true" />
+            <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-[#3D7EAD]">Where we serve</p>
+            <span className="h-px w-10 bg-[#3D7EAD]/40 sm:w-16" aria-hidden="true" />
+          </div>
+          <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">
+            {copy.mapTitle}
+          </h2>
           <p className="mx-auto mt-5 max-w-3xl text-center text-lg text-ink-muted">{copy.mapSubtitle}</p>
           <div className="mt-12">
             <WorldMap locations={locations ?? []} activeCountry={activeCountry} onSelect={setActiveCountry} />
@@ -297,15 +303,17 @@ export function HomePage() {
           <div className="mt-8 grid gap-8 sm:grid-cols-2">
             {locationGroups.map((group) => (
               <div key={group.region}>
-                <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-gold">{group.region}</h3>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-[#3D7EAD]">{group.region}</h3>
                 <div className="flex flex-wrap gap-2">
                   {group.items.map((loc) => (
                     <button
                       key={loc.id}
                       type="button"
                       onClick={() => setActiveCountry(activeCountry === loc.country ? null : loc.country)}
-                      className={`rounded-sm px-3 py-2 text-sm font-medium transition-colors ${
-                        activeCountry === loc.country ? 'bg-gold text-white' : 'bg-white text-teal-deep hover:bg-gold/10'
+                      className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-all ${
+                        activeCountry === loc.country
+                          ? 'border-[#3D7EAD] bg-[#3D7EAD] text-white shadow-[0_8px_16px_rgba(47,106,150,0.22)]'
+                          : 'border-[#d7e6f2] bg-white text-teal-deep hover:border-[#3D7EAD] hover:text-[#2F6A96]'
                       }`}
                       aria-pressed={activeCountry === loc.country}
                     >
