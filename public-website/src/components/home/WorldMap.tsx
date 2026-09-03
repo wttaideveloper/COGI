@@ -5,13 +5,19 @@ import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { resolveMapPalette } from '@/lib/mapColors'
 
-type Pin = { loc: Location; x: number; y: number }
 type Side = 'left' | 'right' | 'top' | 'bottom'
+
+/** Crop the equirectangular frame above Antarctica (~60.5°S in the source SVG). */
+const VIEW_LAT_SOUTH = -58
+const VIEW_LAT_SPAN = 90 - VIEW_LAT_SOUTH
+const VIEW_HEIGHT_FRACTION = VIEW_LAT_SPAN / 180
+const VIEW_ASPECT = 2 / VIEW_HEIGHT_FRACTION
+const VIEW_MASK_SIZE = `100% ${100 / VIEW_HEIGHT_FRACTION}%`
 
 function project(lat: number, lng: number) {
   return {
     x: ((lng + 180) / 360) * 100,
-    y: ((90 - lat) / 180) * 100,
+    y: ((90 - lat) / VIEW_LAT_SPAN) * 100,
   }
 }
 
@@ -41,45 +47,6 @@ function focusCamera(xPct: number, yPct: number, scale: number, compact: boolean
   if (pinY < padY) ty += padY - pinY
 
   return { tx, ty }
-}
-
-function nearestArcs(pins: Pin[]) {
-  const seen = new Set<string>()
-  const arcs: Array<[Pin, Pin]> = []
-  for (const a of pins) {
-    const nearest = pins
-      .filter((b) => b.loc.id !== a.loc.id)
-      .map((b) => ({ b, d: (a.x - b.x) ** 2 + (a.y - b.y) ** 2 }))
-      .sort((left, right) => left.d - right.d)
-      .slice(0, 2)
-    for (const { b } of nearest) {
-      const key = [a.loc.id, b.loc.id].sort().join(':')
-      if (seen.has(key)) continue
-      seen.add(key)
-      arcs.push([a, b])
-    }
-  }
-  const india = pins.find((p) => /india/i.test(p.loc.country))
-  const usa = pins.find((p) => /united states|usa/i.test(p.loc.country))
-  if (india && usa) {
-    const key = [india.loc.id, usa.loc.id].sort().join(':')
-    if (!seen.has(key)) arcs.push([usa, india])
-  }
-  return arcs
-}
-
-function arcPath(a: Pin, b: Pin) {
-  const dx = b.x - a.x
-  const dy = b.y - a.y
-  const dist = Math.hypot(dx, dy) || 1
-  const bulge = Math.min(16, Math.max(5, dist * 0.24))
-  const cx = (a.x + b.x) / 2 - (dy / dist) * bulge
-  const cy = (a.y + b.y) / 2 + (dx / dist) * bulge
-  return `M ${a.x} ${a.y} Q ${cx} ${cy} ${b.x} ${b.y}`
-}
-
-function arcLength(a: Pin, b: Pin) {
-  return Math.hypot(b.x - a.x, b.y - a.y)
 }
 
 const LABEL_SIDE: Record<string, Side> = {
@@ -119,11 +86,6 @@ function revealDelay(country: string) {
 function revealDuration(country: string) {
   const i = Math.max(0, REVEAL_ORDER.indexOf(country))
   return `${0.64 + (i % 3) * 0.05}s`
-}
-
-function directedPath(a: Pin, b: Pin, toward: string | null) {
-  if (toward && a.loc.country === toward) return arcPath(b, a)
-  return arcPath(a, b)
 }
 
 function labelNudge(side: Side, hovered: boolean, selected: boolean) {
@@ -231,20 +193,9 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
         .map((loc) => ({ loc, ...project(loc.lat as number, loc.lng as number) })),
     [locations],
   )
-  const arcs = useMemo(() => nearestArcs(pins), [pins])
   const selected = locations.find((loc) => loc.country === activeCountry)
   const selectedPin = pins.find((p) => p.loc.country === activeCountry)
   const focusCountry = hovered || activeCountry
-  const signalArcIndex = useMemo(() => {
-    const scored = arcs.map(([a, b], index) => ({
-      index,
-      d: arcLength(a, b),
-      related: Boolean(focusCountry && (a.loc.country === focusCountry || b.loc.country === focusCountry)),
-    }))
-    const pool = focusCountry ? scored.filter((item) => item.related) : scored
-    const pick = (pool.length ? pool : scored).slice().sort((left, right) => right.d - left.d)[0]
-    return pick?.index ?? 0
-  }, [arcs, focusCountry])
 
   useEffect(() => {
     if (!activeCountry) return
@@ -258,12 +209,12 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   const mask = {
     WebkitMaskImage: 'url(/images/world-equirectangular.svg)',
     maskImage: 'url(/images/world-equirectangular.svg)',
-    WebkitMaskSize: 'contain',
-    maskSize: 'contain',
+    WebkitMaskSize: VIEW_MASK_SIZE,
+    maskSize: VIEW_MASK_SIZE,
     WebkitMaskRepeat: 'no-repeat',
     maskRepeat: 'no-repeat',
-    WebkitMaskPosition: 'center',
-    maskPosition: 'center',
+    WebkitMaskPosition: 'center top',
+    maskPosition: 'center top',
   } as const
 
   const focused = Boolean(selectedPin) && !reduced
@@ -293,8 +244,9 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
       transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
     >
       <div
-        className="relative aspect-[2.05/1] w-full overflow-hidden"
+        className="relative w-full overflow-hidden"
         style={{
+          aspectRatio: `${VIEW_ASPECT}`,
           background: `radial-gradient(ellipse at 48% 36%, ${palette.oceanTop} 0%, ${palette.ocean} 58%)`,
         }}
         onPointerMove={onPointerMove}
@@ -317,7 +269,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
         />
 
         <div
-          className="map-stage-focus absolute inset-2.5 sm:inset-3 md:inset-4"
+          className="map-stage-focus absolute inset-3 sm:inset-3.5 md:inset-5"
           style={{
             transform: `translate(${camera.tx}%, ${camera.ty}%) scale(${focusScale})`,
             transitionDelay: focused ? '90ms' : '0ms',
@@ -359,79 +311,6 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                 aria-hidden="true"
               />
             ) : null}
-
-            <svg
-              className={`pointer-events-none absolute inset-0 h-full w-full ${reduced ? '' : 'map-arc-fade'}`}
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <defs>
-                <filter id={`map-arc-glow-${uid}`} x="-25%" y="-25%" width="150%" height="150%">
-                  <feGaussianBlur stdDeviation="0.45" />
-                </filter>
-              </defs>
-              {arcs.map(([a, b], arcIndex) => {
-                const related = Boolean(
-                  focusCountry && (a.loc.country === focusCountry || b.loc.country === focusCountry),
-                )
-                const dimmed = Boolean(focusCountry) && !related
-                const local = arcLength(a, b) < 12
-                const d = arcPath(a, b)
-                const restOpacity = local ? 0.3 : 0.58
-                const signal = !reduced && !local && arcIndex === signalArcIndex && (!lightMotion || related)
-                const cometPath = signal ? directedPath(a, b, activeCountry || hovered) : d
-                return (
-                  <g
-                    key={`${a.loc.id}-${b.loc.id}`}
-                    style={{
-                      opacity: dimmed ? 0.22 : related ? 1 : restOpacity,
-                      transition: 'opacity 480ms ease',
-                    }}
-                  >
-                    <path
-                      d={d}
-                      pathLength={1}
-                      fill="none"
-                      stroke={related ? palette.active : palette.pin}
-                      strokeWidth={related ? 1.2 : local ? 0.7 : 0.9}
-                      strokeLinecap="round"
-                      className={reduced ? undefined : 'map-arc-draw'}
-                      style={{ animationDelay: `${220 + arcIndex * 90}ms` }}
-                      filter={`url(#map-arc-glow-${uid})`}
-                    />
-                    <path
-                      d={d}
-                      fill="none"
-                      stroke={related ? palette.active : palette.pin}
-                      strokeWidth={related ? 0.55 : 0.32}
-                      strokeDasharray={local ? '1.1 2.2' : '1.5 2.1'}
-                      strokeLinecap="round"
-                      opacity={related ? 0.95 : 0.55}
-                      className={reduced ? undefined : 'map-arc-dash'}
-                      style={{ animationDelay: `${1.5 + arcIndex * 0.18}s` }}
-                    />
-                    {signal ? (
-                      <path
-                        d={cometPath}
-                        fill="none"
-                        stroke={related ? palette.pinLight : palette.pin}
-                        strokeWidth={related ? 0.7 : 0.48}
-                        strokeDasharray="2.4 118"
-                        strokeLinecap="round"
-                        opacity={related ? 0.92 : 0.42}
-                        className="map-arc-comet"
-                        filter={`url(#map-arc-glow-${uid})`}
-                        style={{
-                          animationDuration: related ? '5.1s' : '6.6s',
-                          animationDelay: related ? '0.28s' : '1.8s',
-                        }}
-                      />
-                    ) : null}
-                  </g>
-                )
-              })}
-            </svg>
 
             {pins.map(({ loc, x, y }) => {
               const isSelected = activeCountry === loc.country

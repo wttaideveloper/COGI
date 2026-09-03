@@ -1,13 +1,13 @@
 {
   "theme": {
-    "primaryColor": "#0A4D4A",
-    "secondaryColor": "#083B39",
-    "backgroundColor": "#F2F8F7",
-    "textColor": "#1C2A28",
-    "accentColor": "#C9A227",
-    "buttonHoverColor": "#E0BC4A",
-    "fontFamily": "Inter, system-ui, sans-serif",
-    "headingFontFamily": "Merriweather, Georgia, serif"
+    "primaryColor": "#1F2937",
+    "secondaryColor": "#4B5563",
+    "backgroundColor": "#FFFFFF",
+    "textColor": "#1F2937",
+    "accentColor": "#5B8FB5",
+    "buttonHoverColor": "#4A7FA3",
+    "fontFamily": "Plus Jakarta Sans, system-ui, sans-serif",
+    "headingFontFamily": "Cormorant Garamond, Georgia, serif"
   },
   "header": {
     "backgroundColor": "#FFFFFF",
@@ -165,10 +165,10 @@
     "heroImageUrl": "/images/cogi-hero.png",
     "heroImageAlt": "People gathered in worship and mission",
     "heroSlideDuration": 6,
-    "mapOceanColor": "#fafafa",
-    "mapLandColor": "#536579",
-    "mapPinColor": "#78C7F5",
-    "mapActiveColor": "#C9A227",
+    "mapOceanColor": "#F7FAFC",
+    "mapLandColor": "#536B82",
+    "mapPinColor": "#4EA8DE",
+    "mapActiveColor": "#1677B8",
     "heroSlides": [
       {
         "id": "hero",
@@ -682,5 +682,5 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-09-03T18:46:13.881Z"
+  "updatedAt": "2026-09-03T18:59:46.262Z"
 }
