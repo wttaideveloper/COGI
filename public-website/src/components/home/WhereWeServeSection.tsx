@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import type { Location } from '@/types'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
-import { hexColor } from '@/lib/mapColors'
+import { resolveMapPalette } from '@/lib/mapColors'
 import { WorldMap } from '@/components/home/WorldMap'
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
 export function WhereWeServeSection({ locations, activeCountry, onSelect, title, subtitle }: Props) {
   const reduced = useReducedMotion()
   const site = useSiteConfig()
-  const pin = hexColor(site.homepage.mapPinColor, '#3D7EAD')
+  const palette = resolveMapPalette(site.homepage)
 
   const locationGroups = ['Americas & Africa', 'Asia-Pacific']
     .map((region) => ({
@@ -82,12 +82,12 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
                       key={loc.id}
                       type="button"
                       onClick={() => onSelect(on ? null : loc.country)}
-                      className="map-nation-chip min-h-11 rounded-full border px-4 py-2 text-sm font-semibold transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
+                      className="map-nation-chip min-h-11 rounded-full border px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2"
                       style={
                         on
                           ? {
-                              borderColor: pin,
-                              background: pin,
+                              borderColor: palette.active,
+                              background: palette.active,
                               color: '#fff',
                             }
                           : {

@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Location } from '@/types'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
@@ -67,14 +67,43 @@ const LABEL_SIDE: Record<string, Side> = {
   'New Zealand': 'left',
 }
 
-/** Idle labels only for well-spaced anchors. Cluster/edge names appear on hover or select. */
 const ANCHOR_LABELS = new Set(['United States', 'Kenya', 'India', 'Philippines', 'Australia'])
+
+const REVEAL_ORDER = [
+  'United States',
+  'Uganda',
+  'Kenya',
+  'Rwanda',
+  'Tanzania',
+  'India',
+  'Singapore',
+  'Philippines',
+  'Australia',
+  'New Zealand',
+]
+
+function revealDelay(country: string) {
+  const index = REVEAL_ORDER.indexOf(country)
+  return 380 + (index < 0 ? REVEAL_ORDER.length : index) * 110
+}
 
 function labelClass(side: Side) {
   if (side === 'left') return 'right-[calc(100%+8px)] top-1/2 -translate-y-1/2'
   if (side === 'top') return 'bottom-[calc(100%+10px)] left-1/2 -translate-x-1/2'
   if (side === 'bottom') return 'top-[calc(100%+10px)] left-1/2 -translate-x-1/2'
   return 'left-[calc(100%+8px)] top-1/2 -translate-y-1/2'
+}
+
+function useMedia(query: string) {
+  const [matches, setMatches] = useState(false)
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const update = () => setMatches(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [query])
+  return matches
 }
 
 type Props = {
@@ -143,6 +172,8 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   const { homepage } = useSiteConfig()
   const palette = useMemo(() => resolveMapPalette(homepage), [homepage])
   const [hovered, setHovered] = useState<string | null>(null)
+  const compact = useMedia('(max-width: 767px)')
+  const tiltRef = useRef<HTMLDivElement>(null)
 
   const pins = useMemo(
     () =>
@@ -176,16 +207,40 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
     maskPosition: 'center',
   } as const
 
+  const focused = Boolean(selectedPin) && !reduced
+  const focusOrigin = selectedPin
+    ? `${Math.min(86, Math.max(14, selectedPin.x))}% ${Math.min(80, Math.max(18, selectedPin.y))}%`
+    : '50% 42%'
+  const focusScale = focused ? (compact ? 1.2 : 1.32) : 1
+
+  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (reduced || compact || event.pointerType !== 'mouse' || !tiltRef.current) return
+    const box = event.currentTarget.getBoundingClientRect()
+    const x = ((event.clientX - box.left) / box.width - 0.5) * 8
+    const y = ((event.clientY - box.top) / box.height - 0.5) * 6
+    tiltRef.current.style.transform = `translate(${x}px, ${y}px)`
+  }
+
+  function onPointerLeave() {
+    if (tiltRef.current) tiltRef.current.style.transform = 'translate(0px, 0px)'
+  }
+
   return (
-    <div
+    <motion.div
       className="overflow-hidden rounded-xl border border-mist-dark md:rounded-2xl"
       style={{ background: palette.ocean }}
+      initial={reduced ? false : { opacity: 0, scale: 0.97 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, amount: 0.28 }}
+      transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
     >
       <div
         className="relative aspect-[2.05/1] w-full overflow-hidden"
         style={{
           background: `radial-gradient(ellipse at 48% 36%, ${palette.oceanTop} 0%, ${palette.ocean} 58%)`,
         }}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
       >
         <div
           className="pointer-events-none absolute inset-0"
@@ -203,181 +258,210 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
           aria-hidden="true"
         />
 
-        <div className="absolute inset-2.5 sm:inset-3 md:inset-4">
-          <div className="absolute inset-0" style={{ backgroundColor: palette.land, ...mask }} aria-hidden="true" />
+        <div
+          className="map-stage-focus absolute inset-2.5 sm:inset-3 md:inset-4"
+          style={{
+            transformOrigin: focusOrigin,
+            transform: `scale(${focusScale})`,
+          }}
+        >
           <div
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background: `linear-gradient(180deg, ${palette.landLight} 0%, transparent 62%)`,
-              opacity: 0.38,
-              ...mask,
-            }}
-            aria-hidden="true"
-          />
-
-          {selectedPin ? (
+            ref={tiltRef}
+            className="absolute inset-0"
+            style={{ transition: reduced || compact ? undefined : 'transform 180ms ease-out' }}
+          >
+            <div className="absolute inset-0" style={{ backgroundColor: palette.land, ...mask }} aria-hidden="true" />
             <div
-              className="pointer-events-none absolute h-[28%] w-[22%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+              className="pointer-events-none absolute inset-0"
               style={{
-                left: `${selectedPin.x}%`,
-                top: `${selectedPin.y}%`,
-                background: `radial-gradient(circle, ${palette.active}55 0%, transparent 70%)`,
-                transition: 'left 480ms ease, top 480ms ease',
+                background: `linear-gradient(180deg, ${palette.landLight} 0%, transparent 62%)`,
+                opacity: 0.38,
+                ...mask,
               }}
               aria-hidden="true"
             />
-          ) : null}
 
-          <svg
-            className={`pointer-events-none absolute inset-0 h-full w-full ${reduced ? '' : 'map-arc-fade'}`}
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <defs>
-              <filter id={`map-arc-glow-${uid}`} x="-25%" y="-25%" width="150%" height="150%">
-                <feGaussianBlur stdDeviation="0.45" />
-              </filter>
-            </defs>
-            {arcs.map(([a, b]) => {
-              const related = Boolean(
-                focusCountry && (a.loc.country === focusCountry || b.loc.country === focusCountry),
-              )
-              const dimmed = Boolean(focusCountry) && !related
-              const local = arcLength(a, b) < 12
-              const d = arcPath(a, b)
-              const restOpacity = local ? 0.28 : 0.58
-              return (
-                <g
-                  key={`${a.loc.id}-${b.loc.id}`}
-                  style={{
-                    opacity: dimmed ? 0.12 : related ? 1 : restOpacity,
-                    transition: 'opacity 400ms ease',
-                  }}
-                >
-                  <path
-                    d={d}
-                    fill="none"
-                    stroke={related ? palette.active : palette.pin}
-                    strokeWidth={related ? 1.15 : local ? 0.7 : 0.9}
-                    opacity={related ? 0.22 : 0.12}
-                    filter={`url(#map-arc-glow-${uid})`}
-                  />
-                  <path
-                    d={d}
-                    fill="none"
-                    stroke={related ? palette.active : palette.pin}
-                    strokeWidth={related ? 0.48 : 0.32}
-                    strokeDasharray={local ? '1.1 2.2' : '1.5 2.1'}
-                    strokeLinecap="round"
-                    opacity={related ? 0.92 : 0.55}
-                    className={reduced ? undefined : 'map-arc-dash'}
-                  />
-                  {!reduced && related ? (
+            {selectedPin ? (
+              <div
+                className="pointer-events-none absolute h-[30%] w-[24%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+                style={{
+                  left: `${selectedPin.x}%`,
+                  top: `${selectedPin.y}%`,
+                  background: `radial-gradient(circle, ${palette.active}4d 0%, transparent 72%)`,
+                  transition: 'left 800ms cubic-bezier(0.22, 1, 0.36, 1), top 800ms cubic-bezier(0.22, 1, 0.36, 1)',
+                }}
+                aria-hidden="true"
+              />
+            ) : null}
+
+            <svg
+              className={`pointer-events-none absolute inset-0 h-full w-full ${reduced ? '' : 'map-arc-fade'}`}
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <defs>
+                <filter id={`map-arc-glow-${uid}`} x="-25%" y="-25%" width="150%" height="150%">
+                  <feGaussianBlur stdDeviation="0.45" />
+                </filter>
+              </defs>
+              {arcs.map(([a, b], arcIndex) => {
+                const related = Boolean(
+                  focusCountry && (a.loc.country === focusCountry || b.loc.country === focusCountry),
+                )
+                const dimmed = Boolean(focusCountry) && !related
+                const local = arcLength(a, b) < 12
+                const d = arcPath(a, b)
+                const restOpacity = local ? 0.28 : 0.58
+                return (
+                  <g
+                    key={`${a.loc.id}-${b.loc.id}`}
+                    style={{
+                      opacity: dimmed ? 0.16 : related ? 1 : restOpacity,
+                      transition: 'opacity 350ms ease',
+                    }}
+                  >
+                    <path
+                      d={d}
+                      pathLength={1}
+                      fill="none"
+                      stroke={related ? palette.active : palette.pin}
+                      strokeWidth={related ? 1.15 : local ? 0.7 : 0.9}
+                      strokeLinecap="round"
+                      className={reduced ? undefined : 'map-arc-draw'}
+                      style={{ animationDelay: `${arcIndex * 90}ms` }}
+                      filter={`url(#map-arc-glow-${uid})`}
+                    />
                     <path
                       d={d}
                       fill="none"
-                      stroke={palette.pinLight}
-                      strokeWidth="0.7"
-                      strokeDasharray="4 96"
+                      stroke={related ? palette.active : palette.pin}
+                      strokeWidth={related ? 0.5 : 0.32}
+                      strokeDasharray={local ? '1.1 2.2' : '1.5 2.1'}
                       strokeLinecap="round"
-                      opacity="0.8"
-                      className="map-arc-comet"
+                      opacity={related ? 0.95 : 0.55}
+                      className={reduced ? undefined : 'map-arc-dash'}
+                      style={{ animationDelay: `${arcIndex * 220}ms` }}
                     />
-                  ) : null}
-                </g>
-              )
-            })}
-          </svg>
+                    {!reduced && (!local || related) ? (
+                      <path
+                        d={d}
+                        fill="none"
+                        stroke={related ? palette.pinLight : palette.pin}
+                        strokeWidth={related ? 0.72 : 0.45}
+                        strokeDasharray="4 96"
+                        strokeLinecap="round"
+                        opacity={related ? 0.9 : 0.28}
+                        className="map-arc-comet"
+                        style={{ animationDelay: `${arcIndex * 0.7}s` }}
+                      />
+                    ) : null}
+                  </g>
+                )
+              })}
+            </svg>
 
-          {pins.map(({ loc, x, y }, index) => {
-            const isSelected = activeCountry === loc.country
-            const isHovered = hovered === loc.country
-            const lit = isSelected || isHovered
-            const dimmed = Boolean(focusCountry) && !lit
-            const side = LABEL_SIDE[loc.country] || (x > 72 ? 'left' : 'right')
-            const showLabel = lit || (ANCHOR_LABELS.has(loc.country) && !focusCountry)
-            const pinFill = isSelected ? palette.active : palette.pin
-            return (
-              <button
-                key={loc.id}
-                type="button"
-                className="group absolute z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-[80%] items-center justify-center"
-                style={{
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  opacity: dimmed ? 0.32 : 1,
-                  transition: 'opacity 400ms ease',
-                  zIndex: lit ? 24 : ANCHOR_LABELS.has(loc.country) ? 12 : 10,
-                }}
-                aria-pressed={isSelected}
-                aria-label={`${loc.country}. ${loc.summary}`}
-                aria-describedby="map-nation-panel"
-                onClick={() => onSelect(isSelected ? null : loc.country)}
-                onMouseEnter={() => setHovered(loc.country)}
-                onMouseLeave={() => setHovered(null)}
-                onFocus={() => setHovered(loc.country)}
-                onBlur={() => setHovered(null)}
-              >
-                <span
-                  className={`relative block h-8 w-[22px] ${reduced ? '' : 'map-pin-enter'}`}
-                  style={reduced ? undefined : { animationDelay: `${220 + index * 55}ms` }}
+            {pins.map(({ loc, x, y }) => {
+              const isSelected = activeCountry === loc.country
+              const isHovered = hovered === loc.country
+              const lit = isSelected || isHovered
+              const dimmed = Boolean(focusCountry) && !lit
+              const side = LABEL_SIDE[loc.country] || (x > 72 ? 'left' : 'right')
+              const showLabel = lit || (ANCHOR_LABELS.has(loc.country) && !focusCountry)
+              const pinFill = isSelected ? palette.active : palette.pin
+              const order = REVEAL_ORDER.indexOf(loc.country)
+              return (
+                <button
+                  key={loc.id}
+                  type="button"
+                  className="group absolute z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-[80%] items-center justify-center"
+                  style={{
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    opacity: dimmed ? 0.34 : 1,
+                    transition: 'opacity 320ms ease',
+                    zIndex: lit ? 24 : ANCHOR_LABELS.has(loc.country) ? 12 : 10,
+                  }}
+                  aria-pressed={isSelected}
+                  aria-label={`${loc.country}. ${loc.summary}`}
+                  aria-describedby="map-nation-panel"
+                  onClick={() => onSelect(isSelected ? null : loc.country)}
+                  onMouseEnter={() => setHovered(loc.country)}
+                  onMouseLeave={() => setHovered(null)}
+                  onFocus={() => setHovered(loc.country)}
+                  onBlur={() => setHovered(null)}
                 >
                   <span
-                    className="absolute left-1/2 top-[15px] h-3 w-5 -translate-x-1/2 rounded-full blur-[5px]"
-                    style={{ background: pinFill, opacity: isSelected ? 0.7 : lit ? 0.45 : 0.22 }}
-                  />
-                  {isSelected ? (
+                    className={`relative block h-8 w-[22px] ${reduced ? '' : 'map-pin-enter'}`}
+                    style={reduced ? undefined : { animationDelay: `${revealDelay(loc.country)}ms` }}
+                  >
                     <span
-                      className={`absolute left-1/2 top-[9px] h-7 w-7 -translate-x-1/2 rounded-full ${reduced ? '' : 'map-pin-halo'}`}
-                      style={{ boxShadow: `0 0 0 1px ${palette.active}99` }}
+                      className="absolute left-1/2 top-[15px] h-3 w-5 -translate-x-1/2 rounded-full blur-[5px] transition-opacity duration-300"
+                      style={{ background: pinFill, opacity: isSelected ? 0.72 : lit ? 0.5 : 0.22 }}
+                    />
+                    {!reduced ? (
+                      <span
+                        className={`absolute left-1/2 top-[10px] h-6 w-6 -translate-x-1/2 rounded-full ${isSelected ? 'map-pin-ripple-on' : 'map-pin-ripple'}`}
+                        style={{
+                          border: `1px solid ${pinFill}`,
+                          animationDelay: `${Math.max(0, order) * 0.38}s`,
+                          opacity: isSelected ? 1 : 0.55,
+                        }}
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    {isSelected && !reduced ? (
+                      <span
+                        className="absolute left-1/2 top-[9px] h-7 w-7 -translate-x-1/2 rounded-full map-pin-halo"
+                        style={{ boxShadow: `0 0 0 1px ${palette.active}99` }}
+                        aria-hidden="true"
+                      />
+                    ) : null}
+                    <svg
+                      viewBox="0 0 24 34"
+                      className={`relative h-8 w-[22px] origin-bottom transition-transform duration-300 ease-out ${
+                        isSelected ? 'scale-110' : isHovered ? 'scale-[1.07]' : ''
+                      }`}
                       aria-hidden="true"
-                    />
-                  ) : null}
-                  <svg
-                    viewBox="0 0 24 34"
-                    className={`relative h-8 w-[22px] origin-bottom transition-transform duration-300 ease-out ${
-                      isSelected ? 'scale-110' : isHovered ? 'scale-[1.06]' : ''
-                    }`}
-                    aria-hidden="true"
-                  >
-                    <defs>
-                      <linearGradient id={`pin-fill-${uid}-${loc.id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={palette.pinLight} />
-                        <stop offset="100%" stopColor={palette.pinDeep} />
-                      </linearGradient>
-                    </defs>
-                    <path
-                      d="M12 1.6c-5.15 0-9.3 4.15-9.3 9.2 0 6.9 9.3 21.2 9.3 21.2s9.3-14.3 9.3-21.2c0-5.05-4.15-9.2-9.3-9.2z"
-                      fill={lit ? pinFill : `url(#pin-fill-${uid}-${loc.id})`}
-                      stroke={palette.light ? '#fff' : 'rgba(255,255,255,0.88)'}
-                      strokeWidth="1.35"
-                    />
-                    <circle cx="12" cy="10.8" r="2.9" fill="#fff" />
-                  </svg>
-                  <span
-                    className={`pointer-events-none absolute z-20 whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md ${labelClass(side)} ${
-                      showLabel ? 'inline-flex' : 'hidden'
-                    } ${showLabel && !lit ? 'max-md:hidden' : ''}`}
-                    style={
-                      lit
-                        ? {
-                            background: pinFill,
-                            color: '#fff',
-                          }
-                        : {
-                            background: palette.light ? 'rgba(255,255,255,0.86)' : 'rgba(12,16,22,0.7)',
-                            color: palette.light ? '#1F2937' : 'rgba(255,255,255,0.9)',
-                            border: `1px solid ${palette.border}`,
-                          }
-                    }
-                  >
-                    {loc.country}
+                    >
+                      <defs>
+                        <linearGradient id={`pin-fill-${uid}-${loc.id}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={palette.pinLight} />
+                          <stop offset="100%" stopColor={palette.pinDeep} />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M12 1.6c-5.15 0-9.3 4.15-9.3 9.2 0 6.9 9.3 21.2 9.3 21.2s9.3-14.3 9.3-21.2c0-5.05-4.15-9.2-9.3-9.2z"
+                        fill={lit ? pinFill : `url(#pin-fill-${uid}-${loc.id})`}
+                        stroke={palette.light ? '#fff' : 'rgba(255,255,255,0.88)'}
+                        strokeWidth="1.35"
+                      />
+                      <circle cx="12" cy="10.8" r="2.9" fill="#fff" />
+                    </svg>
+                    <span
+                      className={`pointer-events-none absolute z-20 whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-opacity duration-300 ${labelClass(side)} ${
+                        showLabel ? 'inline-flex opacity-100' : 'hidden'
+                      } ${showLabel && !lit ? 'max-md:hidden' : ''}`}
+                      style={
+                        lit
+                          ? {
+                              background: pinFill,
+                              color: '#fff',
+                            }
+                          : {
+                              background: palette.light ? 'rgba(255,255,255,0.86)' : 'rgba(12,16,22,0.7)',
+                              color: palette.light ? '#1F2937' : 'rgba(255,255,255,0.9)',
+                              border: `1px solid ${palette.border}`,
+                            }
+                      }
+                    >
+                      {loc.country}
+                    </span>
                   </span>
-                </span>
-              </button>
-            )
-          })}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         <div
@@ -400,10 +484,10 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
           {selected ? (
             <motion.div
               key={selected.country}
-              initial={reduced ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={reduced ? undefined : { opacity: 0, y: 6 }}
-              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              initial={reduced ? false : { opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reduced ? undefined : { opacity: 0, y: 8, scale: 0.99 }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
             >
               <NationPanel selected={selected} palette={palette} onClear={() => onSelect(null)} />
             </motion.div>
@@ -427,6 +511,6 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
           )}
         </AnimatePresence>
       </aside>
-    </div>
+    </motion.div>
   )
 }

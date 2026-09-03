@@ -1,42 +1,43 @@
 {
   "theme": {
-    "primaryColor": "#1F2937",
-    "secondaryColor": "#4B5563",
-    "backgroundColor": "#FFFFFF",
-    "textColor": "#1F2937",
-    "accentColor": "#5B8FB5",
-    "buttonHoverColor": "#4A7FA3",
-    "fontFamily": "Plus Jakarta Sans, system-ui, sans-serif",
-    "headingFontFamily": "Cormorant Garamond, Georgia, serif"
+    "primaryColor": "#0A4D4A",
+    "secondaryColor": "#083B39",
+    "backgroundColor": "#F2F8F7",
+    "textColor": "#1C2A28",
+    "accentColor": "#C9A227",
+    "buttonHoverColor": "#E0BC4A",
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "headingFontFamily": "Merriweather, Georgia, serif"
   },
   "header": {
     "backgroundColor": "#FFFFFF",
     "textColor": "#1F2937",
-    "logoUrl": "",
+    "logoUrl": "/images/cogi-logo.png",
     "logoAlt": "Companions of Grace International",
     "logoHeight": 48,
-    "ctaText": "Donate",
+    "ctaText": "Give now",
     "ctaLink": "/donate",
     "sticky": true
   },
   "footer": {
-    "backgroundColor": "#FFFFFF",
-    "textColor": "#1F2937",
-    "logoUrl": "",
+    "backgroundColor": "#ffffff",
+    "textColor": "#1A2332",
+    "logoUrl": "/images/cogi-logo.png",
     "logoHeight": 40,
-    "description": "Equipping healthcare professionals for Kingdom engagement around the world.",
+    "description": "Equipping healthcare professionals for Kingdom engagement through training, community, and mission.",
     "copyright": "© Companions of Grace International. All rights reserved.",
     "showSocial": true,
     "facebookUrl": "https://facebook.com",
     "instagramUrl": "https://instagram.com",
     "youtubeUrl": "https://youtube.com",
-    "linkedinUrl": "https://linkedin.com/company/coginternational"
+    "linkedinUrl": "https://linkedin.com/company/coginternational",
+    "whatsappUrl": ""
   },
   "seo": {
-    "metaTitle": "Companions of Grace International",
-    "metaDescription": "Equipping healthcare professionals for Kingdom engagement through communities of grace.",
-    "keywords": "COGI, healthcare mission, Christian healthcare, grace communities",
-    "ogImageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80",
+    "metaTitle": "COGI – Companions of Grace International",
+    "metaDescription": "Equipping healthcare professionals for Kingdom engagement through training, community, and missional healthcare programs worldwide.",
+    "keywords": "COGI, Companions of Grace, healthcare missions, missional healthcare, Christian healthcare",
+    "ogImageUrl": "/images/cogi-hero.png",
     "siteUrl": "https://coginternational.org"
   },
   "headerNav": [
@@ -88,6 +89,12 @@
       "id": "c",
       "label": "Programs",
       "href": "/programs",
+      "visible": true
+    },
+    {
+      "id": "ev",
+      "label": "Events",
+      "href": "/events",
       "visible": true
     },
     {
@@ -143,64 +150,55 @@
     {
       "id": "f5",
       "label": "Privacy",
-      "href": "/privacy",
+      "href": "/privacy-policy",
       "visible": true
     }
   ],
+  "customPages": [],
   "homepage": {
-    "heroHeadline": "",
-    "heroIntro": "",
+    "heroHeadline": "Equipping Healthcare Professionals for Kingdom Engagement",
+    "heroIntro": "We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.",
     "heroHeadlineSize": 64,
     "heroHeadlineCase": "uppercase",
     "heroMedia": "video",
-    "heroVideoUrl": "https://www.youtube.com/watch?v=sGKtc3lI_Pg",
-    "heroImageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
-    "heroImageAlt": "Healthcare professionals collaborating in a clinic",
+    "heroVideoUrl": "https://www.youtube.com/watch?v=r6bd53UB7mk",
+    "heroImageUrl": "/images/cogi-hero.png",
+    "heroImageAlt": "People gathered in worship and mission",
     "heroSlideDuration": 6,
-    "mapOceanColor": "#0B1016",
-    "mapLandColor": "#3A4A5C",
-    "mapPinColor": "#5BA8E0",
-    "mapActiveColor": "#2E7CB5",
+    "mapOceanColor": "#08131F",
+    "mapLandColor": "#536579",
+    "mapPinColor": "#78C7F5",
+    "mapActiveColor": "#C9A227",
     "heroSlides": [
       {
-        "id": "s1",
-        "imageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
-        "alt": "Healthcare professionals collaborating in a clinic"
-      },
-      {
-        "id": "s2",
-        "imageUrl": "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1600&q=80",
-        "alt": "Medical team serving together"
-      },
-      {
-        "id": "s3",
-        "imageUrl": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=1600&q=80",
-        "alt": "Community healthcare and care"
+        "id": "hero",
+        "imageUrl": "/images/cogi-hero.png",
+        "alt": "People gathered in worship and mission"
       }
     ],
-    "primaryCtaLabel": "",
-    "primaryCtaHref": "/get-involved",
+    "primaryCtaLabel": "Give now",
+    "primaryCtaHref": "/donate",
     "missionTitle": "Our Mission",
-    "missionStatement": "Inspire and enable transformation so healthcare professionals think, live, and work missionally.",
-    "missionScripture": "",
+    "missionStatement": "Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God's love, and offer hope, healing, and wholeness through Jesus Christ.",
+    "missionScripture": "Colossians 3:17  ·  Romans 12:2",
     "impactStats": [
       {
-        "id": "patients",
+        "id": "Patients served through partners",
         "value": "1,000+",
         "label": "Patients served through partners"
       },
       {
-        "id": "volunteers",
+        "id": "Volunteers & facilitators mobilized",
         "value": "200+",
         "label": "Volunteers & facilitators mobilized"
       },
       {
-        "id": "countries",
+        "id": "Countries engaged",
         "value": "10+",
         "label": "Countries engaged"
       },
       {
-        "id": "professionals",
+        "id": "Healthcare professionals equipped",
         "value": "500+",
         "label": "Healthcare professionals equipped"
       }
@@ -223,27 +221,27 @@
         "kind": "built-in"
       },
       {
-        "id": "mission",
-        "label": "Mission",
-        "enabled": true,
-        "order": 3,
-        "summary": "Mission statement and scripture",
-        "kind": "built-in"
-      },
-      {
         "id": "legacy",
         "label": "Our story",
         "enabled": true,
-        "order": 4,
+        "order": 3,
         "summary": "Who we are and why we exist",
         "kind": "built-in"
       },
       {
-        "id": "methods",
-        "label": "How we work",
+        "id": "mission",
+        "label": "Mission",
+        "enabled": true,
+        "order": 4,
+        "summary": "Mission statement and scripture",
+        "kind": "built-in"
+      },
+      {
+        "id": "video",
+        "label": "Intro video",
         "enabled": true,
         "order": 5,
-        "summary": "Enable, train, and support",
+        "summary": "Film or photo introduction",
         "kind": "built-in"
       },
       {
@@ -262,26 +260,10 @@
         "buttonHref": "/programs"
       },
       {
-        "id": "impact",
-        "label": "Key numbers",
-        "enabled": true,
-        "order": 7,
-        "summary": "Countries, people, and programs",
-        "kind": "built-in"
-      },
-      {
-        "id": "video",
-        "label": "Intro video",
-        "enabled": true,
-        "order": 8,
-        "summary": "Film or photo introduction",
-        "kind": "built-in"
-      },
-      {
         "id": "splitStories",
         "label": "Stories (photo + text)",
         "enabled": true,
-        "order": 9,
+        "order": 7,
         "summary": "Photo on one side, words on the other",
         "kind": "built-in",
         "title": "Stories of transformation",
@@ -291,6 +273,22 @@
         "imageSide": "left",
         "buttonLabel": "See stories",
         "buttonHref": "/resources/stories"
+      },
+      {
+        "id": "methods",
+        "label": "How we work",
+        "enabled": true,
+        "order": 8,
+        "summary": "Enable, train, and support",
+        "kind": "built-in"
+      },
+      {
+        "id": "impact",
+        "label": "Key numbers",
+        "enabled": true,
+        "order": 9,
+        "summary": "Countries, people, and programs",
+        "kind": "built-in"
       },
       {
         "id": "portfolio",
@@ -317,10 +315,18 @@
         "kind": "built-in"
       },
       {
+        "id": "testimonials",
+        "label": "Testimonials",
+        "enabled": true,
+        "order": 13,
+        "summary": "Rotating quotes and short clips",
+        "kind": "built-in"
+      },
+      {
         "id": "events",
         "label": "Next event",
         "enabled": true,
-        "order": 13,
+        "order": 14,
         "summary": "The upcoming featured event",
         "kind": "built-in"
       },
@@ -328,7 +334,7 @@
         "id": "newsletter",
         "label": "Email signup",
         "enabled": true,
-        "order": 14,
+        "order": 15,
         "summary": "Newsletter form",
         "kind": "built-in"
       },
@@ -336,7 +342,7 @@
         "id": "donate",
         "label": "Give",
         "enabled": true,
-        "order": 15,
+        "order": 16,
         "summary": "Invite people to donate",
         "kind": "built-in"
       },
@@ -344,7 +350,7 @@
         "id": "faith",
         "label": "Statement of faith",
         "enabled": true,
-        "order": 16,
+        "order": 17,
         "summary": "Closing faith statement",
         "kind": "built-in"
       }
@@ -360,10 +366,10 @@
       "newsletterBannerCta": "Watch stories",
       "legacyTitle": "Communities of Grace in healthcare",
       "legacyBody": "We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service.",
-      "videoTitle": "Watch our story",
-      "videoDescription": "A short introduction to who Companions of Grace is, why we exist, and the global need we are responding to within healthcare.",
+      "videoTitle": "Healthcare that reaches people",
+      "videoDescription": "Volunteer doctors and nurses bringing free care, medicine, and hope to families who often cannot reach a clinic.",
       "videoImageUrl": "/images/cogi-video-thumb.png",
-      "videoUrl": "/videos/intro.mp4",
+      "videoUrl": "https://www.youtube.com/watch?v=r6bd53UB7mk",
       "methodsTitle": "Our methods",
       "methodsSubtitle": "Enable · Train · Support",
       "portfolioTitle": "What we do — our portfolio",
@@ -384,7 +390,10 @@
       "heroSubtitle": "Equipping healthcare professionals for Kingdom engagement",
       "imageUrl": "/images/cogi-india.png",
       "visionTitle": "Our vision",
-      "missionTitle": "Our mission"
+      "visionBody": "The Global Christian Healthcare Community actively on Mission for God, reflecting His love, witnessing Christ in word and deed, ushering in God's Kingdom.",
+      "missionTitle": "Our mission",
+      "missionBody": "Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God's love, and offer hope, healing, and wholeness through Jesus Christ.",
+      "scripture": "Colossians 3:17  ·  Romans 12:2"
     },
     "story": {
       "heroTitle": "Our story",
@@ -497,7 +506,19 @@
       "stockBody": "Donating appreciated stock or other non-cash assets can allow a larger charitable contribution. Contact us to coordinate.",
       "legacyTitle": "Planned legacy giving",
       "legacyBody": "Wills, retirement plans, charitable trusts, and other planned gifts can create a lasting legacy of biblical stewardship.",
-      "faqTitle": "Frequently asked questions"
+      "faqTitle": "Frequently asked questions",
+      "faqs": [
+        {
+          "id": "donate-how",
+          "question": "How do I donate to COGI?",
+          "answer": "Visit our Donate page to give one-time or recurring gifts through our secure GiveLively integration."
+        },
+        {
+          "id": "donate-mail",
+          "question": "Where should I mail a check?",
+          "answer": "Companions of Grace International · Northern New Jersey, United States. Email info@coginternational.org for mailing details."
+        }
+      ]
     },
     "resources": {
       "heroTitle": "Resources",
@@ -548,12 +569,89 @@
     "board": {
       "heroTitle": "Board members",
       "heroSubtitle": "Leaders committed to equipping healthcare professionals for Kingdom engagement",
-      "imageUrl": "/images/cogi-gathering.png"
+      "imageUrl": "/images/cogi-gathering.png",
+      "members": [
+        {
+          "id": "abraham-thomas",
+          "name": "Dr. Abraham Thomas",
+          "title": "Chairman",
+          "country": "United States",
+          "bio": "Abe is a practicing pediatrician in Northern NJ. After completing medical education in India, he migrated to the US with his wife Ruby. Once empty nesters, God opened a pathway to partner with Mathew in discipleship amongst healthcare workers. He is privileged to serve as Chairman of the COGI Board."
+        },
+        {
+          "id": "mathew-george",
+          "name": "Dr. Mathew George",
+          "title": "CEO",
+          "country": "India",
+          "bio": "Mathew is a dentist by profession who worked at Duncan Hospital, a unit of Emmanuel Hospital Association (EHA). He later served as Missions Secretary of EMFI. God called him to form COGI — a missions effort focused on helping healthcare professionals live lives that advance the Kingdom of God."
+        },
+        {
+          "id": "charles-faust",
+          "name": "Mr. Charles Faust",
+          "title": "Secretary",
+          "country": "United States",
+          "bio": "Chuck is a retired business executive having served in chief operating and chief financial roles for multi-national companies. In 2013, God opened a pathway through a medical mission trip to Duncan Hospital where he met Mathew and formed a close Christian brotherhood that led to COGI."
+        },
+        {
+          "id": "paul-east",
+          "name": "Mr. Paul East",
+          "title": "Board Member",
+          "country": "United States",
+          "bio": "Paul supports COGI because healthcare professionals have a unique opportunity to come alongside, care, and witness by action and words. Christian healthcare professionals need training and nurturing to grow in faith, be effective in their profession, and bless their families, patients, and communities."
+        },
+        {
+          "id": "sunil-abraham",
+          "name": "Dr. Sunil Abraham",
+          "title": "Board Member",
+          "country": "United States",
+          "bio": "Dr. Sunil Abraham supports the work of COGI because of its vision to equip and strengthen the disciples of Christ in healthcare. Healthcare workers need encouragement, fellowship, and a fresh vision to perceive their work beyond their job."
+        },
+        {
+          "id": "manoj-jacob",
+          "name": "Dr. Manoj Jacob",
+          "title": "Board Member",
+          "country": "India",
+          "bio": "Dr. Manoj Jacob served as General Secretary of the Evangelical Medical Fellowship of India (EMFI) while Mathew was Managing Director of Duncan Hospital. He joined the Board to lend support as the vision gained momentum — impressed by partnerships and geographical engagements formed in the first year."
+        },
+        {
+          "id": "ted-lang",
+          "name": "Ted Lang",
+          "title": "Board Member",
+          "country": "United States",
+          "bio": "Bio pending. Please update when ministry provides full biography text."
+        }
+      ]
     },
     "globalTeam": {
       "heroTitle": "Global team",
       "heroSubtitle": "Facilitators, mentors, and coordinators across our regions",
-      "imageUrl": "/images/cogi-kenya.png"
+      "imageUrl": "/images/cogi-kenya.png",
+      "members": [
+        {
+          "id": "gt-africa",
+          "name": "East Africa team",
+          "title": "Regional facilitators",
+          "region": "Americas & Africa",
+          "country": "Kenya",
+          "bio": "Facilitating programs, mentoring, and Communities of Grace across East Africa."
+        },
+        {
+          "id": "gt-asia",
+          "name": "Asia-Pacific team",
+          "title": "Regional facilitators",
+          "region": "Asia-Pacific",
+          "country": "India",
+          "bio": "Coordinating Kingdom of God seminars, missional training, and partnerships across Asia-Pacific."
+        },
+        {
+          "id": "gt-americas",
+          "name": "North America team",
+          "title": "Regional coordinators",
+          "region": "Americas & Africa",
+          "country": "United States",
+          "bio": "Supporting board leadership, fellowship, and North American healthcare community engagement."
+        }
+      ]
     },
     "partners": {
       "heroTitle": "Our partners",
@@ -579,9 +677,10 @@
     "search": {
       "heroTitle": "Search",
       "heroSubtitle": "Find programs, articles, events, and pages",
+      "imageUrl": "/images/cogi-hero.png",
       "placeholder": "Search the site…",
       "button": "Search"
     }
   },
-  "updatedAt": "2026-09-02T16:55:00.000Z"
+  "updatedAt": "2026-09-03T18:05:58.017Z"
 }
