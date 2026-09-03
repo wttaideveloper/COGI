@@ -42,6 +42,14 @@
     .map-pin-glow {
       animation: none;
     }
+
+    .map-arc-dash,
+    .map-arc-comet,
+    .map-pin-enter,
+    .map-arc-fade,
+    .map-pin-halo {
+      animation: none;
+    }
   }
 
   body {
@@ -88,42 +96,85 @@
     background: linear-gradient(135deg, #f4f8fb 0%, #e8f1f7 100%);
   }
 
-  .map-pin-glow {
-    animation: map-glow 2.6s ease-in-out infinite;
-  }
-
   .map-arc-dash {
     stroke-dashoffset: 0;
-    animation: map-arc 18s linear infinite;
+    animation: map-arc 36s linear infinite;
   }
 
-  @keyframes map-glow {
-    0%,
-    100% {
-      opacity: 0.34;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.72;
-      transform: scale(1.28);
-    }
+  .map-arc-comet {
+    animation: map-arc-comet 8.5s ease-in-out infinite;
+  }
+
+  .map-pin-enter {
+    animation: map-pin-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .map-arc-fade {
+    animation: map-arc-fade 1.1s ease-out both;
+  }
+
+  .map-pin-halo {
+    animation: map-halo 3.4s ease-in-out infinite;
   }
 
   @keyframes map-arc {
     to {
-      stroke-dashoffset: -48;
+      stroke-dashoffset: -40;
     }
   }
 
-  @keyframes map-ring {
+  @keyframes map-arc-comet {
     0% {
-      opacity: 0.55;
-      transform: scale(0.7);
+      stroke-dashoffset: 12;
+      opacity: 0;
+    }
+    18% {
+      opacity: 0.7;
+    }
+    82% {
+      opacity: 0.7;
     }
     100% {
+      stroke-dashoffset: -160;
       opacity: 0;
-      transform: scale(2.1);
     }
+  }
+
+  @keyframes map-pin-enter {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes map-arc-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes map-halo {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(1.06);
+    }
+  }
+
+  .map-nation-chip[aria-pressed='false']:hover {
+    border-color: #c5d6e4;
+    background: #f7fafc;
   }
 
   .text-balance {

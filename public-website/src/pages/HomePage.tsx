@@ -15,7 +15,7 @@ import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { formatDate } from '@/lib/utils'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { HeroBackground } from '@/components/home/HeroBackground'
-import { WorldMap } from '@/components/home/WorldMap'
+import { WhereWeServeSection } from '@/components/home/WhereWeServeSection'
 import { CustomHomeSection, SplitBand, isCustomHomeSection, isSplitHomeSection } from '@/components/home/CustomSection'
 import { TestimonialCarousel } from '@/components/home/TestimonialCarousel'
 import { siteImages, siteVideos } from '@/data/siteCopy'
@@ -65,12 +65,6 @@ export function HomePage() {
   const copy = site.copy.homepage
   const matchedStories = stories?.filter((s) => homepage.storiesTeaser.featuredStoryIds.includes(s.id)) ?? []
   const featuredStories = (matchedStories.length ? matchedStories : stories?.slice(0, 2) ?? []).slice(0, 2)
-  const locationGroups = ['Americas & Africa', 'Asia-Pacific']
-    .map((region) => ({
-      region,
-      items: locations?.filter((loc) => loc.region === region) ?? [],
-    }))
-    .filter((group) => group.items.length)
   const heroHeadline = site.homepage.heroHeadline || homepage.hero.headline
   const heroIntro = site.homepage.heroIntro || homepage.hero.intro
   const heroImageUrl = site.homepage.heroImageUrl || site.homepage.heroSlides?.[0]?.imageUrl
@@ -286,51 +280,14 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'map') return (
-      <section key="map" id="map" className="scroll-mt-28 bg-gradient-to-b from-white via-[#f7fbfe] to-white py-14 md:py-20">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="flex items-center justify-center gap-4">
-            <span className="h-px w-10 bg-[#3D7EAD]/40 sm:w-16" aria-hidden="true" />
-            <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-[#3D7EAD]">Where we serve</p>
-            <span className="h-px w-10 bg-[#3D7EAD]/40 sm:w-16" aria-hidden="true" />
-          </div>
-          <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">
-            {copy.mapTitle}
-          </h2>
-          <p className="mx-auto mt-5 max-w-3xl text-center text-lg text-ink-muted">{copy.mapSubtitle}</p>
-          <div className="mt-12">
-            <WorldMap locations={locations ?? []} activeCountry={activeCountry} onSelect={setActiveCountry} />
-          </div>
-          <div className="mt-8 grid gap-8 sm:grid-cols-2">
-            {locationGroups.map((group) => (
-              <div key={group.region}>
-                <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.22em]" style={{ color: site.homepage.mapPinColor || '#3D7EAD' }}>{group.region}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {group.items.map((loc) => {
-                    const on = activeCountry === loc.country
-                    const pin = site.homepage.mapPinColor || '#3D7EAD'
-                    return (
-                    <button
-                      key={loc.id}
-                      type="button"
-                      onClick={() => setActiveCountry(on ? null : loc.country)}
-                      className="rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-all"
-                      style={
-                        on
-                          ? { borderColor: pin, background: pin, color: '#fff', boxShadow: `0 8px 16px ${pin}38` }
-                          : { borderColor: '#d7e6f2', background: '#fff', color: 'var(--color-ink)' }
-                      }
-                      aria-pressed={on}
-                    >
-                      {loc.country}
-                    </button>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+          <WhereWeServeSection
+            key="map"
+            locations={locations ?? []}
+            activeCountry={activeCountry}
+            onSelect={setActiveCountry}
+            title={copy.mapTitle}
+            subtitle={copy.mapSubtitle}
+          />
         )
         if (section.id === 'stories') return (
       <section key="stories" className="bg-white py-14 md:py-20">
