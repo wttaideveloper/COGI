@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import type { Location } from '@/types'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
@@ -17,6 +18,18 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
   const reduced = useReducedMotion()
   const site = useSiteConfig()
   const palette = resolveMapPalette(site.homepage)
+  const keepRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!activeCountry) return
+    const onPointerDown = (event: PointerEvent) => {
+      const node = event.target
+      if (node instanceof Node && keepRef.current?.contains(node)) return
+      onSelect(null)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [activeCountry, onSelect])
 
   const locationGroups = ['Americas & Africa', 'Asia-Pacific']
     .map((region) => ({
@@ -63,6 +76,7 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
           </p>
         </motion.div>
 
+        <div ref={keepRef}>
         <motion.div className="mt-10 md:mt-12" {...item}>
           <WorldMap locations={locations} activeCountry={activeCountry} onSelect={onSelect} />
         </motion.div>
@@ -108,6 +122,7 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
             </div>
           ))}
         </motion.div>
+        </div>
       </motion.div>
     </section>
   )

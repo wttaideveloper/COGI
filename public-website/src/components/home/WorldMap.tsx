@@ -13,6 +13,8 @@ const VIEW_LAT_SPAN = 90 - VIEW_LAT_SOUTH
 const VIEW_HEIGHT_FRACTION = VIEW_LAT_SPAN / 180
 const VIEW_ASPECT = 2 / VIEW_HEIGHT_FRACTION
 const VIEW_MASK_SIZE = `100% ${100 / VIEW_HEIGHT_FRACTION}%`
+/** Outer frame: slightly taller than the cropped geography so the map is contained, not stretched. */
+const FRAME_ASPECT = 2.2
 
 function project(lat: number, lng: number) {
   return {
@@ -234,6 +236,14 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
     if (tiltRef.current) tiltRef.current.style.transform = 'translate(0px, 0px)'
   }
 
+  function onMapPointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (!activeCountry) return
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    const target = event.target as HTMLElement | null
+    if (target?.closest('button, [data-map-keep]')) return
+    onSelect(null)
+  }
+
   return (
     <motion.div
       className="overflow-hidden rounded-xl border border-mist-dark md:rounded-2xl"
@@ -246,11 +256,12 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
       <div
         className="relative w-full overflow-hidden"
         style={{
-          aspectRatio: `${VIEW_ASPECT}`,
+          aspectRatio: `${FRAME_ASPECT}`,
           background: `radial-gradient(ellipse at 48% 36%, ${palette.oceanTop} 0%, ${palette.ocean} 58%)`,
         }}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
+        onPointerDown={onMapPointerDown}
       >
         <div
           className="pointer-events-none absolute inset-0"
@@ -268,13 +279,17 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
           aria-hidden="true"
         />
 
-        <div
-          className="map-stage-focus absolute inset-3 sm:inset-3.5 md:inset-5"
-          style={{
-            transform: `translate(${camera.tx}%, ${camera.ty}%) scale(${focusScale})`,
-            transitionDelay: focused ? '90ms' : '0ms',
-          }}
-        >
+        <div className="absolute inset-0 flex items-center justify-center p-2.5 sm:p-3 md:p-4 [container-type:size]">
+          <div
+            className="map-stage-focus relative"
+            style={{
+              aspectRatio: `${VIEW_ASPECT}`,
+              width: `min(100%, calc(100cqh * ${VIEW_ASPECT}))`,
+              height: `min(100%, calc(100cqw / ${VIEW_ASPECT}))`,
+              transform: `translate(${camera.tx}%, ${camera.ty}%) scale(${focusScale})`,
+              transitionDelay: focused ? '90ms' : '0ms',
+            }}
+          >
           <div
             ref={tiltRef}
             className="absolute inset-0"
@@ -326,6 +341,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                   key={loc.id}
                   type="button"
                   className="group absolute z-10 flex h-11 w-11 -translate-x-1/2 -translate-y-[80%] items-center justify-center"
+                  data-map-keep="true"
                   style={{
                     left: `${x}%`,
                     top: `${y}%`,
@@ -457,6 +473,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
             </div>
           </div>
         </div>
+        </div>
 
         <div
           className="pointer-events-none absolute inset-0"
@@ -481,6 +498,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
       <aside
         id="map-nation-panel"
         className="px-5 py-4 md:px-8 md:py-5"
+        data-map-keep="true"
         style={{ background: palette.panel, borderTop: `1px solid ${palette.border}` }}
         aria-live="polite"
       >
