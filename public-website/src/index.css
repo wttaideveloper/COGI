@@ -50,7 +50,9 @@
     .map-arc-fade,
     .map-pin-halo,
     .map-pin-ripple,
-    .map-pin-ripple-on {
+    .map-pin-ripple-on,
+    .map-focus-ring,
+    .map-stage-breathe {
       animation: none;
     }
   }
@@ -102,20 +104,20 @@
   .map-arc-draw {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    animation: map-arc-draw 1.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: map-arc-draw 1.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .map-arc-dash {
     stroke-dashoffset: 0;
-    animation: map-arc 7.2s linear infinite;
+    animation: map-arc 7.2s linear 1.5s infinite;
   }
 
   .map-arc-comet {
-    animation: map-arc-comet 5.4s ease-in-out infinite;
+    animation: map-arc-comet 6.2s ease-in-out infinite;
   }
 
   .map-pin-enter {
-    animation: map-pin-enter 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: map-pin-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .map-arc-fade {
@@ -123,20 +125,25 @@
   }
 
   .map-pin-halo {
-    animation: map-halo 3.2s ease-in-out infinite;
+    animation: map-halo 3.6s ease-in-out infinite;
   }
 
   .map-pin-ripple {
-    animation: map-ripple 5.4s ease-out infinite;
+    animation: map-ripple 5.8s ease-out infinite;
   }
 
-  .map-pin-ripple-on {
-    animation: map-ripple 2.8s ease-out infinite;
+  .map-focus-ring {
+    animation: map-focus-ring 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   .map-stage-focus {
-    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: transform;
+    transform-origin: 0 0;
+    transition: transform 0.92s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .map-stage-breathe {
+    animation: map-breathe 15s ease-in-out infinite;
+    transform-origin: 50% 42%;
   }
 
   @keyframes map-arc-draw {
@@ -146,29 +153,29 @@
     }
     to {
       stroke-dashoffset: 0;
-      opacity: 0.22;
+      opacity: 0.2;
     }
   }
 
   @keyframes map-arc {
     to {
-      stroke-dashoffset: -28;
+      stroke-dashoffset: -24;
     }
   }
 
   @keyframes map-arc-comet {
     0% {
-      stroke-dashoffset: 8;
+      stroke-dashoffset: 10;
       opacity: 0;
     }
-    16% {
-      opacity: 0.75;
+    12% {
+      opacity: 0.85;
     }
-    84% {
-      opacity: 0.75;
+    78% {
+      opacity: 0.55;
     }
     100% {
-      stroke-dashoffset: -120;
+      stroke-dashoffset: -108;
       opacity: 0;
     }
   }
@@ -176,7 +183,7 @@
   @keyframes map-pin-enter {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.88);
+      transform: translateY(7px) scale(0.92);
     }
     to {
       opacity: 1;
@@ -196,31 +203,57 @@
   @keyframes map-halo {
     0%,
     100% {
-      opacity: 0.32;
+      opacity: 0.28;
       transform: scale(1);
     }
     50% {
-      opacity: 0.55;
-      transform: scale(1.07);
+      opacity: 0.48;
+      transform: scale(1.05);
     }
   }
 
   @keyframes map-ripple {
     0% {
       transform: scale(0.55);
-      opacity: 0.42;
+      opacity: 0.32;
     }
-    65% {
+    70% {
       opacity: 0;
     }
     100% {
-      transform: scale(1.9);
+      transform: scale(1.75);
       opacity: 0;
     }
   }
 
+  @keyframes map-focus-ring {
+    0% {
+      transform: scale(0.45);
+      opacity: 0.55;
+    }
+    100% {
+      transform: scale(2.15);
+      opacity: 0;
+    }
+  }
+
+  @keyframes map-breathe {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.003);
+    }
+  }
+
   .map-nation-chip {
-    transition: transform 0.22s ease, background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease;
+    transition:
+      transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.28s ease,
+      border-color 0.28s ease,
+      color 0.28s ease,
+      box-shadow 0.28s ease;
   }
 
   .map-nation-chip[aria-pressed='false']:hover {

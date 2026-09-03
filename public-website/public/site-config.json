@@ -165,7 +165,7 @@
     "heroImageUrl": "/images/cogi-hero.png",
     "heroImageAlt": "People gathered in worship and mission",
     "heroSlideDuration": 6,
-    "mapOceanColor": "#08131F",
+    "mapOceanColor": "#fafafa",
     "mapLandColor": "#536579",
     "mapPinColor": "#78C7F5",
     "mapActiveColor": "#C9A227",
@@ -682,5 +682,5 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-09-03T18:05:58.017Z"
+  "updatedAt": "2026-09-03T18:46:13.881Z"
 }

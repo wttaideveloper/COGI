@@ -15,6 +15,34 @@ function project(lat: number, lng: number) {
   }
 }
 
+function clampNumber(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+/**
+ * Camera for selected-country focus: scale, then pan, then clamp.
+ * Scaling around a clamped origin pushes eastern/western pins outside overflow:hidden.
+ * Translate is in % of the stage (transform-origin 0 0).
+ */
+function focusCamera(xPct: number, yPct: number, scale: number, compact: boolean) {
+  const padX = compact ? 12 : 9
+  const padY = compact ? 16 : 12
+  const coverMin = 100 * (1 - scale)
+  const coverMax = 0
+
+  let tx = clampNumber(50 - xPct * scale, coverMin, coverMax)
+  let ty = clampNumber(42 - yPct * scale, coverMin, coverMax)
+
+  const pinX = xPct * scale + tx
+  const pinY = yPct * scale + ty
+  if (pinX > 100 - padX) tx -= pinX - (100 - padX)
+  if (pinX < padX) tx += padX - pinX
+  if (pinY > 100 - padY) ty -= pinY - (100 - padY)
+  if (pinY < padY) ty += padY - pinY
+
+  return { tx, ty }
+}
+
 function nearestArcs(pins: Pin[]) {
   const seen = new Set<string>()
   const arcs: Array<[Pin, Pin]> = []
@@ -84,7 +112,26 @@ const REVEAL_ORDER = [
 
 function revealDelay(country: string) {
   const index = REVEAL_ORDER.indexOf(country)
-  return 380 + (index < 0 ? REVEAL_ORDER.length : index) * 110
+  const i = index < 0 ? REVEAL_ORDER.length : index
+  return 460 + i * 108 + (i % 2) * 24 + (i % 3) * 10
+}
+
+function revealDuration(country: string) {
+  const i = Math.max(0, REVEAL_ORDER.indexOf(country))
+  return `${0.64 + (i % 3) * 0.05}s`
+}
+
+function directedPath(a: Pin, b: Pin, toward: string | null) {
+  if (toward && a.loc.country === toward) return arcPath(b, a)
+  return arcPath(a, b)
+}
+
+function labelNudge(side: Side, hovered: boolean, selected: boolean) {
+  const shift = hovered && !selected ? 2 : 0
+  if (side === 'left') return { marginRight: shift }
+  if (side === 'top') return { marginBottom: shift }
+  if (side === 'bottom') return { marginTop: shift }
+  return { marginLeft: shift }
 }
 
 function labelClass(side: Side) {
@@ -173,7 +220,9 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   const palette = useMemo(() => resolveMapPalette(homepage), [homepage])
   const [hovered, setHovered] = useState<string | null>(null)
   const compact = useMedia('(max-width: 767px)')
+  const coarsePointer = useMedia('(hover: none)')
   const tiltRef = useRef<HTMLDivElement>(null)
+  const lightMotion = compact || coarsePointer
 
   const pins = useMemo(
     () =>
@@ -186,6 +235,16 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   const selected = locations.find((loc) => loc.country === activeCountry)
   const selectedPin = pins.find((p) => p.loc.country === activeCountry)
   const focusCountry = hovered || activeCountry
+  const signalArcIndex = useMemo(() => {
+    const scored = arcs.map(([a, b], index) => ({
+      index,
+      d: arcLength(a, b),
+      related: Boolean(focusCountry && (a.loc.country === focusCountry || b.loc.country === focusCountry)),
+    }))
+    const pool = focusCountry ? scored.filter((item) => item.related) : scored
+    const pick = (pool.length ? pool : scored).slice().sort((left, right) => right.d - left.d)[0]
+    return pick?.index ?? 0
+  }, [arcs, focusCountry])
 
   useEffect(() => {
     if (!activeCountry) return
@@ -208,16 +267,15 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   } as const
 
   const focused = Boolean(selectedPin) && !reduced
-  const focusOrigin = selectedPin
-    ? `${Math.min(86, Math.max(14, selectedPin.x))}% ${Math.min(80, Math.max(18, selectedPin.y))}%`
-    : '50% 42%'
   const focusScale = focused ? (compact ? 1.2 : 1.32) : 1
+  const camera = focused && selectedPin ? focusCamera(selectedPin.x, selectedPin.y, focusScale, compact) : { tx: 0, ty: 0 }
+  const canBreathe = !reduced && !lightMotion && !activeCountry && !hovered
 
   function onPointerMove(event: PointerEvent<HTMLDivElement>) {
-    if (reduced || compact || event.pointerType !== 'mouse' || !tiltRef.current) return
+    if (reduced || lightMotion || event.pointerType !== 'mouse' || !tiltRef.current) return
     const box = event.currentTarget.getBoundingClientRect()
-    const x = ((event.clientX - box.left) / box.width - 0.5) * 8
-    const y = ((event.clientY - box.top) / box.height - 0.5) * 6
+    const x = ((event.clientX - box.left) / box.width - 0.5) * 6
+    const y = ((event.clientY - box.top) / box.height - 0.5) * 4
     tiltRef.current.style.transform = `translate(${x}px, ${y}px)`
   }
 
@@ -245,7 +303,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse at 50% 18%, ${palette.pin}14 0%, transparent 42%)`,
+            background: `radial-gradient(ellipse at 50% 18%, ${palette.pin}${lightMotion ? '0c' : '14'} 0%, transparent 42%)`,
           }}
           aria-hidden="true"
         />
@@ -261,15 +319,23 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
         <div
           className="map-stage-focus absolute inset-2.5 sm:inset-3 md:inset-4"
           style={{
-            transformOrigin: focusOrigin,
-            transform: `scale(${focusScale})`,
+            transform: `translate(${camera.tx}%, ${camera.ty}%) scale(${focusScale})`,
+            transitionDelay: focused ? '90ms' : '0ms',
           }}
         >
           <div
             ref={tiltRef}
             className="absolute inset-0"
-            style={{ transition: reduced || compact ? undefined : 'transform 180ms ease-out' }}
+            style={{ transition: reduced || lightMotion ? undefined : 'transform 220ms ease-out' }}
           >
+            <div
+              className={!reduced && !lightMotion ? 'map-stage-breathe absolute inset-0' : 'absolute inset-0'}
+              style={
+                !reduced && !lightMotion
+                  ? { animationPlayState: canBreathe ? 'running' : 'paused' }
+                  : undefined
+              }
+            >
             <div className="absolute inset-0" style={{ backgroundColor: palette.land, ...mask }} aria-hidden="true" />
             <div
               className="pointer-events-none absolute inset-0"
@@ -288,7 +354,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                   left: `${selectedPin.x}%`,
                   top: `${selectedPin.y}%`,
                   background: `radial-gradient(circle, ${palette.active}4d 0%, transparent 72%)`,
-                  transition: 'left 800ms cubic-bezier(0.22, 1, 0.36, 1), top 800ms cubic-bezier(0.22, 1, 0.36, 1)',
+                  transition: 'left 0.92s cubic-bezier(0.16, 1, 0.3, 1), top 0.92s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease',
                 }}
                 aria-hidden="true"
               />
@@ -312,13 +378,15 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                 const dimmed = Boolean(focusCountry) && !related
                 const local = arcLength(a, b) < 12
                 const d = arcPath(a, b)
-                const restOpacity = local ? 0.28 : 0.58
+                const restOpacity = local ? 0.3 : 0.58
+                const signal = !reduced && !local && arcIndex === signalArcIndex && (!lightMotion || related)
+                const cometPath = signal ? directedPath(a, b, activeCountry || hovered) : d
                 return (
                   <g
                     key={`${a.loc.id}-${b.loc.id}`}
                     style={{
-                      opacity: dimmed ? 0.16 : related ? 1 : restOpacity,
-                      transition: 'opacity 350ms ease',
+                      opacity: dimmed ? 0.22 : related ? 1 : restOpacity,
+                      transition: 'opacity 480ms ease',
                     }}
                   >
                     <path
@@ -326,34 +394,38 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                       pathLength={1}
                       fill="none"
                       stroke={related ? palette.active : palette.pin}
-                      strokeWidth={related ? 1.15 : local ? 0.7 : 0.9}
+                      strokeWidth={related ? 1.2 : local ? 0.7 : 0.9}
                       strokeLinecap="round"
                       className={reduced ? undefined : 'map-arc-draw'}
-                      style={{ animationDelay: `${arcIndex * 90}ms` }}
+                      style={{ animationDelay: `${220 + arcIndex * 90}ms` }}
                       filter={`url(#map-arc-glow-${uid})`}
                     />
                     <path
                       d={d}
                       fill="none"
                       stroke={related ? palette.active : palette.pin}
-                      strokeWidth={related ? 0.5 : 0.32}
+                      strokeWidth={related ? 0.55 : 0.32}
                       strokeDasharray={local ? '1.1 2.2' : '1.5 2.1'}
                       strokeLinecap="round"
                       opacity={related ? 0.95 : 0.55}
                       className={reduced ? undefined : 'map-arc-dash'}
-                      style={{ animationDelay: `${arcIndex * 220}ms` }}
+                      style={{ animationDelay: `${1.5 + arcIndex * 0.18}s` }}
                     />
-                    {!reduced && (!local || related) ? (
+                    {signal ? (
                       <path
-                        d={d}
+                        d={cometPath}
                         fill="none"
                         stroke={related ? palette.pinLight : palette.pin}
-                        strokeWidth={related ? 0.72 : 0.45}
-                        strokeDasharray="4 96"
+                        strokeWidth={related ? 0.7 : 0.48}
+                        strokeDasharray="2.4 118"
                         strokeLinecap="round"
-                        opacity={related ? 0.9 : 0.28}
+                        opacity={related ? 0.92 : 0.42}
                         className="map-arc-comet"
-                        style={{ animationDelay: `${arcIndex * 0.7}s` }}
+                        filter={`url(#map-arc-glow-${uid})`}
+                        style={{
+                          animationDuration: related ? '5.1s' : '6.6s',
+                          animationDelay: related ? '0.28s' : '1.8s',
+                        }}
                       />
                     ) : null}
                   </g>
@@ -378,8 +450,8 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                   style={{
                     left: `${x}%`,
                     top: `${y}%`,
-                    opacity: dimmed ? 0.34 : 1,
-                    transition: 'opacity 320ms ease',
+                    opacity: dimmed ? 0.42 : 1,
+                    transition: 'opacity 400ms ease',
                     zIndex: lit ? 24 : ANCHOR_LABELS.has(loc.country) ? 12 : 10,
                   }}
                   aria-pressed={isSelected}
@@ -393,35 +465,62 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                 >
                   <span
                     className={`relative block h-8 w-[22px] ${reduced ? '' : 'map-pin-enter'}`}
-                    style={reduced ? undefined : { animationDelay: `${revealDelay(loc.country)}ms` }}
+                    style={
+                      reduced
+                        ? undefined
+                        : {
+                            animationDelay: `${revealDelay(loc.country)}ms`,
+                            animationDuration: revealDuration(loc.country),
+                          }
+                    }
                   >
                     <span
                       className="absolute left-1/2 top-[15px] h-3 w-5 -translate-x-1/2 rounded-full blur-[5px] transition-opacity duration-300"
-                      style={{ background: pinFill, opacity: isSelected ? 0.72 : lit ? 0.5 : 0.22 }}
+                      style={{ background: pinFill, opacity: isSelected ? 0.72 : isHovered ? 0.46 : 0.22 }}
                     />
-                    {!reduced ? (
-                      <span
-                        className={`absolute left-1/2 top-[10px] h-6 w-6 -translate-x-1/2 rounded-full ${isSelected ? 'map-pin-ripple-on' : 'map-pin-ripple'}`}
-                        style={{
-                          border: `1px solid ${pinFill}`,
-                          animationDelay: `${Math.max(0, order) * 0.38}s`,
-                          opacity: isSelected ? 1 : 0.55,
-                        }}
-                        aria-hidden="true"
-                      />
+                    {!reduced && !isSelected && !lightMotion ? (
+                      <span className="absolute left-1/2 top-[10px] h-6 w-6 -translate-x-1/2" aria-hidden="true">
+                        <span
+                          className="map-pin-ripple block h-full w-full rounded-full"
+                          style={{
+                            border: `1px solid ${pinFill}`,
+                            animationDelay: `${Math.max(0, order) * 0.38}s`,
+                            opacity: isHovered ? 0.42 : 0.55,
+                          }}
+                        />
+                      </span>
                     ) : null}
                     {isSelected && !reduced ? (
                       <span
-                        className="absolute left-1/2 top-[9px] h-7 w-7 -translate-x-1/2 rounded-full map-pin-halo"
-                        style={{ boxShadow: `0 0 0 1px ${palette.active}99` }}
+                        key={`focus-ring-${loc.country}`}
+                        className="absolute left-1/2 top-[10px] h-6 w-6 -translate-x-1/2"
                         aria-hidden="true"
-                      />
+                      >
+                        <span
+                          className="map-focus-ring block h-full w-full rounded-full"
+                          style={{
+                            border: `1.5px solid ${palette.active}`,
+                            boxShadow: `0 0 10px ${palette.active}55`,
+                          }}
+                        />
+                      </span>
+                    ) : null}
+                    {isSelected && !reduced ? (
+                      <span className="absolute left-1/2 top-[9px] h-7 w-7 -translate-x-1/2" aria-hidden="true">
+                        <span
+                          className="map-pin-halo block h-full w-full rounded-full"
+                          style={{ boxShadow: `0 0 0 1px ${palette.active}99` }}
+                        />
+                      </span>
                     ) : null}
                     <svg
                       viewBox="0 0 24 34"
-                      className={`relative h-8 w-[22px] origin-bottom transition-transform duration-300 ease-out ${
-                        isSelected ? 'scale-110' : isHovered ? 'scale-[1.07]' : ''
-                      }`}
+                      className="relative h-8 w-[22px] origin-bottom"
+                      style={{
+                        transform: isSelected ? 'scale(1.06)' : isHovered ? 'scale(1.05)' : 'scale(1)',
+                        transition: 'transform 0.38s cubic-bezier(0.22, 1, 0.36, 1)',
+                        transitionDelay: isSelected ? '160ms' : '0ms',
+                      }}
                       aria-hidden="true"
                     >
                       <defs>
@@ -439,20 +538,35 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                       <circle cx="12" cy="10.8" r="2.9" fill="#fff" />
                     </svg>
                     <span
-                      className={`pointer-events-none absolute z-20 whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-opacity duration-300 ${labelClass(side)} ${
-                        showLabel ? 'inline-flex opacity-100' : 'hidden'
+                      className={`pointer-events-none absolute z-20 whitespace-nowrap rounded-full px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md ${labelClass(side)} ${
+                        showLabel ? 'inline-flex' : 'hidden'
                       } ${showLabel && !lit ? 'max-md:hidden' : ''}`}
                       style={
-                        lit
+                        isSelected
                           ? {
                               background: pinFill,
                               color: '#fff',
+                              opacity: 1,
+                              ...labelNudge(side, false, true),
+                              transition: 'opacity 280ms ease, margin 280ms ease, filter 280ms ease, background-color 280ms ease',
                             }
-                          : {
-                              background: palette.light ? 'rgba(255,255,255,0.86)' : 'rgba(12,16,22,0.7)',
-                              color: palette.light ? '#1F2937' : 'rgba(255,255,255,0.9)',
-                              border: `1px solid ${palette.border}`,
-                            }
+                          : isHovered
+                            ? {
+                                background: pinFill,
+                                color: '#fff',
+                                opacity: 1,
+                                filter: 'brightness(1.06)',
+                                ...labelNudge(side, true, false),
+                                transition: 'opacity 280ms ease, margin 280ms ease, filter 280ms ease, background-color 280ms ease',
+                              }
+                            : {
+                                background: palette.light ? 'rgba(255,255,255,0.86)' : 'rgba(12,16,22,0.7)',
+                                color: palette.light ? '#1F2937' : 'rgba(255,255,255,0.9)',
+                                border: `1px solid ${palette.border}`,
+                                opacity: showLabel ? 0.92 : 0,
+                                ...labelNudge(side, false, false),
+                                transition: 'opacity 280ms ease, margin 280ms ease, filter 280ms ease, background-color 280ms ease',
+                              }
                       }
                     >
                       {loc.country}
@@ -461,17 +575,28 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
                 </button>
               )
             })}
+            </div>
           </div>
         </div>
 
         <div
           className="pointer-events-none absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse at 50% 46%, transparent 52%, ${palette.ocean} 100%)`,
-            opacity: palette.light ? 0.22 : 0.36,
+            background: `radial-gradient(ellipse at 50% 46%, transparent ${lightMotion ? '58%' : '50%'}, ${palette.ocean} 100%)`,
+            opacity: lightMotion ? (palette.light ? 0.16 : 0.24) : palette.light ? 0.24 : 0.4,
           }}
           aria-hidden="true"
         />
+        {!lightMotion ? (
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              boxShadow: `inset 0 0 90px 18px ${palette.ocean}`,
+              opacity: palette.light ? 0.18 : 0.32,
+            }}
+            aria-hidden="true"
+          />
+        ) : null}
       </div>
 
       <aside
@@ -486,8 +611,12 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
               key={selected.country}
               initial={reduced ? false : { opacity: 0, y: 12, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduced ? undefined : { opacity: 0, y: 8, scale: 0.99 }}
-              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+              exit={reduced ? undefined : { opacity: 0, y: 8, scale: 0.99, transition: { duration: 0.2, delay: 0 } }}
+              transition={{
+                duration: 0.4,
+                delay: reduced ? 0 : 0.38,
+                ease: [0.22, 1, 0.36, 1],
+              }}
             >
               <NationPanel selected={selected} palette={palette} onClear={() => onSelect(null)} />
             </motion.div>
@@ -497,7 +626,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
               initial={reduced ? false : { opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={reduced ? undefined : { opacity: 0 }}
-              transition={{ duration: 0.24 }}
+              transition={{ duration: 0.22 }}
               className="flex items-center justify-center gap-2.5 text-center text-sm"
               style={{ color: palette.muted }}
             >

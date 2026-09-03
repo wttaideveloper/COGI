@@ -33,7 +33,7 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
         viewport: { once: true, amount: 0.2 },
         variants: {
           hidden: {},
-          show: { transition: { staggerChildren: 0.08, delayChildren: 0.03 } },
+          show: { transition: { staggerChildren: 0.16, delayChildren: 0.05 } },
         },
       }
 
@@ -89,6 +89,7 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
                               borderColor: palette.active,
                               background: palette.active,
                               color: '#fff',
+                              boxShadow: `0 0 0 1px ${palette.active}`,
                             }
                           : {
                               borderColor: '#e2eaf1',
