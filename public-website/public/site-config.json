@@ -157,10 +157,10 @@
     "heroImageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1600&q=80",
     "heroImageAlt": "Healthcare professionals collaborating in a clinic",
     "heroSlideDuration": 6,
-    "mapOceanColor": "#FFFFFF",
-    "mapLandColor": "#D7E4EE",
-    "mapPinColor": "#5B8FB5",
-    "mapActiveColor": "#C4A574",
+    "mapOceanColor": "#0B1016",
+    "mapLandColor": "#3A4A5C",
+    "mapPinColor": "#5BA8E0",
+    "mapActiveColor": "#2E7CB5",
     "heroSlides": [
       {
         "id": "s1",
@@ -583,5 +583,5 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-08-31T17:50:00.000Z"
+  "updatedAt": "2026-09-02T16:55:00.000Z"
 }

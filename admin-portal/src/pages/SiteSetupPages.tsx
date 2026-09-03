@@ -3,6 +3,7 @@ import { colorPresets, fontOptions, headingFontOptions } from '@/data/siteSetup'
 import { captureDraftSnapshot, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type RevertScope, type SiteConfig } from '@/services/siteConfigStore'
 import { getErrorMessage } from '@/services/strapi'
 import { LOGO_HINT, MediaUpload } from '@/components/MediaUpload'
+import { MapColorFields, type MapColors } from '@/components/MapColorFields'
 import { RevertToLiveButton, UndoDraftButton } from '@/components/RevertButton'
 import type { FooterSettings, HeaderSettings, SeoSettings, ThemeSettings } from '@/types'
 
@@ -81,9 +82,19 @@ function PublishActions({
   )
 }
 
+function mapColorsFromConfig(config: SiteConfig): MapColors {
+  return {
+    mapOceanColor: config.homepage.mapOceanColor || '#0B1016',
+    mapLandColor: config.homepage.mapLandColor || '#3A4A5C',
+    mapPinColor: config.homepage.mapPinColor || '#5BA8E0',
+    mapActiveColor: config.homepage.mapActiveColor || '#2E7CB5',
+  }
+}
+
 export function ThemePage() {
   const initial = loadSiteConfig()
   const [theme, setTheme] = useState<ThemeSettings>({ ...initial.theme, buttonHoverColor: initial.theme.buttonHoverColor || '#3B82F6' })
+  const [mapColors, setMapColors] = useState<MapColors>(() => mapColorsFromConfig(initial))
   const [logoUrl, setLogoUrl] = useState(initial.header.logoUrl)
   const [logoAlt, setLogoAlt] = useState(initial.header.logoAlt)
   const [logoHeight, setLogoHeight] = useState(initial.header.logoHeight ?? 48)
@@ -97,6 +108,7 @@ export function ThemePage() {
     hydrateSiteConfigFromStrapi().then((config) => {
       if (active) {
         setTheme({ ...config.theme, buttonHoverColor: config.theme.buttonHoverColor || '#3B82F6' })
+        setMapColors(mapColorsFromConfig(config))
         setLogoUrl(config.header.logoUrl)
         setLogoAlt(config.header.logoAlt)
         setLogoHeight(config.header.logoHeight ?? 48)
@@ -110,9 +122,17 @@ export function ThemePage() {
     setPending(status)
     setError(null)
     try {
+      const current = loadSiteConfig()
       await saveSiteConfig({
         theme,
-        header: { ...loadSiteConfig().header, logoUrl, logoAlt, logoHeight },
+        header: { ...current.header, logoUrl, logoAlt, logoHeight },
+        homepage: {
+          ...current.homepage,
+          mapOceanColor: mapColors.mapOceanColor,
+          mapLandColor: mapColors.mapLandColor,
+          mapPinColor: mapColors.mapPinColor,
+          mapActiveColor: mapColors.mapActiveColor,
+        },
       }, status)
       if (status === 'draft') captureDraftSnapshot('theme')
       setSavedAs(status)
@@ -135,6 +155,7 @@ export function ThemePage() {
         description="Save a private draft in Strapi, then Publish live to update the public website immediately."
         action={<PublishActions scope="theme" pending={Boolean(pending)} pendingStatus={pending} onSave={save} onReverted={(config) => {
           setTheme(config.theme)
+          setMapColors(mapColorsFromConfig(config))
           setLogoUrl(config.header.logoUrl)
           setLogoAlt(config.header.logoAlt)
           setLogoHeight(config.header.logoHeight ?? 48)
@@ -174,6 +195,13 @@ export function ThemePage() {
             <ColorField label="Body text" value={theme.textColor} onChange={(v) => patch('textColor', v)} />
             <ColorField label="Accent / button" value={theme.accentColor} onChange={(v) => patch('accentColor', v)} />
             <ColorField label="Button hover" value={theme.buttonHoverColor || theme.accentColor} onChange={(v) => patch('buttonHoverColor', v)} />
+          </div>
+          <div className="admin-card p-5">
+            <h3 className="font-bold text-[var(--color-primary)]">World map colors</h3>
+            <p className="mt-1 text-sm text-slate-600">Ocean, land, and pin colors for the homepage “Where we serve” map. Publish live to update the public site.</p>
+            <div className="mt-4">
+              <MapColorFields colors={mapColors} onChange={setMapColors} />
+            </div>
           </div>
           <div className="admin-card p-5">
             <h3 className="font-bold text-[var(--color-primary)]">Site logo</h3>

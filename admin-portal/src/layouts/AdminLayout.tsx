@@ -49,7 +49,7 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: 'Look of the site',
     items: [
-      { label: 'Colors & fonts', to: '/theme', hint: 'Match the public website' },
+      { label: 'Colors & fonts', to: '/theme', hint: 'Site colors, map colors, and fonts' },
       { label: 'Search & sharing', to: '/seo', hint: 'How the site appears in Google' },
       { label: 'Top menu bar', to: '/header', hint: 'Logo, links, Donate button' },
       { label: 'Footer', to: '/footer', hint: 'Bottom of every page' },

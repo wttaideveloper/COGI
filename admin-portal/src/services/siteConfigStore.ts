@@ -44,10 +44,10 @@ export function defaultSiteConfig(): SiteConfig {
       heroImageUrl: mockHomepage.heroImageUrl,
       heroImageAlt: mockHomepage.heroImageAlt,
       heroSlideDuration: mockHomepage.heroSlideDuration ?? 6,
-      mapOceanColor: mockHomepage.mapOceanColor ?? '#FFFFFF',
-      mapLandColor: mockHomepage.mapLandColor ?? '#D7E4EE',
-      mapPinColor: mockHomepage.mapPinColor ?? '#5B8FB5',
-      mapActiveColor: mockHomepage.mapActiveColor ?? '#4A7FA3',
+      mapOceanColor: mockHomepage.mapOceanColor ?? '#0B1016',
+      mapLandColor: mockHomepage.mapLandColor ?? '#3A4A5C',
+      mapPinColor: mockHomepage.mapPinColor ?? '#5BA8E0',
+      mapActiveColor: mockHomepage.mapActiveColor ?? '#2E7CB5',
       heroSlides: structuredClone(mockHomepage.heroSlides || []),
       primaryCtaLabel: mockHomepage.primaryCtaLabel,
       primaryCtaHref: mockHomepage.primaryCtaHref,
@@ -160,6 +160,13 @@ function applyRevertScope(current: SiteConfig, published: SiteConfig, scope: Rev
         logoUrl: published.header.logoUrl,
         logoAlt: published.header.logoAlt,
         logoHeight: published.header.logoHeight,
+      },
+      homepage: {
+        ...current.homepage,
+        mapOceanColor: published.homepage.mapOceanColor,
+        mapLandColor: published.homepage.mapLandColor,
+        mapPinColor: published.homepage.mapPinColor,
+        mapActiveColor: published.homepage.mapActiveColor,
       },
     }
   }

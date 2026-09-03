@@ -134,12 +134,13 @@
     object-fit: contain;
   }
   .admin-sidebar-brand .admin-icon-btn {
-    background: rgba(255, 255, 255, 0.16);
-    border-color: rgba(255, 255, 255, 0.28);
-    color: #fff;
+    background: #f3f8fb;
+    border-color: var(--color-border);
+    color: var(--color-ink);
   }
   .admin-sidebar-brand .admin-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.26);
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
   }
 
   .admin-sidebar-search {
@@ -201,27 +202,45 @@
     border-radius: 0.75rem;
     padding: 0.6rem 0.7rem;
   }
-  .admin-nav-item:hover { background: var(--color-accent-soft); color: var(--color-primary); }
+  .admin-nav-item:hover,
+  .admin-nav-item:focus-visible {
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
+  }
   .admin-nav-item-active {
-    background: var(--color-accent);
-    border-color: var(--color-accent);
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(43, 108, 176, 0.28);
+    background: var(--color-accent-soft);
+    border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+    color: var(--color-ink);
+    box-shadow: inset 3px 0 0 var(--color-accent);
+  }
+  .admin-nav-item-active:hover,
+  .admin-nav-item-active:focus-visible {
+    background: #e8f1f7;
+    color: var(--color-ink);
   }
   .admin-nav-dot {
     width: 0.45rem;
     height: 0.45rem;
     border-radius: 999px;
-    background: currentColor;
-    opacity: 0.55;
+    background: var(--color-accent);
+    opacity: 0.7;
     flex-shrink: 0;
     margin-left: 0.35rem;
   }
-  .admin-nav-icon { flex-shrink: 0; }
+  .admin-nav-icon { flex-shrink: 0; color: var(--color-ink); }
   .admin-nav-copy { display: grid; gap: 0.05rem; min-width: 0; }
-  .admin-nav-label { font-size: 0.9rem; font-weight: 600; }
+  .admin-nav-label { font-size: 0.9rem; font-weight: 600; color: var(--color-ink); }
   .admin-nav-hint { font-size: 0.72rem; color: var(--color-ink-muted); }
-  .admin-nav-item-active .admin-nav-hint { color: rgba(255, 255, 255, 0.82); }
+  .admin-nav-item:hover .admin-nav-label,
+  .admin-nav-item:focus-visible .admin-nav-label,
+  .admin-nav-item-active .admin-nav-label {
+    color: var(--color-ink);
+  }
+  .admin-nav-item:hover .admin-nav-hint,
+  .admin-nav-item:focus-visible .admin-nav-hint,
+  .admin-nav-item-active .admin-nav-hint {
+    color: var(--color-ink-muted);
+  }
 
   .admin-preview-btn {
     display: inline-flex;
@@ -1274,35 +1293,73 @@
     background: #fff;
     cursor: pointer;
   }
+  .hp-map-colors {
+    display: grid;
+    gap: 0.85rem;
+  }
   .hp-map-preview {
     position: relative;
+    aspect-ratio: 2.05 / 1;
     min-height: 8.5rem;
     border-radius: 1.1rem;
     overflow: hidden;
-    padding: 1.1rem 1.2rem 1.2rem;
+    border: 1px solid var(--color-border);
   }
   .hp-map-land {
-    width: min(70%, 18rem);
-    height: 4.2rem;
-    border-radius: 40% 55% 45% 50%;
-    opacity: 0.92;
+    position: absolute;
+    inset: 0;
+    opacity: 0.96;
   }
   .hp-map-pin {
     position: absolute;
-    top: 2.3rem;
-    left: 28%;
     width: 0.7rem;
     height: 0.7rem;
+    margin: -0.35rem 0 0 -0.35rem;
     border-radius: 999px;
     border: 2px solid #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.28);
   }
-  .hp-map-pin-on { left: 46%; width: 0.9rem; height: 0.9rem; }
+  .hp-map-pin-on { width: 0.95rem; height: 0.95rem; margin: -0.48rem 0 0 -0.48rem; }
   .hp-map-preview p {
     margin: 0.85rem 0 0;
     font-size: 0.78rem;
     font-weight: 700;
     color: var(--color-ink-muted);
+  }
+  .hp-map-presets {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+  .hp-map-preset {
+    display: grid;
+    gap: 0.2rem;
+    text-align: left;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    border-radius: 0.85rem;
+    padding: 0.7rem 0.75rem;
+    cursor: pointer;
+  }
+  .hp-map-preset strong { font-size: 0.82rem; }
+  .hp-map-preset span { font-size: 0.68rem; color: var(--color-ink-muted); }
+  .hp-map-preset-on {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+  }
+  .hp-map-preset-swatches {
+    display: flex;
+    gap: 0.25rem;
+  }
+  .hp-map-preset-swatches i {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+  }
+  @media (max-width: 720px) {
+    .hp-map-presets { grid-template-columns: 1fr; }
   }
   .hp-note {
     display: grid;

@@ -9,6 +9,7 @@ import { apiSingle, getErrorMessage, isDemoMode } from '@/services/strapi'
 import { captureDraftSnapshot, ensureRemoteUrl, hydrateSiteConfigFromStrapi, loadSiteConfig, readFileAsDataUrl, saveSiteConfig, type SiteConfig } from '@/services/siteConfigStore'
 import { getPreviewUrl } from '@/utils/preview'
 import { MediaUpload, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
+import { MapColorFields } from '@/components/MapColorFields'
 import { RevertToLiveButton, UndoDraftButton } from '@/components/RevertButton'
 import type { HeroHeadlineCase, HeroMedia, HeroSlide, HomepageBlockKind, HomepageRecord, HomepageSection } from '@/types'
 
@@ -1005,38 +1006,20 @@ export default function HomepageManagerPage() {
               <Field label="Subtitle">
                 <textarea className="admin-input min-h-24" value={copyHome.mapSubtitle} onChange={(e) => patchCopy('mapSubtitle', e.target.value)} />
               </Field>
-              <div className="hp-map-preview" style={{ background: form.watch('mapOceanColor') || '#F7FAFC' }}>
-                <div className="hp-map-land" style={{ background: form.watch('mapLandColor') || '#D7E4EE' }} />
-                <span className="hp-map-pin" style={{ background: form.watch('mapPinColor') || '#5B8FB5' }} />
-                <span className="hp-map-pin hp-map-pin-on" style={{ background: form.watch('mapActiveColor') || '#3B82F6' }} />
-                <p>Ocean, land, and pin colors update the public map.</p>
-              </div>
-              <div className="hp-grid-2">
-                <Field label="Ocean color">
-                  <div className="hp-color">
-                    <input type="color" value={form.watch('mapOceanColor') || '#F7FAFC'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapOceanColor') || '#F7FAFC'} onChange={(e) => form.setValue('mapOceanColor', e.target.value, { shouldDirty: true })} />
-                  </div>
-                </Field>
-                <Field label="Land color">
-                  <div className="hp-color">
-                    <input type="color" value={form.watch('mapLandColor') || '#D7E4EE'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapLandColor') || '#D7E4EE'} onChange={(e) => form.setValue('mapLandColor', e.target.value, { shouldDirty: true })} />
-                  </div>
-                </Field>
-                <Field label="Pin color">
-                  <div className="hp-color">
-                    <input type="color" value={form.watch('mapPinColor') || '#5B8FB5'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapPinColor') || '#5B8FB5'} onChange={(e) => form.setValue('mapPinColor', e.target.value, { shouldDirty: true })} />
-                  </div>
-                </Field>
-                <Field label="Selected pin color">
-                  <div className="hp-color">
-                    <input type="color" value={form.watch('mapActiveColor') || '#3B82F6'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
-                    <input className="admin-input" value={form.watch('mapActiveColor') || '#3B82F6'} onChange={(e) => form.setValue('mapActiveColor', e.target.value, { shouldDirty: true })} />
-                  </div>
-                </Field>
-              </div>
+              <MapColorFields
+                colors={{
+                  mapOceanColor: form.watch('mapOceanColor') || '#0B1016',
+                  mapLandColor: form.watch('mapLandColor') || '#3A4A5C',
+                  mapPinColor: form.watch('mapPinColor') || '#5BA8E0',
+                  mapActiveColor: form.watch('mapActiveColor') || '#2E7CB5',
+                }}
+                onChange={(next) => {
+                  form.setValue('mapOceanColor', next.mapOceanColor, { shouldDirty: true })
+                  form.setValue('mapLandColor', next.mapLandColor, { shouldDirty: true })
+                  form.setValue('mapPinColor', next.mapPinColor, { shouldDirty: true })
+                  form.setValue('mapActiveColor', next.mapActiveColor, { shouldDirty: true })
+                }}
+              />
               <div className="hp-note">
                 Country pins are edited in Locations. Publish live to show the new map colors on the public homepage.
                 <div className="hp-note-actions">

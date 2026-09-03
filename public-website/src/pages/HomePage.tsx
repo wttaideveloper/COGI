@@ -303,23 +303,28 @@ export function HomePage() {
           <div className="mt-8 grid gap-8 sm:grid-cols-2">
             {locationGroups.map((group) => (
               <div key={group.region}>
-                <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-[#3D7EAD]">{group.region}</h3>
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.22em]" style={{ color: site.homepage.mapPinColor || '#3D7EAD' }}>{group.region}</h3>
                 <div className="flex flex-wrap gap-2">
-                  {group.items.map((loc) => (
+                  {group.items.map((loc) => {
+                    const on = activeCountry === loc.country
+                    const pin = site.homepage.mapPinColor || '#3D7EAD'
+                    return (
                     <button
                       key={loc.id}
                       type="button"
-                      onClick={() => setActiveCountry(activeCountry === loc.country ? null : loc.country)}
-                      className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-all ${
-                        activeCountry === loc.country
-                          ? 'border-[#3D7EAD] bg-[#3D7EAD] text-white shadow-[0_8px_16px_rgba(47,106,150,0.22)]'
-                          : 'border-[#d7e6f2] bg-white text-teal-deep hover:border-[#3D7EAD] hover:text-[#2F6A96]'
-                      }`}
-                      aria-pressed={activeCountry === loc.country}
+                      onClick={() => setActiveCountry(on ? null : loc.country)}
+                      className="rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-all"
+                      style={
+                        on
+                          ? { borderColor: pin, background: pin, color: '#fff', boxShadow: `0 8px 16px ${pin}38` }
+                          : { borderColor: '#d7e6f2', background: '#fff', color: 'var(--color-ink)' }
+                      }
+                      aria-pressed={on}
                     >
                       {loc.country}
                     </button>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             ))}
