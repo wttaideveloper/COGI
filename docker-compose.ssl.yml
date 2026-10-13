@@ -1,0 +1,7 @@
+# HTTPS override. Use ONLY after a certificate exists for cogi.wisdomtooth.tech:
+#   docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d nginx
+services:
+  nginx:
+    volumes:
+      - ./nginx/nginx-ssl.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro

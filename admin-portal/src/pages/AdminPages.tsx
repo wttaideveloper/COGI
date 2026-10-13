@@ -13,7 +13,7 @@ import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomep
 import { mockFooterNavigation } from '@/data/siteSetup'
 import { hydrateSiteConfigFromStrapi, captureDraftSnapshot, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
-import { apiCreate, apiDelete, apiGetOne, apiList, apiListAll, apiSingle, apiPublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
+import { apiCreate, apiDelete, apiGetOne, apiList, apiListAll, apiSingle, apiPublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, isDemoModeAllowed, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
 import { fetchLeads, addSubscriber, removeSubscriber, type LeadSubscriber } from '@/services/leads'
 import { COGI_LOGO } from '@/lib/brand'
@@ -173,14 +173,14 @@ function createdDocumentId(created: unknown): string {
 }
 
 export function LoginPage() {
-  const { isAuthenticated, login } = useAuth(); const navigate = useNavigate(); const form = useForm({ resolver: zodResolver(z.object({ identifier: z.string().email(), password: z.string().min(1) })), defaultValues: { identifier: 'admin@cogi.local', password: 'admin123' } });
+  const { isAuthenticated, login } = useAuth(); const navigate = useNavigate(); const form = useForm({ resolver: zodResolver(z.object({ identifier: z.string().email(), password: z.string().min(1) })), defaultValues: isDemoModeAllowed() ? { identifier: 'admin@cogi.local', password: 'admin123' } : { identifier: '', password: '' } });
   const mutation = useMutation({ mutationFn: login, onSuccess: () => navigate('/dashboard') })
   if (isAuthenticated) return <Navigate to="/dashboard" replace />
   return (
     <AuthShell
       title="Sign in"
       subtitle="Update pages, photos, and the homepage in one place."
-      hint="Demo login: admin@cogi.local / admin123"
+      hint={isDemoModeAllowed() ? 'Demo login: admin@cogi.local / admin123' : undefined}
     >
       <form className="space-y-4" onSubmit={form.handleSubmit((v) => mutation.mutate(v))}>
         <Field label="Email" error={form.formState.errors.identifier?.message}>
@@ -570,7 +570,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
   const [localRows, setLocalRows] = useState(() => loadLocalRecords(moduleKey, moduleData[moduleKey] || []))
   const [search, setSearch] = useState('')
   const query = useQuery({ queryKey: [moduleKey], queryFn: () => apiListAll<AnyRecord>(config.endpoint), enabled: !isDemoMode() })
-  const rows = isDemoMode() || query.isError ? localRows : (query.data ?? [])
+  const rows = isDemoMode() ? localRows : (query.data ?? [])
   const current = params.id === 'new' ? undefined : rows.find((row) => row.id === params.id || row.documentId === params.id)
   const dateFieldKeys = new Set(config.fields.filter((f) => f.type === 'date').map((f) => String(f.name)))
   const form = useForm<Record<string, unknown>>({ resolver: zodResolver(schemaFor(config.fields)), values: normalizeForForm(current, config.fields) })
@@ -635,7 +635,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
         })
         return record
       }
-      if (isDemoMode() || query.isError) {
+      if (isDemoMode()) {
         return saveLocal()
       }
       const id = current?.documentId || current?.id || String(params.id)
@@ -672,7 +672,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
   })
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      if (isDemoMode() || query.isError) {
+      if (isDemoMode()) {
         setLocalRows((prev) => {
           const next = prev.filter((row) => String(row.documentId || row.id) !== id)
           saveLocalRecords(moduleKey, next)
@@ -742,7 +742,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
               onClick={() => {
                 if (!window.confirm('Revert this record to the last published version? Draft edits will be discarded.')) return
                 const id = String(params.id)
-                if (isDemoMode() || query.isError) {
+                if (isDemoMode()) {
                   window.alert('No published Strapi version is available in practice mode.')
                   return
                 }
@@ -781,6 +781,9 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
         />
         <p className="admin-toolbar-count">{visible.length} {visible.length === 1 ? config.singular.toLowerCase() : 'records'}</p>
       </div>
+      {query.isError && !isDemoMode() ? (
+        <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700" role="alert">Could not load {config.title.toLowerCase()} from the server: {getErrorMessage(query.error)}. Nothing is being shown from local data.</div>
+      ) : null}
       {query.isLoading && !isDemoMode() && !query.data ? (
         <div className="admin-card p-10 text-center text-sm text-slate-600">Loading custom pages…</div>
       ) : rows.length === 0 ? (

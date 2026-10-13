@@ -42,7 +42,7 @@ export default function PageEditorPage() {
     enabled: !isDemoMode() && !isNew,
   })
 
-  const rows = isDemoMode() || !query.data?.length ? localRows : query.data
+  const rows = isDemoMode() ? localRows : (query.data ?? [])
 
   useEffect(() => {
     if (isNew) return

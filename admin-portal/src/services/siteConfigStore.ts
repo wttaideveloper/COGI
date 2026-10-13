@@ -3,7 +3,7 @@ import { mockFooter, mockHeader, mockSeo, mockTheme, mockFooterNavigation } from
 import { mockHomepage, mockNavigation } from '@/data/mock'
 import { ensureBuiltinSections } from '@/data/homepageBlocks'
 import { defaultSiteCopy, mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
-import { apiPublishSingle, apiSingle, apiUpdateSingle, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
+import { apiPublishSingle, apiSingle, apiUpdateSingle, getJwt, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 
 export type SiteConfig = {
   theme: ThemeSettings
@@ -230,13 +230,14 @@ export function notifyPublished() {
 
 async function writePublicFile(config: SiteConfig) {
   try {
+    const token = getJwt()
     await fetch('/__site-config', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify(config),
     })
   } catch {
-    // Public sync endpoint may be unavailable outside vite dev — Strapi remains the source of truth.
+    // Cache write is best-effort — Strapi remains the source of truth.
   }
 }
 
@@ -422,14 +423,12 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
 
   next = await prepareConfigForStrapi(next)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+  // Strapi is the source of truth: if it rejects the publish, surface the error instead of reporting success.
+  await persistSiteConfigToStrapi(next, 'published')
+  // The config-sync file is a read cache for the public site; a failure here must not hide a successful publish.
   await writePublicFile(next)
   rememberPublishedSiteConfig(next)
   notifyPublished()
-  try {
-    await persistSiteConfigToStrapi(next, 'published')
-  } catch {
-    // Public file is already live for local preview; Strapi can be retried on the next publish.
-  }
   return next
 }
 

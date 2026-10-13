@@ -1,5 +1,6 @@
+import axios from 'axios'
 import { authenticateLocalUser, setUserPassword } from './users'
-import { clearJwt, getJwt, isDemoMode, setDemoMode, setJwt, strapiAuthClient } from './strapi'
+import { MOCK_JWT, clearJwt, getJwt, getStrapiUrl, isDemoMode, isDemoModeAllowed, setDemoMode, setJwt, strapiAuthClient } from './strapi'
 import type { AuthUser, ChangePasswordPayload, LoginPayload } from '@/types'
 
 const USER_KEY = 'cogi_admin_user'
@@ -18,13 +19,19 @@ export async function login(payload: LoginPayload): Promise<AuthUser> {
     storeUser(data.user)
     return data.user
   } catch (error) {
-    const local = authenticateLocalUser(payload.identifier, payload.password)
-    if (local) {
-      setJwt('mock-jwt-cogi-admin')
-      setDemoMode(true)
-      storeUser(local)
-      return local
+    const unreachable = axios.isAxiosError(error) && !error.response
+    // Practice mode is only an explicit, build-time opt-in and only when the server cannot be reached at all.
+    // A rejected login (wrong password, blocked user) must never fall through to local credentials.
+    if (unreachable && isDemoModeAllowed()) {
+      const local = authenticateLocalUser(payload.identifier, payload.password)
+      if (local) {
+        setJwt(MOCK_JWT)
+        setDemoMode(true)
+        storeUser(local)
+        return local
+      }
     }
+    if (unreachable) throw new Error(`Cannot reach the COGI server at ${getStrapiUrl()}. Check your connection or contact the site administrator.`)
     throw error
   }
 }

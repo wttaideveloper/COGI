@@ -25,11 +25,22 @@ strapiClient.interceptors.response.use(
   },
 )
 
-export function getJwt(): string | null { return localStorage.getItem(TOKEN_KEY) }
+export const MOCK_JWT = 'mock-jwt-cogi-admin'
+const DEMO_KEY = 'cogi_demo_mode'
+
+// Practice mode is a build-time opt-in (VITE_ENABLE_DEMO_MODE=true). Production builds never set it, so a stale
+// cogi_demo_mode flag in a browser cannot switch the portal away from the real Strapi backend.
+export function isDemoModeAllowed(): boolean { return import.meta.env.VITE_ENABLE_DEMO_MODE === 'true' }
+export function isDemoMode(): boolean { return isDemoModeAllowed() && localStorage.getItem(DEMO_KEY) === 'true' }
+export function setDemoMode(enabled: boolean): void { if (enabled && isDemoModeAllowed()) { localStorage.setItem(DEMO_KEY, 'true') } else { localStorage.removeItem(DEMO_KEY) } }
+export function getJwt(): string | null {
+  const token = localStorage.getItem(TOKEN_KEY)
+  // A practice-mode session left over in this browser is not a real credential: drop it.
+  if (token === MOCK_JWT && !isDemoMode()) { clearJwt(); localStorage.removeItem('cogi_admin_user'); localStorage.removeItem(DEMO_KEY); return null }
+  return token
+}
 export function setJwt(token: string): void { localStorage.setItem(TOKEN_KEY, token) }
 export function clearJwt(): void { localStorage.removeItem(TOKEN_KEY) }
-export function isDemoMode(): boolean { return localStorage.getItem('cogi_demo_mode') === 'true' }
-export function setDemoMode(enabled: boolean): void { if (enabled) { localStorage.setItem('cogi_demo_mode', 'true') } else { localStorage.removeItem('cogi_demo_mode') } }
 export function getStrapiUrl(): string { return STRAPI_URL }
 export function getErrorMessage(error: unknown): string { return axios.isAxiosError(error) ? (error.response?.data?.error?.message || error.message) : error instanceof Error ? error.message : 'Unexpected error' }
 
