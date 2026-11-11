@@ -1,7 +1,7 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Testimonial } from '@/types'
-import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 
 export function TestimonialCarousel({ items }: { items: Testimonial[] }) {
@@ -28,7 +28,7 @@ export function TestimonialCarousel({ items }: { items: Testimonial[] }) {
     >
       <figure className="rounded-xl border border-mist-dark bg-white p-8 text-center shadow-sm">
         {current.mediaType === 'video' && current.videoUrl ? (
-          <VideoPlayer src={current.videoUrl} title={current.author} className="relative mx-auto mb-6 aspect-video w-full overflow-hidden bg-black" />
+          <MediaPreview video src={current.videoUrl} alt={current.author} className="relative mx-auto mb-6 aspect-video w-full overflow-hidden bg-black" />
         ) : null}
         <blockquote className="font-display text-2xl italic leading-relaxed text-teal-deep md:text-3xl">
           “{current.quote}”

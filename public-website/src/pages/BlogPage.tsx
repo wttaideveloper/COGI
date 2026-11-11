@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -35,7 +36,7 @@ export function BlogPage() {
           <div className="space-y-8">
             {visible?.map((post) => (
               <Card key={post.id} as="article" className="overflow-hidden !p-0">
-                {post.imageUrl ? <img src={post.imageUrl} alt={post.imageAlt || ''} className="h-56 w-full object-cover" /> : null}
+                {post.imageUrl ? <MediaPreview src={post.imageUrl} alt={post.imageAlt || ''} className="h-56 w-full object-cover" /> : null}
                 <div className="p-6">
                 <span className="text-xs font-semibold uppercase tracking-wide text-gold">{post.category}</span>
                 <h2 className="mt-2 font-display text-2xl text-teal-deep">

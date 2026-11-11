@@ -1,9 +1,9 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getStoryBySlug } from '@/api/stories'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card, ErrorState, Skeleton } from '@/components/ui/Card'
-import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { ShareButtons } from '@/components/ui/ShareButtons'
 
 export function StoryDetailPage() {
@@ -31,9 +31,9 @@ export function StoryDetailPage() {
       <div className="mx-auto max-w-3xl px-4 py-16">
         <Link to="/resources/stories" className="mb-8 inline-block text-sm font-semibold text-teal-deep hover:text-gold">← Back to stories</Link>
         {story.type === 'video' && story.videoUrl ? (
-          <VideoPlayer src={story.videoUrl} poster={story.imageUrl} title={story.title} className="relative mb-8 aspect-video w-full overflow-hidden bg-black" />
+          <MediaPreview video src={story.videoUrl} poster={story.imageUrl} alt={story.title} className="relative mb-8 aspect-video w-full overflow-hidden bg-black" />
         ) : story.imageUrl ? (
-          <img src={story.imageUrl} alt="" className="mb-8 h-72 w-full rounded-xl object-cover" />
+          <MediaPreview src={story.imageUrl} alt={story.title} className="mb-8 h-72 w-full rounded-xl object-cover" />
         ) : null}
         <Card>
           {story.summary ? (

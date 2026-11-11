@@ -1,10 +1,10 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getTestimonials } from '@/api/testimonials'
 import { getPrograms } from '@/api/programs'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
-import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { TestimonialCarousel } from '@/components/home/TestimonialCarousel'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
@@ -39,7 +39,7 @@ export function TestimonialsPage() {
           <div className="mb-12 grid gap-6 md:grid-cols-2">
             {videos.map((t) => (
               <Card key={`video-${t.id}`} className="overflow-hidden !p-0">
-                <VideoPlayer src={t.videoUrl!} title={t.author} className="relative aspect-video w-full overflow-hidden bg-black" />
+                <MediaPreview video src={t.videoUrl!} alt={t.author} className="relative aspect-video w-full overflow-hidden bg-black" />
                 <div className="p-5">
                   <p className="font-semibold text-teal-deep">{t.author}</p>
                   {t.role ? <p className="text-sm text-ink-muted">{t.role}</p> : null}

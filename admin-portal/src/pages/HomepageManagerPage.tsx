@@ -1,3 +1,4 @@
+import { sectionAnimations, type SectionAnimation } from '../../../shared/sectionAnimation'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -602,6 +603,15 @@ export default function HomepageManagerPage() {
               </button>
             </div>
           </div>
+
+          {activeSection && (
+            <Field label="Section entrance animation" hint="Plays once when this section enters view.">
+              <select className="admin-input" value={activeSection.animation || 'none'}
+                onChange={e => patchSection(activeSection.id, { animation: e.target.value as SectionAnimation })}>
+                {Object.entries(sectionAnimations).filter(([value]) => value !== 'editorial' || activeSection.id === 'hero').map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+              </select>
+            </Field>
+          )}
 
           {activeTab === 'hero' ? (
             <div className="hp-hero">

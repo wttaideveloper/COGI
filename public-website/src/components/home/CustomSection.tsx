@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { Link } from 'react-router-dom'
 import { ButtonLink } from '@/components/ui/Button'
 import type { SiteConfig } from '@/lib/siteConfig'
@@ -27,7 +28,7 @@ export function SplitBand({ section, imageLeft, tone = 'white' }: { section: Hom
   const image = (
     <div className="relative min-h-[240px] h-full overflow-hidden md:min-h-[340px]">
       {section.imageUrl ? (
-        <img src={section.imageUrl} alt={section.imageAlt || title} className="absolute inset-0 h-full w-full object-cover" />
+        <MediaPreview src={section.imageUrl} alt={section.imageAlt || title} className="absolute inset-0 h-full w-full object-cover" />
       ) : (
         <div className="flex h-full min-h-[240px] items-center justify-center bg-mist-dark text-sm text-ink-muted md:min-h-[340px]">Photo</div>
       )}
@@ -84,7 +85,7 @@ export function CustomHomeSection({ section }: { section: HomeSection }) {
   if (kind === 'banner') {
     return (
       <section className="border-y border-mist-dark bg-white py-14 text-ink md:py-20" aria-label={title}>
-        {section.imageUrl ? <img src={section.imageUrl} alt={section.imageAlt || ''} className="mx-auto mb-8 h-56 max-w-4xl rounded-xl object-cover px-4" /> : null}
+        {section.imageUrl ? <MediaPreview src={section.imageUrl} alt={section.imageAlt || title} className="mx-auto mb-8 h-56 max-w-4xl rounded-xl object-cover px-4" /> : null}
         <div className="mx-auto max-w-4xl px-4 text-center">
           {section.eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">{section.eyebrow}</p> : null}
           <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-wide text-teal-deep md:text-5xl">{title}</h2>
@@ -123,7 +124,7 @@ export function CustomHomeSection({ section }: { section: HomeSection }) {
     return (
       <section className="bg-white py-16" aria-label={title}>
         <div className="mx-auto max-w-6xl px-4">
-          {section.imageUrl ? <img src={section.imageUrl} alt={section.imageAlt || title} className="w-full object-cover" /> : null}
+          {section.imageUrl ? <MediaPreview src={section.imageUrl} alt={section.imageAlt || title} className="w-full object-cover" /> : null}
           {body || title ? <p className="mt-4 text-center text-sm text-ink-muted">{body || title}</p> : null}
         </div>
       </section>

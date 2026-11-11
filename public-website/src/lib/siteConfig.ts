@@ -1,3 +1,6 @@
+import type { SectionAnimation } from '../../../shared/sectionAnimation'
+import { buttonHoverStyle } from '../../../shared/buttonHover'
+import type { HoverAnimation } from '../../../shared/buttonHover'
 import { fetchFromStrapi } from '@/services/strapi'
 import { defaultSiteCopy, mergeSiteCopy, siteImages, siteVideos, type SiteCopy } from '@/data/siteCopy'
 
@@ -34,6 +37,7 @@ export type SiteConfig = {
     backgroundColor: string
     textColor: string
     accentColor: string
+    buttonHoverAnimation?: HoverAnimation
     buttonHoverColor: string
     fontFamily: string
     headingFontFamily: string
@@ -94,6 +98,7 @@ export type SiteConfig = {
     missionScripture?: string
     impactStats?: Array<{ id: string; value: string; label: string; description?: string }>
     sections?: Array<{
+      animation?: SectionAnimation
       id: string
       label: string
       enabled: boolean
@@ -239,6 +244,9 @@ const defaults: SiteConfig = {
 
 export function applyTheme(theme: SiteConfig['theme'], chrome?: Pick<SiteConfig, 'header' | 'footer'>) {
   const root = document.documentElement
+  for (const [name, value] of Object.entries(buttonHoverStyle(theme.buttonHoverColor || theme.accentColor, theme.buttonHoverAnimation))) {
+    root.style.setProperty(name, value)
+  }
   root.style.setProperty('--color-teal-deep', theme.primaryColor)
   root.style.setProperty('--color-teal-mid', theme.secondaryColor)
   root.style.setProperty('--color-teal-light', theme.buttonHoverColor || theme.accentColor)

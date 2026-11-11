@@ -1,3 +1,5 @@
+import type { SectionAnimation } from '../../../shared/sectionAnimation'
+import type { HoverAnimation } from '../../../shared/buttonHover'
 export type Status = 'draft' | 'published'
 export type EnquiryStatus = 'new' | 'in_progress' | 'resolved' | 'spam'
 export type ModuleKey = 'homepage' | 'pages' | 'navigation' | 'media' | 'programs' | 'blog' | 'events' | 'stories' | 'testimonials' | 'team' | 'partners' | 'locations' | 'enquiries' | 'newsletter' | 'settings' | 'users' | 'audit' | 'theme' | 'header' | 'footer' | 'seo'
@@ -41,6 +43,7 @@ export type CustomPagePublic = {
 }
 export type HomepageBlockKind = 'built-in' | 'text' | 'split' | 'cta' | 'quote' | 'banner' | 'image'
 export interface HomepageSection {
+  animation?: SectionAnimation
   id: string
   label: string
   enabled: boolean
@@ -96,6 +99,7 @@ export interface ThemeSettings {
   backgroundColor: string
   textColor: string
   accentColor: string
+  buttonHoverAnimation?: HoverAnimation
   buttonHoverColor: string
   fontFamily: string
   headingFontFamily: string

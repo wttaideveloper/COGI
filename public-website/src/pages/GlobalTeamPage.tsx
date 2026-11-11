@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
@@ -34,7 +35,7 @@ export function GlobalTeamPage() {
                 <div className="grid gap-4 bg-mist/50 p-6 sm:grid-cols-2">
                   {group.map((member) => (
                     <Card key={member.id}>
-                      {member.imageUrl ? <img src={member.imageUrl} alt="" className="mb-3 h-16 w-16 rounded-full object-cover" /> : null}
+                      {member.imageUrl ? <MediaPreview src={member.imageUrl} alt={member.name} className="mb-3 h-16 w-16 rounded-full object-cover" /> : null}
                       <h3 className="font-semibold text-teal-deep">{member.name}</h3>
                       <p className="text-sm text-gold">{member.title}</p>
                       {member.country ? <p className="text-xs text-ink-muted">{member.country}</p> : null}

@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 
@@ -56,6 +57,7 @@ export function HeroSlider({ slides, intervalMs = 6000, className, objectPositio
         />
       ))}
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/10" />
+      {valid[active] && <MediaPreview overlay src={valid[active].imageUrl} alt={valid[active].alt || "Hero photograph"} className="absolute inset-0" />}
       {children}
       {showControls && valid.length > 1 ? (
         <div className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2" role="tablist" aria-label="Hero slides">

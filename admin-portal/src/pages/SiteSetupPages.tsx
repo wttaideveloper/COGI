@@ -1,3 +1,4 @@
+import { buttonHoverStyle } from '../../../shared/buttonHover'
 import { useEffect, useState, type ReactNode } from 'react'
 import { colorPresets, fontOptions, headingFontOptions } from '@/data/siteSetup'
 import { captureDraftSnapshot, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig, type RevertScope, type SiteConfig } from '@/services/siteConfigStore'
@@ -195,6 +196,13 @@ export function ThemePage() {
             <ColorField label="Body text" value={theme.textColor} onChange={(v) => patch('textColor', v)} />
             <ColorField label="Accent / button" value={theme.accentColor} onChange={(v) => patch('accentColor', v)} />
             <ColorField label="Button hover" value={theme.buttonHoverColor || theme.accentColor} onChange={(v) => patch('buttonHoverColor', v)} />
+            <Field label="Button hover animation">
+              <select className="admin-input" value={theme.buttonHoverAnimation || 'sweep'} onChange={e => patch('buttonHoverAnimation', e.target.value)}>
+                <option value="sweep">Sweep from left</option>
+                <option value="rise">Fill from bottom</option>
+                <option value="instant">Instant fill</option>
+              </select>
+            </Field>
           </div>
           <div className="admin-card p-5">
             <h3 className="font-bold text-[var(--color-primary)]">World map colors</h3>
@@ -254,14 +262,10 @@ export function ThemePage() {
             <p className="m-0 text-sm">Body text preview — communities of grace among healthcare professionals.</p>
             <h3 className="mt-3 mb-0 text-xl font-bold" style={{ fontFamily: theme.headingFontFamily, color: theme.secondaryColor }}>Heading preview</h3>
             {logoUrl ? <img src={logoUrl} alt="" className="mt-4 max-w-[220px] object-contain" style={{ height: logoHeight }} /> : null}
-            <span
-              className="mt-4 inline-flex rounded-lg px-3 py-2 text-sm font-bold text-white"
-              style={{ background: theme.accentColor }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = theme.buttonHoverColor || theme.accentColor }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = theme.accentColor }}
-            >
-              Button (hover me)
-            </span>
+            <button type="button" className="theme-hover-preview mt-4 rounded-lg px-3 py-2 text-sm font-bold text-white"
+              style={{ backgroundColor: theme.accentColor, ...buttonHoverStyle(theme.buttonHoverColor || theme.accentColor, theme.buttonHoverAnimation) }}>
+              Preview button
+            </button>
           </div>
         </div>
       </div>

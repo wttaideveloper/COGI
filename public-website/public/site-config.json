@@ -7,7 +7,7 @@
     "accentColor": "#5B8FB5",
     "buttonHoverColor": "#4A7FA3",
     "fontFamily": "Plus Jakarta Sans, system-ui, sans-serif",
-    "headingFontFamily": "Cormorant Garamond, Georgia, serif"
+    "headingFontFamily": "Bricolage Grotesque, system-ui, sans-serif"
   },
   "header": {
     "backgroundColor": "#FFFFFF",
@@ -156,10 +156,10 @@
   ],
   "customPages": [],
   "homepage": {
-    "heroHeadline": "Equipping Healthcare Professionals for Kingdom Engagement",
-    "heroIntro": "We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.",
-    "heroHeadlineSize": 64,
-    "heroHeadlineCase": "uppercase",
+    "heroHeadline": "A fellowship for people who care.",
+    "heroIntro": "We bring healthcare professionals together to live out their Christian faith, learn from one another, and serve their communities.",
+    "heroHeadlineSize": 96,
+    "heroHeadlineCase": "as-typed",
     "heroMedia": "video",
     "heroVideoUrl": "https://www.youtube.com/watch?v=r6bd53UB7mk",
     "heroImageUrl": "/images/cogi-hero.png",
@@ -206,6 +206,7 @@
     "sections": [
       {
         "id": "hero",
+        "animation": "editorial",
         "label": "Welcome banner",
         "enabled": true,
         "order": 1,
@@ -257,7 +258,8 @@
         "imageAlt": "Healthcare professionals in training",
         "imageSide": "right",
         "buttonLabel": "Learn more",
-        "buttonHref": "/programs"
+        "buttonHref": "/programs",
+        "animation": "rise"
       },
       {
         "id": "splitStories",
@@ -288,7 +290,8 @@
         "enabled": true,
         "order": 9,
         "summary": "Countries, people, and programs",
-        "kind": "built-in"
+        "kind": "built-in",
+        "animation": "zoom"
       },
       {
         "id": "portfolio",
@@ -312,7 +315,8 @@
         "enabled": true,
         "order": 12,
         "summary": "Story cards from the library",
-        "kind": "built-in"
+        "kind": "built-in",
+        "animation": "fade"
       },
       {
         "id": "testimonials",

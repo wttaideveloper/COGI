@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
 import { NewsletterForm } from '@/components/forms/NewsletterForm'
@@ -16,7 +17,7 @@ export function DonatePage() {
       <div className="mx-auto max-w-4xl px-4 py-16">
         <p className="mb-10 text-lg leading-relaxed text-ink">{page.intro}</p>
         <Card className="mb-10 overflow-hidden p-0">
-          {page.imageUrl ? <img src={page.imageUrl} alt="" className="h-64 w-full object-cover" /> : null}
+          {page.imageUrl ? <MediaPreview src={page.imageUrl} alt={page.heroTitle} className="h-64 w-full object-cover" /> : null}
           <div className="p-6 text-center">
             <h2 className="font-display text-2xl text-teal-deep">{page.giveTitle}</h2>
             <p className="mt-4 text-ink-muted">{page.giveBody}</p>

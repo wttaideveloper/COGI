@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { HeroSlider, type HeroSlide } from './HeroSlider'
 
@@ -63,6 +64,7 @@ export function HeroBackground({ mode, videoUrl, poster, slides, intervalMs, red
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/10" />
+      <MediaPreview overlay video src={videoUrl!} poster={poster} alt="Homepage film" className="absolute inset-0" />
       {!yt && !vimeo ? (
         <button
           type="button"

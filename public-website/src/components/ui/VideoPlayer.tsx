@@ -2,25 +2,28 @@ import { useState } from 'react'
 
 type Props = {
   src: string
+  initiallyPlaying?: boolean
   poster?: string
   title: string
   className?: string
 }
 
-function toPlayback(src: string): { kind: 'youtube' | 'file'; url: string } {
+function toPlayback(src: string): { kind: 'embed' | 'file'; url: string } {
   const youtube = src.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{6,})/)
   if (youtube?.[1]) {
-    return { kind: 'youtube', url: `https://www.youtube-nocookie.com/embed/${youtube[1]}?autoplay=1&rel=0` }
+    return { kind: 'embed', url: `https://www.youtube-nocookie.com/embed/${youtube[1]}?autoplay=1&rel=0` }
   }
+  const vimeo = src.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (vimeo) return { kind: 'embed', url: `https://player.vimeo.com/video/${vimeo[1]}?autoplay=1` }
   return { kind: 'file', url: src }
 }
 
-export function VideoPlayer({ src, poster, title, className }: Props) {
-  const [playing, setPlaying] = useState(false)
+export function VideoPlayer({ src, poster, title, className, initiallyPlaying = false }: Props) {
+  const [playing, setPlaying] = useState(initiallyPlaying)
   const playback = toPlayback(src)
 
   if (playing) {
-    if (playback.kind === 'youtube') {
+    if (playback.kind === 'embed') {
       return (
         <div className={className || 'relative aspect-video overflow-hidden bg-black'}>
           <iframe
@@ -35,7 +38,7 @@ export function VideoPlayer({ src, poster, title, className }: Props) {
     }
     return (
       <div className={className || 'relative aspect-video overflow-hidden bg-black'}>
-        <video src={playback.url} poster={poster} className="absolute inset-0 h-full w-full object-cover" controls autoPlay playsInline />
+        <video src={playback.url} poster={poster} className="absolute inset-0 h-full w-full object-contain" controls autoPlay playsInline />
       </div>
     )
   }

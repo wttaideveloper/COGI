@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { Link, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { SEO } from '@/components/ui/SEO'
@@ -61,7 +62,7 @@ function renderSection(section: PublicPageSection, index: number) {
               <h2 className="font-display text-2xl font-semibold text-teal-deep md:text-3xl">{section.title}</h2>
               <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-ink-muted">{section.content}</p>
             </div>
-            {section.imageUrl ? <img src={section.imageUrl} alt={section.title} className="aspect-video w-full rounded-xl object-cover shadow-md" /> : null}
+            {section.imageUrl ? <MediaPreview src={section.imageUrl} alt={section.title} className="aspect-video w-full rounded-xl object-cover shadow-md" /> : null}
           </div>
         </section>
       )
@@ -97,7 +98,7 @@ function renderSection(section: PublicPageSection, index: number) {
       return (
         <section key={section.id} className="py-16">
           <div className="mx-auto max-w-4xl px-4">
-            {section.imageUrl ? <img src={section.imageUrl} alt={section.title} className="w-full rounded-xl object-cover shadow-md" /> : null}
+            {section.imageUrl ? <MediaPreview src={section.imageUrl} alt={section.title} className="w-full rounded-xl object-cover shadow-md" /> : null}
             {section.title ? <h2 className="mt-6 font-display text-2xl text-teal-deep">{section.title}</h2> : null}
             {section.content ? <p className="mt-2 text-ink-muted">{section.content}</p> : null}
           </div>

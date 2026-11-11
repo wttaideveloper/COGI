@@ -1,3 +1,4 @@
+import { HomeBackdrop } from '@/components/home/HomeBackdrop'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -14,17 +15,17 @@ import { NewsletterForm } from '@/components/forms/NewsletterForm'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { formatDate } from '@/lib/utils'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
-import { HeroBackground } from '@/components/home/HeroBackground'
 import { WhereWeServeSection } from '@/components/home/WhereWeServeSection'
 import { CustomHomeSection, SplitBand, isCustomHomeSection, isSplitHomeSection } from '@/components/home/CustomSection'
 import { TestimonialCarousel } from '@/components/home/TestimonialCarousel'
-import { siteImages, siteVideos } from '@/data/siteCopy'
-import { VideoPlayer } from '@/components/ui/VideoPlayer'
+import { siteImages } from '@/data/siteCopy'
+import { MediaPreview } from '@/components/ui/MediaPreview'
 
 const methodImages = [siteImages.enable, siteImages.train, siteImages.support]
 const portfolioImages = [siteImages.historicGathering, siteImages.clinic, siteImages.careHands, siteImages.hope]
 
 export function HomePage() {
+
   const reduced = useReducedMotion()
   const site = useSiteConfig()
   const [searchParams] = useSearchParams()
@@ -65,33 +66,17 @@ export function HomePage() {
   const copy = site.copy.homepage
   const matchedStories = stories?.filter((s) => homepage.storiesTeaser.featuredStoryIds.includes(s.id)) ?? []
   const featuredStories = (matchedStories.length ? matchedStories : stories?.slice(0, 2) ?? []).slice(0, 2)
+  const heroPhoto = site.homepage.heroSlides?.find(slide => slide.imageUrl)
   const heroHeadline = site.homepage.heroHeadline || homepage.hero.headline
   const heroIntro = site.homepage.heroIntro || homepage.hero.intro
-  const heroImageUrl = site.homepage.heroImageUrl || site.homepage.heroSlides?.[0]?.imageUrl
-  const heroImageAlt = site.homepage.heroImageAlt || homepage.hero.imageAlt
   const heroHeadlineSize = site.homepage.heroHeadlineSize || 64
   const heroHeadlineCase = site.homepage.heroHeadlineCase || 'uppercase'
-  const heroVideoUrl = site.homepage.heroVideoUrl || siteVideos.intro
-  const heroMedia = site.homepage.heroMedia === 'images' ? 'images' : 'video'
-  const heroSlideDuration = site.homepage.heroSlideDuration || 6
   const primaryCtaLabel = site.homepage.primaryCtaLabel || homepage.hero.primaryCta.label
   const primaryCtaHref = site.homepage.primaryCtaHref || homepage.hero.primaryCta.href
   const missionTitle = site.homepage.missionTitle || homepage.mission.title
   const missionStatement = site.homepage.missionStatement || homepage.mission.statement
   const missionScripture = site.homepage.missionScripture || homepage.mission.scripture
-  const heroSlides = (site.homepage.heroSlides?.length
-    ? site.homepage.heroSlides
-    : heroImageUrl
-      ? [{ id: 'hero', imageUrl: heroImageUrl, alt: heroImageAlt }]
-      : []
-  ).filter((slide) => Boolean(slide.imageUrl))
   const impactStats = site.homepage.impactStats?.length ? site.homepage.impactStats : homepage.impactStats
-  const sectionEnabled = (id: string): boolean => {
-    const list = site.homepage.sections
-    if (!list?.length) return true
-    const found = list.find((s) => s.id === id)
-    return found ? found.enabled : true
-  }
   const orderedSections = [...(site.homepage.sections?.length ? site.homepage.sections : [
     { id: 'hero', label: 'Hero', enabled: true, order: 1, summary: '' },
     { id: 'newsletterBanner', label: 'Gold banner', enabled: true, order: 2, summary: '' },
@@ -113,14 +98,10 @@ export function HomePage() {
   ])]
     .sort((a, b) => a.order - b.order)
     .filter((section) => section.enabled !== false)
-    .filter((section) => !(section.id === 'video' && sectionEnabled('legacy')))
-
-  const fadeUp = reduced
-    ? { initial: false as const }
-    : { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } }
+    .filter((section) => section.id !== 'video')
 
   return (
-    <>
+    <div className="home-experience">
       <SEO description={heroIntro} />
       {orderedSections.map((section) => {
         if (isCustomHomeSection(section)) return <CustomHomeSection key={section.id} section={section} />
@@ -134,28 +115,24 @@ export function HomePage() {
           )
         }
         if (section.id === 'hero') return (
-      <section key="hero" className="relative min-h-[68vh] overflow-hidden md:min-h-[72vh]" aria-label="Welcome">
-        <HeroBackground
-          mode={heroMedia}
-          videoUrl={heroVideoUrl}
-          poster={heroImageUrl}
-          slides={heroSlides}
-          intervalMs={heroSlideDuration * 1000}
-          reduced={reduced}
-        />
-        <div className="relative z-10 mx-auto flex min-h-[68vh] max-w-6xl flex-col justify-end px-4 pb-14 pt-20 md:min-h-[72vh] md:pb-16 md:pt-24">
-          <motion.div {...(reduced ? {} : { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8 } })}>
+      <section key="hero" className="home-scroll-scene" data-entrance={'animation' in section ? section.animation : undefined} aria-label="Welcome">
+        <div className="home-scroll-stage">
+        <div className="home-scene-backdrop" aria-hidden="true" />
+        <HomeBackdrop />
+        <div className="home-scroll-layout">
+          <div className="home-scroll-copy">
+          <div>
             <h1
               className="max-w-5xl font-display font-bold leading-[0.95] tracking-wide text-white"
               style={{
-                fontSize: `clamp(1.85rem, 4.6vw, ${heroHeadlineSize}px)`,
+                fontSize: `clamp(2.9rem, 6.5vw, ${heroHeadlineSize}px)`,
                 textTransform: heroHeadlineCase === 'lowercase' ? 'lowercase' : heroHeadlineCase === 'as-typed' ? 'none' : 'uppercase',
               }}
             >
               {heroHeadline}
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-relaxed text-white/90 md:text-xl">{heroIntro}</p>
-            <div className="mt-8 flex flex-wrap items-center gap-6">
+            <div className="pointer-events-auto mt-8 flex w-fit flex-wrap items-center gap-6">
               <ButtonLink to={primaryCtaHref} size="lg" className="rounded-sm uppercase tracking-[0.22em]">
                 {primaryCtaLabel}
               </ButtonLink>
@@ -165,12 +142,18 @@ export function HomePage() {
                 </Link>
               ) : null}
             </div>
-          </motion.div>
+          </div>
+          </div>
+          <div className="hero-photograph">
+            <MediaPreview src={heroPhoto?.imageUrl || site.homepage.heroImageUrl || siteImages.historicGathering}
+              alt={heroPhoto?.alt || site.homepage.heroImageAlt || 'Fellowship gathering'} className="h-full w-full" />
+          </div>
+        </div>
         </div>
       </section>
         )
         if (section.id === 'newsletterBanner') return (
-      <section key="newsletterBanner" className="border-y border-mist-dark bg-white py-16 text-teal-deep">
+      <section key="newsletterBanner" className="home-dispatch border-y border-mist-dark bg-white py-16 text-teal-deep">
         <div className="mx-auto grid max-w-5xl gap-10 px-4 md:grid-cols-2 md:items-center">
           <div className="text-center md:text-left">
             <p className="text-xs font-bold uppercase tracking-[0.28em]">{copy.eyebrow}</p>
@@ -187,37 +170,22 @@ export function HomePage() {
         </div>
       </section>
         )
-        if (section.id === 'legacy' || section.id === 'video') return (
-      <section key="legacy-video" className="border-y border-mist-dark bg-white py-14 md:py-20">
+        if (section.id === 'legacy') return (
+      <section key="legacy" className="border-y border-mist-dark bg-white py-14 md:py-20">
         <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-ink">
-          {sectionEnabled('legacy') && (
-            <>
               <h2 className="font-display text-4xl font-bold uppercase tracking-wide text-teal-deep md:text-6xl">{copy.legacyTitle}</h2>
               <p className="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-ink-muted">{copy.legacyBody}</p>
-            </>
-          )}
-          {sectionEnabled('video') && (
-            <div className="mx-auto mt-12 max-w-4xl">
-              <p className="mb-6 font-display text-xl italic text-gold">{copy.videoDescription}</p>
-              <VideoPlayer
-                src={homepage.video.videoUrl && homepage.video.videoUrl !== '/videos/intro.mp4' ? homepage.video.videoUrl : (copy.videoUrl || siteVideos.intro)}
-                poster={copy.videoImageUrl}
-                title={copy.videoTitle}
-                className="relative aspect-video overflow-hidden border border-mist-dark bg-white shadow-sm"
-              />
-            </div>
-          )}
         </div>
       </section>
         )
         if (section.id === 'mission') return (
       <section key="mission" className="bg-white py-14 md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <motion.div {...fadeUp}>
+          <div>
             <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">{missionTitle}</p>
             <p className="mt-6 font-display text-2xl leading-relaxed text-ink md:text-3xl">{missionStatement}</p>
             <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-teal-deep">{missionScripture}</p>
-          </motion.div>
+          </div>
         </div>
       </section>
         )
@@ -230,21 +198,21 @@ export function HomePage() {
           </h2>
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {homepage.methods.map((method, i) => (
-              <motion.div key={method.id} {...fadeUp} className="overflow-hidden rounded-xl border border-mist-dark bg-white">
-                <img src={methodImages[i] || siteImages.missionField} alt="" className="h-52 w-full object-cover" />
+              <div key={method.id} className="overflow-hidden rounded-xl border border-mist-dark bg-white">
+                <MediaPreview src={methodImages[i] || siteImages.missionField} alt={method.title} className="h-52 w-full object-cover" />
                 <div className="p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold">{method.title}</p>
                   <h3 className="mt-2 font-display text-3xl text-teal-deep">{method.subtitle}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ink-muted">{method.description}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
         )
         if (section.id === 'impact') return (
-      <section key="impact" className="border-y border-mist-dark bg-white py-20 text-ink">
+      <section key="impact" className="home-impact border-y border-mist-dark bg-white py-20 text-ink">
         <div className="mx-auto max-w-6xl px-4 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">{copy.impactTitle}</p>
           <p className="mx-auto mt-5 max-w-3xl text-lg text-ink-muted">{copy.impactIntro}</p>
@@ -266,14 +234,14 @@ export function HomePage() {
           <SectionHeading title={copy.portfolioTitle} subtitle={copy.portfolioSubtitle} />
           <div className="grid gap-6 md:grid-cols-2">
             {homepage.portfolio.map((area, i) => (
-              <Link key={area.id} to={`/programs/${area.programSlug}`} className="group overflow-hidden rounded-xl border border-mist-dark bg-white">
-                <img src={portfolioImages[i] || siteImages.clinic} alt="" className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <article key={area.id} className="group overflow-hidden rounded-xl border border-mist-dark bg-white">
+                <MediaPreview src={portfolioImages[i] || siteImages.clinic} alt={area.title} className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="p-6">
                   <h3 className="font-display text-3xl text-teal-deep group-hover:text-gold">{area.title}</h3>
                   <p className="mt-3 max-w-xl text-sm text-ink-muted">{area.summary}</p>
-                  <span className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-gold">Learn more</span>
+                  <Link to={`/programs/${area.programSlug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-gold">Learn more</Link>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         </div>
@@ -302,9 +270,9 @@ export function HomePage() {
             {featuredStories.map((story) => (
               <article key={story.id} className="overflow-hidden">
                 {story.type === 'video' && story.videoUrl ? (
-                  <VideoPlayer src={story.videoUrl} poster={story.imageUrl} title={story.title} className="relative h-72 w-full overflow-hidden bg-black" />
+                  <MediaPreview video src={story.videoUrl} poster={story.imageUrl} alt={story.title} className="relative h-72 w-full overflow-hidden bg-black" />
                 ) : story.imageUrl ? (
-                  <img src={story.imageUrl} alt="" className="h-72 w-full object-cover" />
+                  <MediaPreview src={story.imageUrl} alt={story.title} className="h-72 w-full object-cover" />
                 ) : null}
                 <div className="pt-5">
                   <span className="text-xs font-bold uppercase tracking-[0.18em] text-gold">{story.country} · {story.program}</span>
@@ -337,7 +305,7 @@ export function HomePage() {
         <section key="events" className="border-y border-mist-dark bg-white py-20 text-ink">
           <div className="mx-auto max-w-4xl px-4 text-center">
             {siteImages.historicGathering ? (
-              <img src={siteImages.historicGathering} alt="" className="mb-8 h-56 w-full rounded-xl object-cover" />
+              <MediaPreview src={siteImages.historicGathering} alt={featuredEvent.title} className="mb-8 h-56 w-full rounded-xl object-cover" />
             ) : null}
             <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">Featured Event</p>
             <h2 className="mt-3 font-display text-4xl font-bold text-teal-deep">{featuredEvent.title}</h2>
@@ -359,7 +327,7 @@ export function HomePage() {
       <section key="donate" className="border-y border-mist-dark bg-white py-14 text-ink md:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
           {siteImages.give ? (
-            <img src={siteImages.give} alt="" className="mb-8 h-52 w-full rounded-xl object-cover" />
+            <MediaPreview src={siteImages.give} alt={homepage.donateCta.title} className="mb-8 h-52 w-full rounded-xl object-cover" />
           ) : null}
           <h2 className="font-display text-4xl uppercase tracking-wide text-teal-deep md:text-5xl">{homepage.donateCta.title}</h2>
           <p className="mt-5 text-lg text-ink-muted">{homepage.donateCta.description}</p>
@@ -379,7 +347,22 @@ export function HomePage() {
       </section>
         )
         return null
+      }).map((content, index) => {
+        if (!content) return null
+        const section = orderedSections[index]
+        const effect = 'animation' in section ? section.animation : 'none'
+        if (reduced || !effect || effect === 'none' || effect === 'editorial') return <div key={section.id}>{content}</div>
+        return (
+          <motion.div key={section.id}
+            initial={{ opacity: 0, y: effect === 'rise' ? 28 : 0, scale: effect === 'zoom' ? 0.96 : 1 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, amount: 'some' }}
+            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {content}
+          </motion.div>
+        )
       })}
-    </>
+    </div>
   )
 }

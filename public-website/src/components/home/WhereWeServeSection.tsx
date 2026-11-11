@@ -1,7 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import type { Location } from '@/types'
-import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { resolveMapPalette } from '@/lib/mapColors'
 import { WorldMap } from '@/components/home/WorldMap'
@@ -15,7 +13,6 @@ type Props = {
 }
 
 export function WhereWeServeSection({ locations, activeCountry, onSelect, title, subtitle }: Props) {
-  const reduced = useReducedMotion()
   const site = useSiteConfig()
   const palette = resolveMapPalette(site.homepage)
   const keepRef = useRef<HTMLDivElement>(null)
@@ -38,31 +35,10 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
     }))
     .filter((group) => group.items.length)
 
-  const fade = reduced
-    ? {}
-    : {
-        initial: 'hidden' as const,
-        whileInView: 'show' as const,
-        viewport: { once: true, amount: 0.2 },
-        variants: {
-          hidden: {},
-          show: { transition: { staggerChildren: 0.16, delayChildren: 0.05 } },
-        },
-      }
-
-  const item = reduced
-    ? {}
-    : {
-        variants: {
-          hidden: { opacity: 0, y: 14 },
-          show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
-        },
-      }
-
   return (
     <section id="map" className="scroll-mt-28 bg-white py-14 md:py-20">
-      <motion.div className="mx-auto max-w-7xl px-4" {...fade}>
-        <motion.div className="mx-auto max-w-3xl text-center" {...item}>
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-3xl text-center">
           <div className="flex items-center justify-center gap-4">
             <span className="h-px w-8 bg-gold/40 sm:w-14" aria-hidden="true" />
             <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-gold">Where we serve</p>
@@ -74,14 +50,14 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
           <p className="mx-auto mt-5 max-w-3xl text-pretty text-base leading-relaxed text-ink-muted md:text-lg">
             {subtitle}
           </p>
-        </motion.div>
+        </div>
 
         <div ref={keepRef}>
-        <motion.div className="mt-10 md:mt-12" {...item}>
+        <div className="mt-10 md:mt-12">
           <WorldMap locations={locations} activeCountry={activeCountry} onSelect={onSelect} />
-        </motion.div>
+        </div>
 
-        <motion.div className="mt-8 grid gap-8 sm:grid-cols-2 md:mt-10" {...item}>
+        <div className="mt-8 grid gap-8 sm:grid-cols-2 md:mt-10">
           {locationGroups.map((group) => (
             <div key={group.region}>
               <div className="mb-3.5 flex items-center gap-3">
@@ -121,9 +97,9 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
               </div>
             </div>
           ))}
-        </motion.div>
         </div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   )
 }

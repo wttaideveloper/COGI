@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { clsx } from 'clsx'
 import { ButtonLink } from '@/components/ui/Button'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
@@ -91,19 +91,31 @@ export function mergeCustomPageNav(items: SiteNavItem[], pages: PublicCustomPage
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   clsx(
     'rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em]',
-    isActive ? 'text-current' : 'text-current',
+    isActive ? 'bg-mist-dark text-current' : 'text-current hover:bg-mist-dark',
   )
 
 export function Header() {
   const { header, headerNav, customPages } = useSiteConfig()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
-  const items = mergeCustomPageNav(
+  const toggle = useRef<HTMLButtonElement>(null)
+  const configuredItems = mergeCustomPageNav(
     (headerNav.length ? headerNav : fallbackNav).filter((item) => item.visible !== false),
     customPages,
     'header',
   )
-  const sticky = header.sticky !== false
+  const items = [{ id: 'site-home', label: 'Home', href: '/' }, ...configuredItems.filter(item => resolveNavHref(item) !== '/')]
+  const { pathname, key } = useLocation()
+  useEffect(() => { setMobileOpen(false); setOpenId(null) }, [key])
+  useEffect(() => {
+    if (!mobileOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setMobileOpen(false); toggle.current?.focus() }
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [mobileOpen])
+  const sticky = pathname === '/' || header.sticky !== false
   const light = isLightColor(header.backgroundColor || '#FFFFFF')
 
   return (
@@ -137,30 +149,33 @@ export function Header() {
               return (
                 <div
                   key={item.id}
-                  className="relative"
+                  className="relative flex items-center"
+                  onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpenId(null) }}
+                  onKeyDown={event => {
+                    if (event.key === 'Escape') { setOpenId(null); event.currentTarget.querySelector('button')?.focus() }
+                  }}
                   onMouseEnter={() => setOpenId(item.id)}
                   onMouseLeave={() => setOpenId(null)}
                 >
                   <NavLink
                     to={href}
                     className="flex items-center gap-1 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-current"
-                    aria-expanded={open}
-                    aria-haspopup="true"
                     onClick={() => setOpenId(null)}
                   >
                     {item.label}
+                  </NavLink>
+                  <button type="button" className="nav-disclosure p-1" aria-label={`Show ${item.label} links`} aria-expanded={open} onClick={() => setOpenId(open ? null : item.id)}>
                     <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
                       <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" fill="none" />
                     </svg>
-                  </NavLink>
+                  </button>
                   {open ? (
-                    <ul className="absolute left-0 top-full min-w-[200px] rounded-lg border border-mist-dark bg-white py-2 shadow-lg" role="menu">
+                    <ul className="absolute left-0 top-full min-w-[200px] rounded-lg border border-mist-dark bg-white py-2 shadow-lg">
                       {children.map((child) => (
-                        <li key={child.id} role="none">
+                        <li key={child.id}>
                           <NavLink
                             to={resolveNavHref(child)}
                             className="block px-4 py-2 text-sm text-ink hover:bg-mist"
-                            role="menuitem"
                             onClick={() => setOpenId(null)}
                           >
                             {child.label}
@@ -200,6 +215,7 @@ export function Header() {
           className="shrink-0 rounded-md p-2 text-current lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-expanded={mobileOpen}
+          ref={toggle}
           aria-controls="mobile-menu"
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
         >
@@ -230,6 +246,7 @@ export function Header() {
                 ))}
               </li>
             ))}
+            <li><NavLink to="/search" className={navLinkClass}>Search</NavLink></li>
             <li className="pt-2">
               <ButtonLink
                 to={header.ctaLink || '/donate'}

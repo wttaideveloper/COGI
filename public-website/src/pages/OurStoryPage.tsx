@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { motion } from 'framer-motion'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero } from '@/components/ui/Card'
@@ -36,7 +37,7 @@ export function OurStoryPage() {
       <div className="mx-auto max-w-3xl px-4 py-16">
         <p className="mb-12 text-lg leading-relaxed text-ink">{story.intro}</p>
         {story.imageUrl ? (
-          <img src={story.imageUrl} alt="" className="mb-12 h-72 w-full rounded-xl object-cover shadow-lg" />
+          <MediaPreview src={story.imageUrl} alt={story.heroTitle} className="mb-12 h-72 w-full rounded-xl object-cover shadow-lg" />
         ) : null}
         <div className="relative border-l-2 border-gold pl-8">
           {story.milestones.map((milestone, i) => (

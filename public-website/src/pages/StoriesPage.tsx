@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -5,7 +6,6 @@ import { getStories } from '@/api/stories'
 import { getPrograms } from '@/api/programs'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
-import { VideoPlayer } from '@/components/ui/VideoPlayer'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function StoriesPage() {
@@ -48,9 +48,9 @@ export function StoriesPage() {
           {filtered?.map((story) => (
             <Card key={story.id} as="article" className="overflow-hidden p-0">
               {story.type === 'video' && story.videoUrl ? (
-                <VideoPlayer src={story.videoUrl} poster={story.imageUrl} title={story.title} className="relative h-56 w-full overflow-hidden bg-black" />
+                <MediaPreview video src={story.videoUrl} poster={story.imageUrl} alt={story.title} className="relative h-56 w-full overflow-hidden bg-black" />
               ) : story.imageUrl ? (
-                <img src={story.imageUrl} alt="" className="h-56 w-full object-cover" />
+                <MediaPreview src={story.imageUrl} alt={story.title} className="h-56 w-full object-cover" />
               ) : null}
               <div className="p-6">
               <div className="flex items-center gap-2">

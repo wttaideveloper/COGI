@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
@@ -30,10 +31,10 @@ export function BoardPage() {
         {members.length ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {members.map((member) => (
-              <button key={member.id} type="button" onClick={() => setSelectedId(member.id)} className="text-left">
+              <div key={member.id} className="text-left">
                 <Card className="h-full transition-shadow hover:shadow-md hover:border-gold/40">
                   {member.imageUrl ? (
-                    <img src={member.imageUrl} alt="" className="mb-4 h-20 w-20 rounded-full object-cover" />
+                    <MediaPreview src={member.imageUrl} alt={member.name} className="mb-4 h-20 w-20 rounded-full object-cover" />
                   ) : (
                     <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-mist-dark bg-white text-2xl font-display font-bold text-gold">
                       {initials(member.name) || '—'}
@@ -43,9 +44,9 @@ export function BoardPage() {
                   <p className="text-sm font-semibold text-gold">{member.title}</p>
                   {member.country ? <p className="mt-1 text-sm text-ink-muted">{member.country}</p> : null}
                   <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm text-ink-muted">{stripHtml(member.bio)}</p>
-                  <span className="mt-4 inline-block text-sm font-semibold text-teal-mid">Read full bio →</span>
+                  <button type="button" onClick={() => setSelectedId(member.id)} className="mt-4 inline-block text-sm font-semibold text-teal-mid">Read full bio →</button>
                 </Card>
-              </button>
+              </div>
             ))}
           </div>
         ) : (

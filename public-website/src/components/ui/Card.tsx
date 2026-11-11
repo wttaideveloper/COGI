@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { cn } from '@/lib/utils'
 
 interface CardProps {
@@ -8,7 +9,7 @@ interface CardProps {
 
 export function Card({ children, className, as: Tag = 'div' }: CardProps) {
   return (
-    <Tag className={cn('rounded-xl border border-mist-dark bg-white/80 shadow-sm backdrop-blur-sm', className?.includes('p-0') || className?.includes('!p-0') ? '' : 'p-6', className)}>
+    <Tag className={cn('site-depth-card rounded-xl border border-mist-dark bg-white/80 shadow-sm backdrop-blur-sm', className?.includes('p-0') || className?.includes('!p-0') ? '' : 'p-6', className)}>
       {children}
     </Tag>
   )
@@ -66,12 +67,12 @@ export function SectionHeading({
 
 export function PageHero({ title, subtitle, imageUrl }: { title: string; subtitle?: string; imageUrl?: string }) {
   return (
-    <section className="border-b border-mist-dark bg-white py-16 text-teal-deep md:py-20">
+    <section className="page-intro border-b border-mist-dark bg-white py-16 text-teal-deep md:py-20">
       <div className="mx-auto max-w-4xl px-4 text-center">
         <h1 id="page-heading" className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
         {subtitle && <p className="mt-4 text-lg text-ink-muted">{subtitle}</p>}
         {imageUrl ? (
-          <img src={imageUrl} alt="" className="mt-10 h-52 w-full rounded-xl object-cover md:h-64" />
+          <MediaPreview src={imageUrl} alt={title} className="mt-10 h-52 w-full rounded-xl object-cover md:h-64" />
         ) : null}
       </div>
     </section>

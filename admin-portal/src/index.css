@@ -1876,3 +1876,19 @@
     display: none;
   }
 }
+
+.theme-hover-preview {
+  background-image: linear-gradient(var(--button-fill), var(--button-fill));
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  background-size: var(--button-fill-start);
+  transition: background-size var(--button-fill-duration) cubic-bezier(.18,.8,.28,1), color var(--button-fill-duration) ease;
+}
+.theme-hover-preview:is(:hover, :focus-visible) {
+  background-size: 100% 100%;
+  color: var(--button-fill-ink);
+  box-shadow: inset 0 0 0 1px var(--button-fill);
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-hover-preview { transition: none; }
+}

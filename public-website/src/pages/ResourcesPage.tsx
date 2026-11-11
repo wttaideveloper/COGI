@@ -1,3 +1,4 @@
+import { MediaPreview } from '@/components/ui/MediaPreview'
 import { Link } from 'react-router-dom'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
@@ -30,16 +31,16 @@ export function ResourcesPage() {
       <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl || page.cards[0]?.imageUrl} />
       <div className="mx-auto max-w-5xl px-4 py-16 grid gap-6 md:grid-cols-3 md:items-stretch">
         {page.cards.map((r) => (
-          <Link key={r.href || r.title} to={resourceHref(r.title, r.href)} className="flex min-h-full">
+          <div key={r.href || r.title} className="flex min-h-full">
             <Card className="flex h-full w-full min-h-[22rem] flex-col overflow-hidden !p-0 transition-shadow hover:border-gold/50 hover:shadow-md">
-              {r.imageUrl ? <img src={r.imageUrl} alt="" className="h-40 w-full shrink-0 object-cover" /> : <div className="h-40 w-full shrink-0 bg-mist" />}
-              <div className="flex flex-1 flex-col p-6">
+              {r.imageUrl ? <MediaPreview src={r.imageUrl} alt={r.title} className="h-40 w-full shrink-0 object-cover" /> : <div className="h-40 w-full shrink-0 bg-mist" />}
+              <Link to={resourceHref(r.title, r.href)} className="flex flex-1 flex-col p-6">
                 <h2 className="font-display text-xl text-teal-deep">{r.title}</h2>
                 <p className="mt-3 flex-1 text-ink-muted">{r.body}</p>
                 <span className="mt-auto pt-4 inline-block text-sm font-semibold text-teal-mid">Explore →</span>
-              </div>
+              </Link>
             </Card>
-          </Link>
+          </div>
         ))}
       </div>
     </>
