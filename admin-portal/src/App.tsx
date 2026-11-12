@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import RequireAuth from '@/components/RequireAuth'
 import AdminLayout from '@/layouts/AdminLayout'
 import { AuditPage, DashboardPage, EnquiriesPage, ForgotPasswordPage, GenericContentPage, LoginPage, NavigationPage, NewsletterPage, ProfilePage, ResetPasswordPage, SettingsPage } from '@/pages/AdminPages'
+import LegalPagesEditor from '@/pages/LegalPagesEditor'
 import UsersPage from '@/pages/UsersPage'
 import HomepagePage from '@/pages/HomepageManagerPage'
 import MediaLibraryPage from '@/pages/MediaLibraryPage'
@@ -10,7 +11,7 @@ import { FooterEditorPage, HeaderEditorPage, SeoEditorPage, ThemePage } from '@/
 import WebsiteCopyPage from '@/pages/WebsiteCopyPage'
 import type { ModuleKey } from '@/types'
 
-const crudModules: ModuleKey[] = ['programs', 'blog', 'events', 'stories', 'testimonials', 'team', 'partners', 'locations']
+const crudModules: ModuleKey[] = ['programs', 'blog', 'events', 'stories', 'testimonials', 'partners', 'locations']
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="header" element={<HeaderEditorPage />} />
           <Route path="footer" element={<FooterEditorPage />} />
           <Route path="homepage" element={<HomepagePage />} />
+          <Route path="team/*" element={<Navigate to="/website-copy?tab=board" replace />} />
           <Route path="website-copy" element={<WebsiteCopyPage />} />
           <Route path="media" element={<MediaLibraryPage />} />
           <Route path="navigation" element={<NavigationPage />} />
@@ -36,6 +38,7 @@ export default function App() {
           {crudModules.map((key) => <Route key={`${key}-edit`} path={`${key}/:id`} element={<GenericContentPage moduleKey={key} />} />)}
           <Route path="enquiries" element={<EnquiriesPage />} />
           <Route path="newsletter" element={<NewsletterPage />} />
+          <Route path="legal" element={<LegalPagesEditor />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="audit" element={<AuditPage />} />

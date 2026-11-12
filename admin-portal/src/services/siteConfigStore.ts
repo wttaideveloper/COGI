@@ -6,6 +6,9 @@ import { defaultSiteCopy, mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiPublishSingle, apiSingle, apiUpdateSingle, getJwt, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 
 export type SiteConfig = {
+  legalPages?: Array<{ slug: string; title: string; content: string; lastUpdated: string }>
+  content?: Record<string, Record<string, unknown>[]>
+  globalSettings?: Record<string, unknown>
   theme: ThemeSettings
   header: HeaderSettings
   footer: FooterSettings
@@ -76,8 +79,8 @@ function mergeConfig(partial: Partial<SiteConfig>): SiteConfig {
       ...partial.homepage,
       sections: ensureBuiltinSections(partial.homepage?.sections ?? base.homepage.sections),
     },
-    headerNav: partial.headerNav?.length ? partial.headerNav : base.headerNav,
-    footerNav: partial.footerNav?.length ? partial.footerNav : base.footerNav,
+    headerNav: Array.isArray(partial.headerNav) ? partial.headerNav : base.headerNav,
+    footerNav: Array.isArray(partial.footerNav) ? partial.footerNav : base.footerNav,
     customPages: Array.isArray(partial.customPages) ? partial.customPages : (base.customPages || []),
     copy: mergeSiteCopy(partial.copy),
     updatedAt: partial.updatedAt || base.updatedAt,
@@ -135,15 +138,13 @@ async function fetchPublishedFromPublicFile(): Promise<SiteConfig | null> {
 }
 
 export async function resolvePublishedSiteConfig(): Promise<SiteConfig | null> {
-  const fromStrapi = await fetchPublishedFromStrapi()
-  if (fromStrapi) {
-    rememberPublishedSiteConfig(fromStrapi)
-    return fromStrapi
-  }
-  const fromFile = await fetchPublishedFromPublicFile()
-  if (fromFile) {
-    rememberPublishedSiteConfig(fromFile)
-    return fromFile
+  const [fromStrapi, fromFile] = await Promise.all([fetchPublishedFromStrapi(), fetchPublishedFromPublicFile()])
+  const published = fromStrapi && fromFile
+    ? (localIsNewer(fromFile, fromStrapi) ? fromFile : fromStrapi)
+    : fromStrapi || fromFile
+  if (published) {
+    rememberPublishedSiteConfig(published)
+    return published
   }
   return loadPublishedSiteConfig()
 }
@@ -231,12 +232,14 @@ export function notifyPublished() {
 async function writePublicFile(config: SiteConfig) {
   try {
     const token = getJwt()
-    await fetch('/__site-config', {
+    const response = await fetch('/__site-config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       body: JSON.stringify(config),
     })
-  } catch {
+    if (!response.ok) throw new Error('Could not publish the website configuration. Please try again.')
+  } catch (error) {
+    if (isDemoMode()) throw error
     // Cache write is best-effort — Strapi remains the source of truth.
   }
 }
@@ -329,14 +332,20 @@ function localIsNewer(local: SiteConfig, incoming: SiteConfig) {
 
 export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
   const local = loadSiteConfig()
-  if (isDemoMode()) return local
+  const published = await resolvePublishedSiteConfig()
+  const latest = published && !localIsNewer(local, published) ? published : local
+  if (isDemoMode()) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(latest))
+    return latest
+  }
   try {
     const record = await apiSingle<{ payload?: Partial<SiteConfig> }>('/site-config', { status: 'draft' })
     if (record?.payload && typeof record.payload === 'object') {
       const merged = mergeConfig(record.payload)
-      if (localIsNewer(local, merged)) {
+      if (localIsNewer(latest, merged)) {
         void resolvePublishedSiteConfig()
-        return local
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(latest))
+        return latest
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
       void resolvePublishedSiteConfig()
@@ -347,9 +356,10 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
       const record = await apiSingle<{ payload?: Partial<SiteConfig> }>('/site-config')
       if (record?.payload && typeof record.payload === 'object') {
         const merged = mergeConfig(record.payload)
-        if (localIsNewer(local, merged)) {
+        if (localIsNewer(latest, merged)) {
           void resolvePublishedSiteConfig()
-          return local
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(latest))
+          return latest
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(merged))
         void resolvePublishedSiteConfig()
@@ -360,7 +370,8 @@ export async function hydrateSiteConfigFromStrapi(): Promise<SiteConfig> {
     }
   }
   void resolvePublishedSiteConfig()
-  return local
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(latest))
+  return latest
 }
 
 const SNAPSHOT_PREFIX = 'cogi_draft_snapshot_'
@@ -430,6 +441,16 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
   rememberPublishedSiteConfig(next)
   notifyPublished()
   return next
+}
+
+// Collection publishing must not publish unrelated unsaved page drafts.
+export async function publishLocalContent(patch: Pick<SiteConfig, 'content' | 'globalSettings'>) {
+  const published = await resolvePublishedSiteConfig() || defaultSiteConfig()
+  const next = mergeConfig({ ...published, ...patch, updatedAt: new Date().toISOString() })
+  await writePublicFile(next)
+  rememberPublishedSiteConfig(next)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...loadSiteConfig(), ...patch }))
+  notifyPublished()
 }
 
 function pageHref(page: CustomPagePublic) {

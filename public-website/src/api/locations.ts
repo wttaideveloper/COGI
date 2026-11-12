@@ -21,5 +21,5 @@ export async function getLocations(): Promise<Location[]> {
       lng: l.lng ?? l.longitude ?? fallback?.lng,
     }
   })
-  return rows.length ? rows : fallbackLocations
+  return rows
 }

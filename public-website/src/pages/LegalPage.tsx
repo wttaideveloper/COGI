@@ -1,3 +1,4 @@
+import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { useLocation } from 'react-router-dom'
 import { getLegalPage } from '@/api/search'
 import { SEO } from '@/components/ui/SEO'
@@ -6,7 +7,9 @@ import { PageHero, ErrorState } from '@/components/ui/Card'
 export function LegalPage() {
   const { pathname } = useLocation()
   const slug = pathname.replace(/^\//, '')
-  const page = getLegalPage(slug)
+  const { legalPages } = useSiteConfig()
+  const fallback = getLegalPage(slug)
+  const page = legalPages?.find(page => page.slug === (fallback?.slug || slug)) || fallback
 
   if (!page) {
     return (

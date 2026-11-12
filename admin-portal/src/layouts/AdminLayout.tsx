@@ -61,7 +61,8 @@ const groups: Array<{ label: string; items: NavItem[] }> = [
     items: [
       { label: 'Homepage', to: '/homepage', hint: 'Welcome banner and homepage blocks' },
       { label: 'Site pages', to: '/website-copy', hint: 'About, Donate, Contact, and more' },
-      { label: 'Custom pages', to: '/pages', hint: 'Extra pages that are not in the main site' },
+      { label: 'Legal pages', to: '/legal', hint: 'Privacy, terms, cookies, accessibility' },
+        { label: 'Custom pages', to: '/pages', hint: 'Extra pages that are not in the main site' },
       { label: 'Photos & files', to: '/media', hint: 'Upload images and videos' },
       { label: 'Programs', to: '/programs', hint: 'Training and ministry areas' },
       { label: 'Blog', to: '/blog', hint: 'News and articles' },

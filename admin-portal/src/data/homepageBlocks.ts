@@ -164,7 +164,7 @@ export function ensureBuiltinSections(sections?: HomepageSection[] | null): Home
     return a.order - b.order
   })
   const customs = current.filter(isCustomSection)
-  return [...builtins, ...customs].map((section, index) => ({ ...section, order: index + 1 }))
+  return [...builtins, ...customs].sort((a, b) => a.order - b.order).map((section, index) => ({ ...section, order: index + 1 }))
 }
 
 export function createHomepageBlock(kind: Exclude<HomepageBlockKind, 'built-in'>, order: number): HomepageSection {

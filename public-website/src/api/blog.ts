@@ -8,6 +8,7 @@ function mediaUrl(value: unknown): string | undefined {
   if (!value) return undefined
   if (typeof value === 'string') {
     if (!value) return undefined
+    if (value.startsWith('/uploads/')) return `${STRAPI_URL}${value}`
     return value.startsWith('http') || value.startsWith('/') || value.startsWith('data:') ? value : `${STRAPI_URL}${value}`
   }
   if (typeof value !== 'object') return undefined
@@ -44,7 +45,7 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
     sort: 'publishedAt:desc',
     populate: '*',
   })
-  if (!data?.data?.length) return fallbackBlogPosts
+  if (!data) return fallbackBlogPosts
   return data.data.map(mapBlog)
 }
 
@@ -54,5 +55,5 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPost | undefi
     populate: '*',
   })
   if (data?.data?.[0]) return mapBlog(data.data[0])
-  return fallbackBlogPosts.find((p) => p.slug === slug)
+  return data ? undefined : fallbackBlogPosts.find((p) => p.slug === slug)
 }

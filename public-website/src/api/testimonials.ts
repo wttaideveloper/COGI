@@ -33,6 +33,6 @@ export async function getTestimonials(): Promise<Testimonial[]> {
     sort: 'featured:desc',
     populate: '*',
   })
-  if (!data?.data?.length) return fallbackTestimonials
+  if (!data) return fallbackTestimonials
   return data.data.map(mapTestimonial)
 }

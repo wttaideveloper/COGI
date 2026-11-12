@@ -8,6 +8,7 @@ function mediaUrl(value: unknown): string | undefined {
   if (!value) return undefined
   if (typeof value === 'string') {
     if (!value) return undefined
+    if (value.startsWith('/uploads/')) return `${STRAPI_URL}${value}`
     return value.startsWith('http') || value.startsWith('/') || value.startsWith('data:') ? value : `${STRAPI_URL}${value}`
   }
   if (typeof value !== 'object') return undefined
@@ -63,7 +64,7 @@ export async function getStories(): Promise<Story[]> {
     sort: 'featured:desc',
     populate: '*',
   })
-  if (!data?.data?.length) return fallbackStories
+  if (!data) return fallbackStories
   return data.data.map(mapStory)
 }
 
@@ -73,5 +74,5 @@ export async function getStoryBySlug(slug: string): Promise<Story | undefined> {
     populate: '*',
   })
   if (data?.data?.[0]) return mapStory(data.data[0])
-  return fallbackStories.find((s) => s.slug === slug)
+  return data ? undefined : fallbackStories.find((s) => s.slug === slug)
 }

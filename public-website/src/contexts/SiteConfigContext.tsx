@@ -13,14 +13,24 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true
+    let loading = false
 
     async function load(invalidateContent = false) {
+      if (loading) return
+      loading = true
+      try {
       const next = await fetchSiteConfig()
       if (!active) return
       setConfig(next)
       applyTheme(next.theme, next)
       setReady(true)
       if (invalidateContent) void queryClient.invalidateQueries()
+      } catch {
+        // Keep the last usable configuration if a refresh fails.
+      } finally {
+        loading = false
+        if (active) setReady(true)
+      }
     }
 
     void load(true).finally(() => {

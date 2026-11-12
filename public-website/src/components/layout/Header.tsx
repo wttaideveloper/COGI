@@ -110,12 +110,12 @@ export function uniqueHeaderNav(items: SiteNavItem[], ctaHref: string): SiteNavI
 }
 
 export function Header() {
-  const { header, headerNav, customPages } = useSiteConfig()
+  const { header, headerNav, customPages, updatedAt } = useSiteConfig()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
   const toggle = useRef<HTMLButtonElement>(null)
   const configuredItems = mergeCustomPageNav(
-    (headerNav.length ? headerNav : fallbackNav).filter((item) => item.visible !== false),
+    (headerNav.length || updatedAt ? headerNav : fallbackNav).filter((item) => item.visible !== false),
     customPages,
     'header',
   )

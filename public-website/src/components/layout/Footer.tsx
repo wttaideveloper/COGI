@@ -41,7 +41,7 @@ const socialIcons: Record<string, React.ReactNode> = {
 }
 
 export function Footer() {
-  const { footer, footerNav, customPages } = useSiteConfig()
+  const { footer, footerNav, customPages, updatedAt } = useSiteConfig()
   const { data: settings } = useQuery({
     queryKey: ['globalSettings'],
     queryFn: getGlobalSettings,
@@ -54,7 +54,7 @@ export function Footer() {
     { id: '4', label: 'Contact', href: '/contact' },
   ]
   const menuLinks = mergeCustomPageNav(
-    (footerNav.length ? footerNav : fallbackExplore).filter((item) => item.visible !== false),
+    (footerNav.length || updatedAt ? footerNav : fallbackExplore).filter((item) => item.visible !== false),
     customPages,
     'footer',
   )

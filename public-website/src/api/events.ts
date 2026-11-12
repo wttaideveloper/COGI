@@ -34,7 +34,7 @@ export async function getEvents(): Promise<Event[]> {
     sort: 'startDate:asc',
     populate: '*',
   })
-  if (!data?.data?.length) return fallbackEvents
+  if (!data) return fallbackEvents
   return data.data.map(mapEvent)
 }
 
@@ -43,7 +43,8 @@ export async function getEventBySlug(slug: string): Promise<Event | undefined> {
     'filters[slug][$eq]': slug,
     populate: '*',
   })
-  if (!data?.data?.[0]) return fallbackEvents.find((e) => e.slug === slug)
+  if (!data) return fallbackEvents.find((e) => e.slug === slug)
+  if (!data.data?.[0]) return undefined
   return mapEvent(data.data[0])
 }
 

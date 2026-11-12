@@ -22,7 +22,7 @@ export function DonatePage() {
             <h2 className="font-display text-2xl text-teal-deep">{page.giveTitle}</h2>
             <p className="mt-4 text-ink-muted">{page.giveBody}</p>
             <a
-              href={giveLivelyUrl}
+              href={page.giveUrl || giveLivelyUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-6 inline-flex items-center justify-center rounded-md bg-gold px-8 py-4 text-lg font-semibold text-white hover:bg-gold-light"

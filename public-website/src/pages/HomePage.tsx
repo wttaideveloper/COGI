@@ -1,3 +1,5 @@
+import { HeroBackground } from '@/components/home/HeroBackground'
+import { getPrograms } from '@/api/programs'
 import { HomeBackdrop } from '@/components/home/HomeBackdrop'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -30,6 +32,7 @@ export function HomePage() {
   const site = useSiteConfig()
   const [searchParams] = useSearchParams()
   const { data: homepage, isLoading, isError, refetch } = useQuery({ queryKey: ['homepage'], queryFn: getHomepage })
+  const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms })
   const { data: stories } = useQuery({ queryKey: ['stories'], queryFn: getStories })
   const { data: testimonials } = useQuery({ queryKey: ['testimonials'], queryFn: getTestimonials })
   const { data: featuredEvent } = useQuery({ queryKey: ['featuredEvent'], queryFn: getFeaturedEvent })
@@ -66,7 +69,6 @@ export function HomePage() {
   const copy = site.copy.homepage
   const matchedStories = stories?.filter((s) => homepage.storiesTeaser.featuredStoryIds.includes(s.id)) ?? []
   const featuredStories = (matchedStories.length ? matchedStories : stories?.slice(0, 2) ?? []).slice(0, 2)
-  const heroPhoto = site.homepage.heroSlides?.find(slide => slide.imageUrl)
   const heroHeadline = site.homepage.heroHeadline || homepage.hero.headline
   const heroIntro = site.homepage.heroIntro || homepage.hero.intro
   const heroHeadlineSize = site.homepage.heroHeadlineSize || 64
@@ -98,7 +100,7 @@ export function HomePage() {
   ])]
     .sort((a, b) => a.order - b.order)
     .filter((section) => section.enabled !== false)
-    .filter((section) => section.id !== 'video')
+
 
   return (
     <div className="home-experience">
@@ -144,9 +146,8 @@ export function HomePage() {
             </div>
           </div>
           </div>
-          <div className="hero-photograph">
-            <MediaPreview src={heroPhoto?.imageUrl || site.homepage.heroImageUrl || siteImages.historicGathering}
-              alt={heroPhoto?.alt || site.homepage.heroImageAlt || 'Fellowship gathering'} className="h-full w-full" />
+          <div className="hero-photograph relative">
+            <HeroBackground mode={site.homepage.heroMedia || 'images'} videoUrl={site.homepage.heroVideoUrl} poster={site.homepage.heroImageUrl} slides={site.homepage.heroSlides || []} intervalMs={(site.homepage.heroSlideDuration ?? 6) * 1000} reduced={reduced} />
           </div>
         </div>
         </div>
@@ -178,6 +179,12 @@ export function HomePage() {
         </div>
       </section>
         )
+        if (section.id === 'video') return (
+          <section key="video" className="mx-auto max-w-5xl px-4 py-16">
+            <SectionHeading title={copy.videoTitle} subtitle={copy.videoDescription} />
+            {copy.videoUrl ? <MediaPreview video src={copy.videoUrl} poster={copy.videoImageUrl} alt={copy.videoTitle} className="aspect-video w-full" /> : null}
+          </section>
+        )
         if (section.id === 'mission') return (
       <section key="mission" className="bg-white py-14 md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center">
@@ -197,9 +204,9 @@ export function HomePage() {
             {copy.methodsSubtitle}
           </h2>
           <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {homepage.methods.map((method, i) => (
+            {(copy.methods || homepage.methods).map((method, i) => (
               <div key={method.id} className="overflow-hidden rounded-xl border border-mist-dark bg-white">
-                <MediaPreview src={methodImages[i] || siteImages.missionField} alt={method.title} className="h-52 w-full object-cover" />
+                <MediaPreview src={method.imageUrl ?? methodImages[i] ?? siteImages.missionField} alt={method.title} className="h-52 w-full object-cover" />
                 <div className="p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold">{method.title}</p>
                   <h3 className="mt-2 font-display text-3xl text-teal-deep">{method.subtitle}</h3>
@@ -233,13 +240,13 @@ export function HomePage() {
           <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">What we do</p>
           <SectionHeading title={copy.portfolioTitle} subtitle={copy.portfolioSubtitle} />
           <div className="grid gap-6 md:grid-cols-2">
-            {homepage.portfolio.map((area, i) => (
+            {(programs || []).map((area, i) => (
               <article key={area.id} className="group overflow-hidden rounded-xl border border-mist-dark bg-white">
                 <MediaPreview src={portfolioImages[i] || siteImages.clinic} alt={area.title} className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="p-6">
                   <h3 className="font-display text-3xl text-teal-deep group-hover:text-gold">{area.title}</h3>
                   <p className="mt-3 max-w-xl text-sm text-ink-muted">{area.summary}</p>
-                  <Link to={`/programs/${area.programSlug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-gold">Learn more</Link>
+                  <Link to={`/programs/${area.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-gold">Learn more</Link>
                 </div>
               </article>
             ))}
@@ -293,8 +300,8 @@ export function HomePage() {
         if (section.id === 'testimonials') return testimonials?.length ? (
       <section key="testimonials" className="bg-mist-gradient py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">Voices from the fellowship</p>
-          <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">From volunteers and partners</h2>
+          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">{copy.testimonialsEyebrow}</p>
+          <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">{copy.testimonialsTitle}</h2>
           <div className="mt-12">
             <TestimonialCarousel items={testimonials} />
           </div>
@@ -318,7 +325,7 @@ export function HomePage() {
         if (section.id === 'newsletter') return (
       <section key="newsletter" className="bg-white py-20">
         <div className="mx-auto max-w-xl px-4">
-          <SectionHeading title={homepage.newsletter.title} subtitle={homepage.newsletter.description} />
+          <SectionHeading title={copy.newsletterTitle} subtitle={copy.newsletterDescription} />
           <div className="border border-mist-dark bg-white p-6"><NewsletterForm /></div>
         </div>
       </section>
@@ -327,11 +334,11 @@ export function HomePage() {
       <section key="donate" className="border-y border-mist-dark bg-white py-14 text-ink md:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
           {siteImages.give ? (
-            <MediaPreview src={siteImages.give} alt={homepage.donateCta.title} className="mb-8 h-52 w-full rounded-xl object-cover" />
+            <MediaPreview src={siteImages.give} alt={site.copy.donate.giveTitle} className="mb-8 h-52 w-full rounded-xl object-cover" />
           ) : null}
           <h2 className="font-display text-4xl uppercase tracking-wide text-teal-deep md:text-5xl">{homepage.donateCta.title}</h2>
-          <p className="mt-5 text-lg text-ink-muted">{homepage.donateCta.description}</p>
-          <ButtonLink to="/donate" size="lg" className="mt-8 rounded-sm uppercase tracking-[0.22em]">{homepage.donateCta.buttonLabel}</ButtonLink>
+          <p className="mt-5 text-lg text-ink-muted">{site.copy.donate.giveBody}</p>
+          <ButtonLink to="/donate" size="lg" className="mt-8 rounded-sm uppercase tracking-[0.22em]">{site.copy.donate.giveCta}</ButtonLink>
         </div>
       </section>
         )

@@ -22,8 +22,8 @@ export function normalizeGlobalSettings(value: unknown): GlobalSettings {
     tagline: text(raw.tagline, fallbackGlobalSettings.tagline),
     mission: text(raw.mission, fallbackGlobalSettings.mission),
     vision: text(raw.vision, fallbackGlobalSettings.vision),
-    contactEmail: text(raw.contactEmail ?? raw.primaryEmail, fallbackGlobalSettings.contactEmail),
-    contactPhone: text(raw.contactPhone ?? raw.phone, ''),
+    contactEmail: text(raw.primaryEmail ?? raw.contactEmail, fallbackGlobalSettings.contactEmail),
+    contactPhone: text(raw.phone ?? raw.primaryPhone ?? raw.contactPhone, ''),
     address: text(raw.address, fallbackGlobalSettings.address || ''),
     socialLinks,
   }

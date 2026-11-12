@@ -23,7 +23,7 @@ async function load() {
   return { strapi, auth }
 }
 
-beforeEach(() => { vi.stubGlobal('localStorage', memoryStorage()) })
+beforeEach(() => { vi.stubGlobal('localStorage', memoryStorage()); vi.stubEnv('VITE_ENABLE_DEMO_MODE', 'false') })
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs() })
 
 describe('login in a production build (demo mode not enabled)', () => {

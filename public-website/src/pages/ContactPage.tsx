@@ -7,8 +7,15 @@ import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function ContactPage() {
   const { data: settings } = useQuery({ queryKey: ['globalSettings'], queryFn: getGlobalSettings })
-  const { copy } = useSiteConfig()
+  const { copy, footer } = useSiteConfig()
   const page = copy.contact
+  const configuredSocial = [
+    { platform: 'facebook', label: 'Facebook', url: footer.facebookUrl },
+    { platform: 'instagram', label: 'Instagram', url: footer.instagramUrl },
+    { platform: 'linkedin', label: 'LinkedIn', url: footer.linkedinUrl },
+    { platform: 'youtube', label: 'YouTube', url: footer.youtubeUrl },
+  ].filter(link => link.url)
+  const socialLinks = configuredSocial.length ? configuredSocial : settings?.socialLinks || []
 
   return (
     <>
@@ -29,6 +36,7 @@ export function ContactPage() {
                 <dt className="text-sm font-semibold text-ink-muted">Email</dt>
                 <dd><a href={`mailto:${settings?.contactEmail}`} className="text-teal-deep hover:text-gold">{settings?.contactEmail}</a></dd>
               </div>
+              {settings?.contactPhone ? <div><dt className="text-sm font-semibold text-ink-muted">Phone</dt><dd><a href={`tel:${settings.contactPhone}`}>{settings.contactPhone}</a></dd></div> : null}
               {settings?.address && (
                 <div>
                   <dt className="text-sm font-semibold text-ink-muted">Office</dt>
@@ -40,7 +48,7 @@ export function ContactPage() {
           <Card>
             <h2 className="font-display text-xl text-teal-deep">{page.socialTitle}</h2>
             <ul className="mt-4 space-y-2">
-              {settings?.socialLinks.map((link) => (
+              {socialLinks.map((link) => (
                 <li key={link.platform}>
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-teal-deep hover:text-gold">{link.label}</a>
                 </li>

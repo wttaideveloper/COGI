@@ -9,9 +9,11 @@ import { IMAGE_HINT, MediaUpload } from '@/components/MediaUpload'
 import MenuSwapper from '@/components/MenuSwapper'
 import RichTextEditor from '@/components/RichTextEditor'
 import { useAuth } from '@/contexts/AuthContext'
-import { mockActivity, mockAudit, mockBlog, mockEnquiries, mockEvents, mockHomepage, mockLocations, mockMedia, mockNavigation, mockPages, mockPartners, mockPrograms, mockSettings, mockStats, mockStories, mockTeam, mockTestimonials } from '@/data/mock'
+import { mockActivity, mockAudit, mockEnquiries, mockHomepage, mockMedia, mockNavigation, mockSettings, mockStats, mockTestimonials } from '@/data/mock'
 import { mockFooterNavigation } from '@/data/siteSetup'
 import { hydrateSiteConfigFromStrapi, captureDraftSnapshot, loadSiteConfig, notifyPublished, readFileAsDataUrl, saveSiteConfig } from '@/services/siteConfigStore'
+import { demoSeed, loadDemoRows, publishDemoRow, loadDemoSettings } from '@/services/demoContent'
+import { publishLocalContent } from '@/services/siteConfigStore'
 import { loadLocalRecords, saveLocalRecords } from '@/services/localRecords'
 import { apiCreate, apiDelete, apiGetOne, apiList, apiListAll, apiSingle, apiPublish, apiUpdate, apiUpdateSingle, getErrorMessage, getStrapiUrl, isDemoMode, isDemoModeAllowed, uploadMedia } from '@/services/strapi'
 import { exportCsv } from '@/utils/csv'
@@ -25,9 +27,6 @@ type AnyRecord = BaseRecord & Record<string, unknown>
 const statusOptions = [{ label: 'Draft', value: 'draft' }, { label: 'Published', value: 'published' }]
 const yesNo = [{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]
 
-const moduleData: Record<string, AnyRecord[]> = {
-  pages: mockPages as unknown as AnyRecord[], programs: mockPrograms as unknown as AnyRecord[], blog: mockBlog as unknown as AnyRecord[], events: mockEvents as unknown as AnyRecord[], stories: mockStories as unknown as AnyRecord[], testimonials: mockTestimonials as unknown as AnyRecord[], team: mockTeam as unknown as AnyRecord[], partners: mockPartners as unknown as AnyRecord[], locations: mockLocations as unknown as AnyRecord[],
-}
 
 export const moduleConfigs: Record<string, ModuleConfig<AnyRecord>> = {
   pages: { key: 'pages', title: 'Custom pages', endpoint: '/pages', route: '/pages', singular: 'Page', description: 'Extra pages beyond the main site. Edit About, Donate, Contact, and other live wording under Site pages.', columns: [{ key: 'title', label: 'Title' }, { key: 'slug', label: 'URL' }, { key: 'status', label: 'Status' }, { key: 'updatedAt', label: 'Updated' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
@@ -68,6 +67,7 @@ function normalizeForForm(record: AnyRecord | undefined, fields: FormField<AnyRe
     if (name === 'sectionsText' && record?.sections) value[name] = JSON.stringify(record.sections, null, 2)
     else if (name === 'itemsText' && record?.items) value[name] = (record.items as Array<{ label: string; href: string }>).map((i) => `${i.label} | ${i.href}`).join('\n')
     else if (name === 'imageUrl') value[name] = mediaToUrl(record?.imageUrl) || mediaToUrl(record?.thumbnail) || mediaToUrl(record?.featuredImage) || ''
+    else if (name === 'description' && record?.body != null) value[name] = record.body
     else if (record?.[name] != null && record[name] !== '') value[name] = record[name]
     else if (field.type === 'number') value[name] = 0
     else if (field.type === 'select') value[name] = field.options?.[0]?.value
@@ -121,6 +121,7 @@ function mediaToUrl(value: unknown): string {
   if (!value) return ''
   if (typeof value === 'string') {
     if (!value) return ''
+    if (value.startsWith('/uploads/')) return `${getStrapiUrl()}${value}`
     return value.startsWith('http') || value.startsWith('/') || value.startsWith('data:') ? value : `${getStrapiUrl()}${value}`
   }
   if (typeof value !== 'object') return ''
@@ -146,7 +147,8 @@ function buildPayload(endpoint: string, values: Record<string, unknown>, _status
   const map = schemaFieldMap[endpoint]
   const out: Record<string, unknown> = {}
   for (const [formKey, apiKey] of Object.entries(map)) {
-    if (cleaned[formKey] === undefined || cleaned[formKey] === '') continue
+    if (cleaned[formKey] === undefined) continue
+    if (cleaned[formKey] === '' && (apiKey === 'startDate' || apiKey === 'endDate')) { out[apiKey] = null; continue }
     if (apiKey === 'latitude' || apiKey === 'longitude' || apiKey === 'order') {
       const n = toDecimal(cleaned[formKey])
       if (n !== undefined) out[apiKey] = n
@@ -562,12 +564,17 @@ export function NavigationPage() {
 export function GenericContentPage({ moduleKey }: { moduleKey: ModuleKey }) {
   const config = moduleConfigs[moduleKey]
   if (!config) return <Navigate to="/dashboard" replace />
-  return <GenericContentInner moduleKey={moduleKey} config={config} />
+  return <GenericContentInner key={moduleKey} moduleKey={moduleKey} config={config} />
 }
 
 function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; config: ModuleConfig<AnyRecord> }) {
   const params = useParams(); const navigate = useNavigate(); const qc = useQueryClient(); const isEditing = Boolean(params.id)
-  const [localRows, setLocalRows] = useState(() => loadLocalRecords(moduleKey, moduleData[moduleKey] || []))
+  const [localRows, setLocalRows] = useState(() => loadLocalRecords(moduleKey, demoSeed(moduleKey)))
+  useEffect(() => {
+    let active = true
+    if (isDemoMode()) void loadDemoRows(moduleKey, config.endpoint).then(rows => { if (active) setLocalRows(rows) })
+    return () => { active = false }
+  }, [moduleKey, config.endpoint])
   const [search, setSearch] = useState('')
   const query = useQuery({ queryKey: [moduleKey], queryFn: () => apiListAll<AnyRecord>(config.endpoint), enabled: !isDemoMode() })
   const rows = isDemoMode() ? localRows : (query.data ?? [])
@@ -617,7 +624,7 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
           payload.thumbnail = Number.isFinite(mediaId) ? mediaId : uploaded.id
         }
       }
-      const saveLocal = () => {
+      const saveLocal = async () => {
         const id = String(current?.id || current?.documentId || Date.now())
         const record = {
           ...current,
@@ -628,11 +635,10 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
           status,
           updatedAt: new Date().toISOString().slice(0, 10),
         } as AnyRecord
-        setLocalRows((prev) => {
-          const next = current ? prev.map((row) => (row.id === current.id || row.documentId === current.documentId ? record : row)) : [record, ...prev]
-          saveLocalRecords(moduleKey, next)
-          return next
-        })
+        if (status === 'published') await publishDemoRow(moduleKey, config.endpoint, record)
+        const next = current ? localRows.map(row => row.id === current.id ? record : row) : [record, ...localRows]
+        saveLocalRecords(moduleKey, next)
+        setLocalRows(next)
         return record
       }
       if (isDemoMode()) {
@@ -650,9 +656,6 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
         if (status === 'published') await apiPublish(config.endpoint, id)
         return {}
       } catch (error) {
-        if (config.endpoint === '/events' || config.endpoint === '/news-articles' || config.endpoint === '/stories') {
-          return saveLocal()
-        }
         throw error
       }
     },
@@ -673,11 +676,10 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
   const remove = useMutation({
     mutationFn: async (id: string) => {
       if (isDemoMode()) {
-        setLocalRows((prev) => {
-          const next = prev.filter((row) => String(row.documentId || row.id) !== id)
-          saveLocalRecords(moduleKey, next)
-          return next
-        })
+        await publishDemoRow(moduleKey, config.endpoint, null, id)
+        const next = localRows.filter(row => String(row.documentId || row.id) !== id)
+        saveLocalRecords(moduleKey, next)
+        setLocalRows(next)
         return
       }
       await apiDelete(config.endpoint, id)
@@ -1188,13 +1190,16 @@ export function NewsletterPage() {
   )
 }
 export function SettingsPage() {
-  const query = useQuery({ queryKey: ['global-setting'], queryFn: () => apiSingle<SettingsRecord>('/global-setting'), enabled: !isDemoMode() })
+  const query = useQuery({ queryKey: ['global-setting'], queryFn: async () => {
+    const raw = isDemoMode() ? await loadDemoSettings() : await apiSingle<SettingsRecord & { phone?: string }>('/global-setting')
+    return { ...mockSettings, ...raw, primaryPhone: raw.primaryPhone ?? raw.phone ?? '' } as SettingsRecord
+  } })
   const form = useForm<SettingsRecord>({ values: query.data ?? mockSettings })
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const mutation = useMutation({
     mutationFn: async (values: SettingsRecord) => {
       if (isDemoMode()) {
-        localStorage.setItem('cogi_settings', JSON.stringify(values))
+        await publishLocalContent({ globalSettings: { ...values, phone: values.primaryPhone } })
         return values
       }
       await apiUpdateSingle('/global-setting', {

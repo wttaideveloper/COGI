@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { IMAGE_HINT, MediaUpload } from '@/components/MediaUpload'
 import { defaultSiteCopy, mergeSiteCopy, type CopyBlock, type SiteCopy } from '@/data/siteCopy'
 import { captureDraftSnapshot, hydrateSiteConfigFromStrapi, loadSiteConfig, saveSiteConfig } from '@/services/siteConfigStore'
@@ -108,7 +108,8 @@ function LivePreview({ title, subtitle, imageUrl }: { title: string; subtitle: s
 
 export default function WebsiteCopyPage() {
   const [copy, setCopy] = useState<SiteCopy>(() => mergeSiteCopy(loadSiteConfig().copy))
-  const [tab, setTab] = useState<TabId>('about')
+  const [searchParams] = useSearchParams()
+  const [tab, setTab] = useState<TabId>(() => PAGE_TABS.find(page => page.id === searchParams.get('tab'))?.id || 'about')
   const [search, setSearch] = useState('')
   const [savedAs, setSavedAs] = useState<'draft' | 'published' | null>(null)
   const [pending, setPending] = useState<'draft' | 'published' | null>(null)
@@ -567,6 +568,7 @@ export default function WebsiteCopyPage() {
                     <Field label="Online title"><TextInput value={copy.donate.giveTitle} onChange={(v) => patch('donate', { ...copy.donate, giveTitle: v })} /></Field>
                     <Field label="Online body"><TextArea value={copy.donate.giveBody} onChange={(v) => patch('donate', { ...copy.donate, giveBody: v })} /></Field>
                     <Field label="Give button"><TextInput value={copy.donate.giveCta} onChange={(v) => patch('donate', { ...copy.donate, giveCta: v })} /></Field>
+                    <Field label="Donation link"><TextInput value={copy.donate.giveUrl || ''} onChange={v => patch('donate', { ...copy.donate, giveUrl: v })} placeholder="https://secure.givelively.org/donate/companions-of-grace-international" /></Field>
                     <div className="grid gap-4 md:grid-cols-3">
                       <div>
                         <Field label="Mail title"><TextInput value={copy.donate.mailTitle} onChange={(v) => patch('donate', { ...copy.donate, mailTitle: v })} /></Field>

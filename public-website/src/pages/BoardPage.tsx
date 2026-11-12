@@ -4,7 +4,7 @@ import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
-import { defaultSiteCopy, stripHtml } from '@/data/siteCopy'
+import { stripHtml } from '@/data/siteCopy'
 
 function initials(name: string) {
   return name
@@ -19,7 +19,7 @@ function initials(name: string) {
 export function BoardPage() {
   const { copy } = useSiteConfig()
   const page = copy.board
-  const members = page.members?.length ? page.members : defaultSiteCopy.board.members
+  const members = page.members
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = members.find((member) => member.id === selectedId) ?? null
 

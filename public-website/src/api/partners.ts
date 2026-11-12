@@ -18,6 +18,6 @@ export async function getPartners(): Promise<Partner[]> {
     sort: 'order:asc',
   })
   const rows = sanitizePartners(data?.data ?? [])
-  if (!rows.length) return sanitizePartners(fallbackPartners)
+  if (!data) return sanitizePartners(fallbackPartners)
   return rows
 }

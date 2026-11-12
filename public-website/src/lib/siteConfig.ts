@@ -31,6 +31,7 @@ export type PublicCustomPage = {
 }
 
 export type SiteConfig = {
+  legalPages?: Array<{ slug: string; title: string; content: string; lastUpdated: string }>
   theme: {
     primaryColor: string
     secondaryColor: string
@@ -269,11 +270,6 @@ export function applyTheme(theme: SiteConfig['theme'], chrome?: Pick<SiteConfig,
   document.body.style.fontFamily = theme.fontFamily
 }
 
-function isPlaceholderHeroVideo(url?: string) {
-  if (!url) return true
-  return url.includes('sGKtc3lI_Pg') || url === '/videos/intro.mp4' || url.includes('images.unsplash.com')
-}
-
 async function fetchSiteConfigFile(): Promise<Partial<SiteConfig> | null> {
   try {
     const res = await fetch(`/site-config.json?t=${Date.now()}`, { cache: 'no-store' })
@@ -299,19 +295,10 @@ export async function fetchSiteConfig(): Promise<SiteConfig> {
       ...primary,
       homepage: { ...(secondary.homepage || {}), ...(primary.homepage || {}) } as SiteConfig['homepage'],
       copy: { ...(secondary.copy || {}), ...(primary.copy || {}) } as SiteCopy,
-      headerNav: primary.headerNav?.length ? primary.headerNav : secondary.headerNav,
-      footerNav: primary.footerNav?.length ? primary.footerNav : secondary.footerNav,
-      customPages: mergeCustomPages(
-        fileWins ? fromFile.customPages : fromStrapi.customPages,
-        fileWins ? fromStrapi.customPages : fromFile.customPages,
-      ),
+      headerNav: primary.headerNav ?? secondary.headerNav,
+      footerNav: primary.footerNav ?? secondary.footerNav,
+      customPages: primary.customPages ?? secondary.customPages,
     })
-    const slides = merged.homepage.heroSlides || []
-    const unsplashOnly = slides.length > 0 && slides.every((slide) => slide.imageUrl?.includes('images.unsplash.com'))
-    if (isPlaceholderHeroVideo(merged.homepage.heroVideoUrl) || unsplashOnly) {
-      merged.homepage.heroVideoUrl = siteVideos.intro
-      if (unsplashOnly || merged.homepage.heroMedia !== 'images') merged.homepage.heroMedia = 'video'
-    }
     return merged
   }
   if (fromStrapi) return fromStrapi
@@ -348,17 +335,14 @@ function mergeHomeSections(
     return existing ? { ...builtin, ...existing, id: builtin.id } : { ...builtin }
   })
   const customs = current.filter((section) => !defaultsList.some((item) => item.id === section.id))
-  return [...restored, ...customs].map((section, index) => ({ ...section, order: index + 1 }))
+  return [...restored, ...customs].sort((a, b) => a.order - b.order).map((section, index) => ({ ...section, order: index + 1 }))
 }
 
-function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
+export function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
   const homepage = {
     ...defaults.homepage,
     ...data.homepage,
     sections: mergeHomeSections(data.homepage?.sections ?? defaults.homepage.sections),
-  }
-  if (!homepage.heroVideoUrl || homepage.heroVideoUrl.includes('sGKtc3lI_Pg')) {
-    homepage.heroVideoUrl = siteVideos.intro
   }
   const copy = mergeSiteCopy(data.copy)
   if (copy.homepage.videoUrl === '/videos/intro.mp4') {
@@ -373,8 +357,8 @@ function mergeSiteConfig(data: Partial<SiteConfig>): SiteConfig {
     seo: { ...defaults.seo, ...data.seo },
     homepage,
     copy,
-    headerNav: data.headerNav?.length ? data.headerNav : defaults.headerNav,
-    footerNav: data.footerNav?.length ? data.footerNav : defaults.footerNav,
+    headerNav: Array.isArray(data.headerNav) ? data.headerNav : defaults.headerNav,
+    footerNav: Array.isArray(data.footerNav) ? data.footerNav : defaults.footerNav,
     customPages: mergeCustomPages(data.customPages, defaults.customPages),
   }
 }

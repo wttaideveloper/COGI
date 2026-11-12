@@ -3,12 +3,12 @@ import { useState } from 'react'
 import { SEO } from '@/components/ui/SEO'
 import { PageHero, Card } from '@/components/ui/Card'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
-import { defaultSiteCopy, stripHtml } from '@/data/siteCopy'
+import { stripHtml } from '@/data/siteCopy'
 
 export function GlobalTeamPage() {
   const { copy } = useSiteConfig()
   const page = copy.globalTeam
-  const members = page.members?.length ? page.members : defaultSiteCopy.globalTeam.members
+  const members = page.members
   const regions = [...new Set(members.map((member) => member.region).filter(Boolean))]
   const [expanded, setExpanded] = useState<string | null>(regions[0] ?? null)
 

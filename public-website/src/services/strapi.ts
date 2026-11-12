@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { readPublishedContent } from './publishedContent'
 
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'
 
@@ -16,6 +17,8 @@ export function isStrapiAvailable(): boolean {
 }
 
 export async function fetchFromStrapi<T>(endpoint: string, params?: Record<string, unknown>): Promise<T | null> {
+  const published = await readPublishedContent(endpoint, params)
+  if (published !== undefined) return published as T
   try {
     const { data } = await strapiClient.get<T>(endpoint, {
       params: { ...params },

@@ -4,19 +4,21 @@ const strapi = vi.hoisted(() => ({
   apiUpdateSingle: vi.fn(),
   apiPublishSingle: vi.fn(),
   uploadMedia: vi.fn(),
+  apiSingle: vi.fn(),
+  isDemoMode: vi.fn(() => false),
 }))
 
 vi.mock('@/services/strapi', () => ({
   apiUpdateSingle: strapi.apiUpdateSingle,
   apiPublishSingle: strapi.apiPublishSingle,
-  apiSingle: vi.fn(),
+  apiSingle: strapi.apiSingle,
   uploadMedia: strapi.uploadMedia,
   getStrapiUrl: () => 'https://cogi.example',
   getJwt: () => 'real-jwt',
-  isDemoMode: () => false,
+  isDemoMode: strapi.isDemoMode,
 }))
 
-import { saveSiteConfig } from './siteConfigStore'
+import { saveSiteConfig, hydrateSiteConfigFromStrapi, defaultSiteConfig, resolvePublishedSiteConfig, publishLocalContent } from './siteConfigStore'
 
 function memoryStorage(): Storage {
   const map = new Map<string, string>()
@@ -40,6 +42,45 @@ beforeEach(() => {
   strapi.apiUpdateSingle.mockReset().mockResolvedValue({})
   strapi.apiPublishSingle.mockReset().mockResolvedValue({})
   strapi.uploadMedia.mockReset().mockResolvedValue({ url: '/uploads/logo_abc.png' })
+  strapi.apiSingle.mockReset().mockResolvedValue(null)
+  strapi.isDemoMode.mockReset().mockReturnValue(false)
+})
+
+describe('website and admin synchronization', () => {
+  it('hydrates practice mode from the actual public site, not demo defaults', async () => {
+    strapi.isDemoMode.mockReturnValue(true)
+    const live = defaultSiteConfig()
+    live.homepage.heroHeadline = 'Current website headline'
+    live.updatedAt = '2026-11-12T10:00:00Z'
+    fetchMock.mockResolvedValue({ ok: true, json: async () => live })
+    expect((await hydrateSiteConfigFromStrapi()).homepage.heroHeadline).toBe('Current website headline')
+  })
+
+  it('uses the newest published source consistently', async () => {
+    const old = { ...defaultSiteConfig(), updatedAt: '2026-11-10T10:00:00Z' }
+    const current = { ...defaultSiteConfig(), updatedAt: '2026-11-12T10:00:00Z', headerNav: [] }
+    strapi.apiSingle.mockResolvedValue({ payload: old })
+    fetchMock.mockResolvedValue({ ok: true, json: async () => current })
+    expect((await resolvePublishedSiteConfig())?.headerNav).toEqual([])
+  })
+
+  it('does not claim a successful practice publish when the shared file rejects it', async () => {
+    strapi.isDemoMode.mockReturnValue(true)
+    fetchMock.mockResolvedValue({ ok: false })
+    await expect(saveSiteConfig({}, 'published')).rejects.toThrow('Could not publish')
+  })
+
+  it('publishes collection changes without leaking a pending homepage draft', async () => {
+    strapi.isDemoMode.mockReturnValue(true)
+    const live = defaultSiteConfig()
+    live.homepage.heroHeadline = 'Live headline'
+    fetchMock.mockImplementation(async (_url, init) => init?.method === 'POST' ? { ok: true } : { ok: true, json: async () => live })
+    await saveSiteConfig({ homepage: { ...live.homepage, heroHeadline: 'Private draft' } }, 'draft')
+    await publishLocalContent({ content: { '/programs': [] } })
+    const sent = JSON.parse(fetchMock.mock.calls.find(call => call[1]?.method === 'POST')![1].body)
+    expect(sent.homepage.heroHeadline).toBe('Live headline')
+    expect(sent.content['/programs']).toEqual([])
+  })
 })
 afterEach(() => { vi.unstubAllGlobals() })
 

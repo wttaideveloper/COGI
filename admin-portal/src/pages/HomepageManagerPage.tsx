@@ -1,3 +1,4 @@
+import { fallbackHomepage } from '../../../shared/fallback'
 import { sectionAnimations, type SectionAnimation } from '../../../shared/sectionAnimation'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -88,9 +89,9 @@ function homepageFromConfig(config: SiteConfig): HomepageRecord {
   return {
     ...mockHomepage,
     ...home,
-    heroHeadline: sampleOrEmpty(home.heroHeadline, SAMPLE_HEADLINES),
-    heroIntro: sampleOrEmpty(home.heroIntro, SAMPLE_INTROS),
-    primaryCtaLabel: sampleOrEmpty(home.primaryCtaLabel, SAMPLE_CTAS),
+    heroHeadline: home.heroHeadline,
+    heroIntro: home.heroIntro,
+    primaryCtaLabel: home.primaryCtaLabel,
     heroHeadlineSize: home.heroHeadlineSize ?? 64,
     heroHeadlineCase: home.heroHeadlineCase ?? 'uppercase',
     heroMedia: home.heroMedia === 'video' ? 'video' : 'images',
@@ -104,21 +105,6 @@ function homepageFromConfig(config: SiteConfig): HomepageRecord {
     sections: ensureBuiltinSections(home.sections?.length ? home.sections : mockHomepage.sections),
     heroSlides: home.heroSlides,
   }
-}
-
-const SAMPLE_HEADLINES = [
-  'Equipping Healthcare Professionals for Kingdom Engagement',
-]
-const SAMPLE_INTROS = [
-  'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.',
-  'COGI cultivates communities of grace among healthcare professionals serving missionally around the world.',
-]
-const SAMPLE_CTAS = ['Give now', 'Join the Movement']
-
-function sampleOrEmpty(value: string | undefined, samples: string | string[]) {
-  const text = (value ?? '').trim()
-  const list = Array.isArray(samples) ? samples : [samples]
-  return list.some((sample) => text === sample.trim()) ? '' : (value ?? '')
 }
 
 function shortName(name: string, max = 32) {
@@ -156,9 +142,9 @@ export default function HomepageManagerPage() {
   const safeData: HomepageRecord = {
     ...mockHomepage,
     ...data,
-    heroHeadline: sampleOrEmpty(data.heroHeadline, SAMPLE_HEADLINES),
-    heroIntro: sampleOrEmpty(data.heroIntro, SAMPLE_INTROS),
-    primaryCtaLabel: sampleOrEmpty(data.primaryCtaLabel, SAMPLE_CTAS),
+    heroHeadline: data.heroHeadline ?? mockHomepage.heroHeadline,
+    heroIntro: data.heroIntro ?? mockHomepage.heroIntro,
+    primaryCtaLabel: data.primaryCtaLabel ?? mockHomepage.primaryCtaLabel,
     heroHeadlineSize: data.heroHeadlineSize ?? mockHomepage.heroHeadlineSize ?? 64,
     heroHeadlineCase: data.heroHeadlineCase ?? mockHomepage.heroHeadlineCase ?? 'uppercase',
     heroMedia: data.heroMedia === 'video' ? 'video' : 'images',
@@ -632,7 +618,7 @@ export default function HomepageManagerPage() {
                   </div>
                 </Field>
                 <Field label="Headline" hint="This sits over the photo or film. Keep it short." count={`${headline.length}/80`} over={headline.length > 80}>
-                  <input className="admin-input" {...form.register('heroHeadline')} placeholder={SAMPLE_HEADLINES[0]} />
+                  <input className="admin-input" {...form.register('heroHeadline')} placeholder={mockHomepage.heroHeadline} />
                 </Field>
                 <Field label="Headline letters" hint="Choose how the headline looks on the public homepage.">
                   <div className="hp-case" role="group" aria-label="Headline letter case">
@@ -656,11 +642,11 @@ export default function HomepageManagerPage() {
                   </div>
                 </Field>
                 <Field label="Intro paragraph" count={`${intro.length}/280`} over={intro.length > 280}>
-                  <textarea className="admin-input min-h-28" {...form.register('heroIntro')} placeholder={SAMPLE_INTROS[1]} />
+                  <textarea className="admin-input min-h-28" {...form.register('heroIntro')} placeholder={mockHomepage.heroIntro} />
                 </Field>
                 <div className="hp-grid-2">
                   <Field label="Main button" hint="Example: Give now">
-                    <input className="admin-input" {...form.register('primaryCtaLabel')} placeholder={SAMPLE_CTAS[0]} />
+                    <input className="admin-input" {...form.register('primaryCtaLabel')} placeholder={mockHomepage.primaryCtaLabel} />
                   </Field>
                   <Field label="Main button link" hint="Example: /donate">
                     <input className="admin-input" {...form.register('primaryCtaHref')} />
@@ -964,7 +950,12 @@ export default function HomepageManagerPage() {
               <Field label="Subtitle">
                 <input className="admin-input" value={copyHome.methodsSubtitle} onChange={(e) => patchCopy('methodsSubtitle', e.target.value)} />
               </Field>
-              <div className="hp-note">The three method cards come from Programs. Change headings here; edit card content in Programs.</div>
+              {(copyHome.methods ?? fallbackHomepage.methods).map((method, index) => (
+                <div key={method.id} className="admin-card space-y-3 p-4">
+                  {(['title', 'subtitle', 'description'] as const).map(key => <Field key={key} label={key}><textarea className="admin-input" value={method[key]} onChange={e => setCopyHome(prev => ({ ...prev, methods: (prev.methods ?? fallbackHomepage.methods).map((row, i) => i === index ? { ...row, [key]: e.target.value } : row) }))} /></Field>)}
+                  <MediaUpload kind="image" label="Card image" value={method.imageUrl} onLoaded={url => setCopyHome(prev => ({ ...prev, methods: (prev.methods ?? fallbackHomepage.methods).map((row, i) => i === index ? { ...row, imageUrl: url } : row) }))} onClear={() => setCopyHome(prev => ({ ...prev, methods: (prev.methods ?? fallbackHomepage.methods).map((row, i) => i === index ? { ...row, imageUrl: '' } : row) }))} />
+                </div>
+              ))}
             </div>
           ) : null}
 
@@ -1079,6 +1070,13 @@ export default function HomepageManagerPage() {
             <div className="hp-note">
               This block shows the next featured event from the Events module.
               <div className="hp-note-actions"><Link className="btn-secondary" to="/events">Edit events</Link></div>
+            </div>
+          ) : null}
+          {(['newsletter', 'testimonials'].includes(activeTab)) ? (
+            <div className="hp-fields">
+              {(activeTab === 'newsletter' ? ['newsletterTitle', 'newsletterDescription'] as const : ['testimonialsEyebrow', 'testimonialsTitle'] as const).map(key => (
+                <Field key={key} label={key.replace(/([A-Z])/g, ' $1')}><textarea className="admin-input" value={copyHome[key]} onChange={e => patchCopy(key, e.target.value)} /></Field>
+              ))}
             </div>
           ) : null}
           {activeTab === 'newsletter' ? (
