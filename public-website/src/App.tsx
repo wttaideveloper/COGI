@@ -70,6 +70,7 @@ export default function App() {
               <Route path="join-us" element={<GetInvolvedPage />} />
               <Route path="donate" element={<DonatePage />} />
               <Route path="contact" element={<ContactPage />} />
+              <Route path="contact-us" element={<ContactPage />} />
               <Route path="search" element={<SearchPage />} />
               <Route path="privacy" element={<LegalPage />} />
               <Route path="privacy-policy" element={<LegalPage />} />

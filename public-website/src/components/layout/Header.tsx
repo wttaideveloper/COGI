@@ -29,6 +29,8 @@ const fallbackNav: SiteNavItem[] = [
 
 const LABEL_HREF: Record<string, string> = {
   contact: '/contact',
+  'contact us': '/contact',
+  donate: '/donate',
   about: '/about',
   'about us': '/about',
   programs: '/programs',
@@ -42,6 +44,7 @@ const LABEL_HREF: Record<string, string> = {
 }
 
 const PATH_ALIASES: Record<string, string> = {
+  '/contact-us': '/contact',
   '/privacy': '/privacy-policy',
   '/privacy-policy': '/privacy-policy',
   '/terms': '/terms-of-use',
@@ -94,6 +97,18 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-mist-dark text-current' : 'text-current hover:bg-mist-dark',
   )
 
+export function uniqueHeaderNav(items: SiteNavItem[], ctaHref: string): SiteNavItem[] {
+  const canonical = (href: string) => href.replace(/\/+$/, '') || '/'
+  const seen = new Set(['/', canonical(ctaHref)])
+  const filter = (entries: SiteNavItem[]): SiteNavItem[] => entries.flatMap(item => {
+    const href = canonical(resolveNavHref(item))
+    if (item.visible === false || seen.has(href)) return []
+    seen.add(href)
+    return [{ ...item, children: item.children?.filter(child => child.visible !== false && canonical(resolveNavHref(child)) !== canonical(ctaHref)) }]
+  })
+  return [{ id: 'site-home', label: 'Home', href: '/' }, ...filter(items)]
+}
+
 export function Header() {
   const { header, headerNav, customPages } = useSiteConfig()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -104,7 +119,8 @@ export function Header() {
     customPages,
     'header',
   )
-  const items = [{ id: 'site-home', label: 'Home', href: '/' }, ...configuredItems.filter(item => resolveNavHref(item) !== '/')]
+  const ctaHref = resolveNavHref({ href: header.ctaLink || '/donate', label: header.ctaText || 'Donate' })
+  const items = uniqueHeaderNav(configuredItems, ctaHref)
   const { pathname, key } = useLocation()
   useEffect(() => { setMobileOpen(false); setOpenId(null) }, [key])
   useEffect(() => {
@@ -202,7 +218,7 @@ export function Header() {
           </Link>
 
           <ButtonLink
-            to={header.ctaLink || '/donate'}
+            to={ctaHref}
             size="sm"
             className="rounded-sm uppercase tracking-[0.2em]"
           >
@@ -249,7 +265,7 @@ export function Header() {
             <li><NavLink to="/search" className={navLinkClass}>Search</NavLink></li>
             <li className="pt-2">
               <ButtonLink
-                to={header.ctaLink || '/donate'}
+                to={ctaHref}
                 className="w-full"
                 onClick={() => setMobileOpen(false)}
               >
