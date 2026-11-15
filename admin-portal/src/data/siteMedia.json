@@ -1,0 +1,114 @@
+[
+  {
+    "id": "site-cogi-church.png",
+    "name": "cogi-church.png",
+    "url": "/images/cogi-church.png",
+    "mime": "image/png",
+    "size": 1808213
+  },
+  {
+    "id": "site-cogi-enable.png",
+    "name": "cogi-enable.png",
+    "url": "/images/cogi-enable.png",
+    "mime": "image/png",
+    "size": 2572300
+  },
+  {
+    "id": "site-cogi-gathering.png",
+    "name": "cogi-gathering.png",
+    "url": "/images/cogi-gathering.png",
+    "mime": "image/png",
+    "size": 2057756
+  },
+  {
+    "id": "site-cogi-give.png",
+    "name": "cogi-give.png",
+    "url": "/images/cogi-give.png",
+    "mime": "image/png",
+    "size": 2433331
+  },
+  {
+    "id": "site-cogi-hands.png",
+    "name": "cogi-hands.png",
+    "url": "/images/cogi-hands.png",
+    "mime": "image/png",
+    "size": 1988308
+  },
+  {
+    "id": "site-cogi-hero.png",
+    "name": "cogi-hero.png",
+    "url": "/images/cogi-hero.png",
+    "mime": "image/png",
+    "size": 2810036
+  },
+  {
+    "id": "site-cogi-india.png",
+    "name": "cogi-india.png",
+    "url": "/images/cogi-india.png",
+    "mime": "image/png",
+    "size": 4220855
+  },
+  {
+    "id": "site-cogi-kenya.png",
+    "name": "cogi-kenya.png",
+    "url": "/images/cogi-kenya.png",
+    "mime": "image/png",
+    "size": 1757611
+  },
+  {
+    "id": "site-cogi-logo.png",
+    "name": "cogi-logo.png",
+    "url": "/images/cogi-logo.png",
+    "mime": "image/png",
+    "size": 9031
+  },
+  {
+    "id": "site-cogi-support.png",
+    "name": "cogi-support.png",
+    "url": "/images/cogi-support.png",
+    "mime": "image/png",
+    "size": 3517627
+  },
+  {
+    "id": "site-cogi-train.png",
+    "name": "cogi-train.png",
+    "url": "/images/cogi-train.png",
+    "mime": "image/png",
+    "size": 2407345
+  },
+  {
+    "id": "site-cogi-video-thumb.png",
+    "name": "cogi-video-thumb.png",
+    "url": "/images/cogi-video-thumb.png",
+    "mime": "image/png",
+    "size": 1601396
+  },
+  {
+    "id": "site-homepage-c4c-india.jpg",
+    "name": "homepage-c4c-india.jpg",
+    "url": "/images/homepage-c4c-india.jpg",
+    "mime": "image/jpeg",
+    "size": 2264252
+  },
+  {
+    "id": "site-homepage-workshop.jpg",
+    "name": "homepage-workshop.jpg",
+    "url": "/images/homepage-workshop.jpg",
+    "mime": "image/jpeg",
+    "size": 1060993
+  },
+  {
+    "id": "site-orbital-globe.jpg",
+    "name": "orbital-globe.jpg",
+    "url": "/images/orbital-globe.jpg",
+    "mime": "image/jpeg",
+    "size": 50299
+  },
+  {
+    "id": "site-world-equirectangular.svg",
+    "name": "world-equirectangular.svg",
+    "url": "/images/world-equirectangular.svg",
+    "mime": "image/svg+xml",
+    "size": 1470874
+  }
+]

@@ -1,7 +1,7 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { mockMedia } from '@/data/mock'
-import { getErrorMessage, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
+import { getErrorMessage, getStrapiUrl, isDemoMode, strapiClient, uploadMedia } from '@/services/strapi'
 import { readFileAsDataUrl } from '@/services/siteConfigStore'
 import { IMAGE_HINT, formatFileSize, validateMediaFile } from '@/components/MediaUpload'
 import type { MediaFile } from '@/types'
@@ -25,6 +25,7 @@ function persistLocalMedia(files: MediaFile[]) {
 
 function absoluteUrl(url: string) {
   if (!url) return ''
+  if (url.startsWith('/images/')) return import.meta.env.BASE_URL + url.slice(1)
   if (url.startsWith('http') || url.startsWith('blob:') || url.startsWith('data:')) return url
   return `${getStrapiUrl()}${url}`
 }
@@ -38,6 +39,17 @@ export default function MediaLibraryPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [draftAlts, setDraftAlts] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (isDemoMode()) return
+    let active = true
+    strapiClient.get<MediaFile[]>('/upload/files').then(({ data }) => {
+      if (!active) return
+      const remote = data.map(file => ({ ...file, id: String(file.id), size: Math.round(file.size * 1000) }))
+      setFiles(previous => [...remote, ...previous.filter(file => file.id.startsWith('local-'))])
+    }).catch(err => { if (active) setError(getErrorMessage(err)) })
+    return () => { active = false }
+  }, [])
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -146,7 +158,7 @@ export default function MediaLibraryPage() {
     }
   }
 
-  function saveAlt(file: MediaFile) {
+  async function saveAlt(file: MediaFile) {
     const nextAlt = (draftAlts[file.id] ?? file.alternativeText ?? '').trim()
     updateFiles((prev) =>
       prev.map((row) => (row.id === file.id ? { ...row, alternativeText: nextAlt || row.name } : row)),
@@ -154,8 +166,12 @@ export default function MediaLibraryPage() {
     flash(`Alt text saved for ${file.name}`)
   }
 
-  function removeFile(file: MediaFile) {
+  async function removeFile(file: MediaFile) {
     if (!window.confirm(`Delete “${file.name}”?`)) return
+    if (!isDemoMode() && file.url.includes('/uploads/')) {
+      try { await strapiClient.delete('/upload/files/' + file.id) }
+      catch (err) { setError(getErrorMessage(err)); return }
+    }
     updateFiles((prev) => prev.filter((row) => row.id !== file.id))
     flash(`Deleted ${file.name}`)
   }

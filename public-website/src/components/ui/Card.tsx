@@ -1,4 +1,3 @@
-import { MediaPreview } from '@/components/ui/MediaPreview'
 import { cn } from '@/lib/utils'
 
 interface CardProps {
@@ -67,13 +66,12 @@ export function SectionHeading({
 
 export function PageHero({ title, subtitle, imageUrl }: { title: string; subtitle?: string; imageUrl?: string }) {
   return (
-    <section className="page-intro border-b border-mist-dark bg-white py-16 text-teal-deep md:py-20">
-      <div className="mx-auto max-w-4xl px-4 text-center">
+    <section className="page-intro relative isolate grid min-h-72 place-items-center overflow-hidden px-5 py-16 text-center text-white md:min-h-96">
+      <img src={imageUrl || '/images/cogi-gathering.png'} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+      <div className="absolute inset-0 -z-10 bg-black/65" />
+      <div className="max-w-4xl">
         <h1 id="page-heading" className="font-display text-4xl font-bold md:text-5xl">{title}</h1>
-        {subtitle && <p className="mt-4 text-lg text-ink-muted">{subtitle}</p>}
-        {imageUrl ? (
-          <MediaPreview src={imageUrl} alt={title} className="mt-10 h-52 w-full rounded-xl object-cover md:h-64" />
-        ) : null}
+        {subtitle && <p className="mt-4 text-lg">{subtitle}</p>}
       </div>
     </section>
   )

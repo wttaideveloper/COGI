@@ -160,10 +160,10 @@
     "heroIntro": "We bring healthcare professionals together to live out their Christian faith, learn from one another, and serve their communities.",
     "heroHeadlineSize": 96,
     "heroHeadlineCase": "as-typed",
-    "heroMedia": "video",
+    "heroMedia": "images",
     "heroVideoUrl": "https://www.youtube.com/watch?v=r6bd53UB7mk",
-    "heroImageUrl": "/images/cogi-hero.png",
-    "heroImageAlt": "People gathered in worship and mission",
+    "heroImageUrl": "/images/homepage-workshop.jpg",
+    "heroImageAlt": "Participants seated around tables during a workshop",
     "heroSlideDuration": 6,
     "mapOceanColor": "#F7FAFC",
     "mapLandColor": "#536B82",
@@ -172,8 +172,8 @@
     "heroSlides": [
       {
         "id": "hero",
-        "imageUrl": "/images/cogi-hero.png",
-        "alt": "People gathered in worship and mission"
+        "imageUrl": "/images/homepage-workshop.jpg",
+        "alt": "Participants seated around tables during a workshop"
       }
     ],
     "primaryCtaLabel": "Give now",
@@ -392,7 +392,7 @@
     "about": {
       "heroTitle": "Vision & mission",
       "heroSubtitle": "Equipping healthcare professionals for Kingdom engagement",
-      "imageUrl": "/images/cogi-india.png",
+      "imageUrl": "/images/cogi-enable.png",
       "visionTitle": "Our vision",
       "visionBody": "The Global Christian Healthcare Community actively on Mission for God, reflecting His love, witnessing Christ in word and deed, ushering in God's Kingdom.",
       "missionTitle": "Our mission",
@@ -403,7 +403,7 @@
       "heroTitle": "Our story",
       "heroSubtitle": "A fellowship born from prayer, friendship, and Kingdom vision",
       "intro": "What began as God knitting hearts together among healthcare leaders has become a global movement. COGI exists to ignite Communities of Grace — catalytic healthcare professionals who lift spiritual and practical hope in their nations.",
-      "imageUrl": "/images/cogi-gathering.png",
+      "imageUrl": "/images/homepage-c4c-india.jpg",
       "milestones": [
         {
           "year": "2013",
@@ -436,7 +436,7 @@
       "heroTitle": "Our beliefs",
       "heroSubtitle": "Essential convictions that underlie our mission and purpose",
       "intro": "These essential beliefs shape how we equip healthcare professionals for Kingdom engagement.",
-      "imageUrl": "/images/cogi-hands.png",
+      "imageUrl": "/images/cogi-video-thumb.png",
       "items": [
         {
           "id": "god",
@@ -573,7 +573,7 @@
     "board": {
       "heroTitle": "Board members",
       "heroSubtitle": "Leaders committed to equipping healthcare professionals for Kingdom engagement",
-      "imageUrl": "/images/cogi-gathering.png",
+      "imageUrl": "/images/cogi-support.png",
       "members": [
         {
           "id": "abraham-thomas",
@@ -629,7 +629,7 @@
     "globalTeam": {
       "heroTitle": "Global team",
       "heroSubtitle": "Facilitators, mentors, and coordinators across our regions",
-      "imageUrl": "/images/cogi-kenya.png",
+      "imageUrl": "/images/cogi-hero.png",
       "members": [
         {
           "id": "gt-africa",
@@ -660,7 +660,7 @@
     "partners": {
       "heroTitle": "Our partners",
       "heroSubtitle": "Collaborating to multiply missional healthcare impact",
-      "imageUrl": "/images/cogi-church.png"
+      "imageUrl": "/images/cogi-give.png"
     },
     "storiesPage": {
       "heroTitle": "Stories of transformation",

@@ -1,3 +1,4 @@
+import siteMedia from './siteMedia.json'
 import type { ActivityItem, AdminUserRecord, AuditRecord, BlogRecord, DashboardStats, EnquiryRecord, EventRecord, HomepageRecord, LocationRecord, MediaFile, NavigationMenu, PageRecord, PartnerRecord, ProgramRecord, SettingsRecord, StoryRecord, SubscriberRecord, TeamRecord, TestimonialRecord } from '@/types'
 import { siteImages, siteVideos } from '@/data/siteCopy'
 
@@ -97,19 +98,7 @@ export const mockPages: PageRecord[] = [
   { id: '17', title: 'Cookie Notice', slug: 'cookie-notice', status: 'published', updatedAt: '2026-01-01', pageType: 'content', templateId: 'starter', showInFooter: true, seo: { metaTitle: 'Cookie Notice – COGI' }, sections: [{ id: 's1', type: 'text', title: 'Cookie Notice', content: 'This website uses essential cookies for navigation, form security, and accessibility preferences.' }] },
   { id: '18', title: 'Accessibility', slug: 'accessibility', status: 'published', updatedAt: '2026-01-01', pageType: 'content', templateId: 'starter', showInFooter: true, seo: { metaTitle: 'Accessibility – COGI' }, sections: [{ id: 's1', type: 'text', title: 'Accessibility Statement', content: 'COGI is committed to WCAG 2.1 AA: skip links, keyboard access, contrast, reduced motion, and descriptive alt text.' }] },
 ]
-export const mockMedia: MediaFile[] = [
-  { id: '1', name: 'cogi-hero.png', url: siteImages.heroCrowd, mime: 'image/png', size: 312000, alternativeText: 'A global gathering of believers on mission', createdAt: '2026-07-10' },
-  { id: '2', name: 'cogi-hands.png', url: siteImages.heroHands, mime: 'image/png', size: 245000, alternativeText: 'Hands joined in prayer and partnership', createdAt: '2026-07-10' },
-  { id: '3', name: 'cogi-kenya.png', url: siteImages.kenya, mime: 'image/png', size: 278000, alternativeText: 'Ministry and training in East Africa', createdAt: '2026-07-11' },
-  { id: '4', name: 'cogi-india.png', url: siteImages.missionField, mime: 'image/png', size: 268000, alternativeText: 'Healthcare professionals serving together', createdAt: '2026-07-09' },
-  { id: '5', name: 'cogi-gathering.png', url: siteImages.historicGathering, mime: 'image/png', size: 256000, alternativeText: 'A historic gathering of the fellowship', createdAt: '2026-07-09' },
-  { id: '6', name: 'cogi-video-thumb.png', url: siteImages.videoThumb, mime: 'image/png', size: 198000, alternativeText: 'Introduction video thumbnail', createdAt: '2026-07-11' },
-  { id: '7', name: 'cogi-enable.png', url: siteImages.enable, mime: 'image/png', size: 210000, alternativeText: 'Enable — communities of learning', createdAt: '2026-07-11' },
-  { id: '8', name: 'cogi-train.png', url: siteImages.train, mime: 'image/png', size: 214000, alternativeText: 'Train — formation experiences', createdAt: '2026-07-11' },
-  { id: '9', name: 'cogi-support.png', url: siteImages.support, mime: 'image/png', size: 208000, alternativeText: 'Support — care for the caregiver', createdAt: '2026-07-11' },
-  { id: '10', name: 'cogi-give.png', url: siteImages.give, mime: 'image/png', size: 190000, alternativeText: 'Give to the work of Companions of Grace', createdAt: '2026-07-12' },
-  { id: '11', name: 'cogi-church.png', url: siteImages.hope, mime: 'image/png', size: 204000, alternativeText: 'Missional church and healthcare', createdAt: '2026-07-12' },
-]
+export const mockMedia: MediaFile[] = siteMedia
 export const mockNavigation: NavigationMenu[] = [
   {
     id: '1',
