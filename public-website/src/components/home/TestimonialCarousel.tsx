@@ -37,7 +37,7 @@ export function TestimonialCarousel({ items }: { items: Testimonial[] }) {
           <p className="font-semibold text-ink">{current.author}</p>
           {current.role ? <p className="text-sm text-ink-muted">{current.role}</p> : null}
           {(current.country || current.program) ? (
-            <p className="mt-1 text-xs uppercase tracking-wide text-gold">{[current.country, current.program].filter(Boolean).join(' · ')}</p>
+            <p className="mt-1 text-xs uppercase tracking-wide text-accent-ink">{[current.country, current.program].filter(Boolean).join(' · ')}</p>
           ) : null}
         </figcaption>
       </figure>
@@ -58,7 +58,7 @@ export function TestimonialCarousel({ items }: { items: Testimonial[] }) {
         </div>
       ) : null}
       <p className="mt-6 text-center">
-        <Link to="/resources/testimonials" className="text-sm font-semibold text-teal-deep hover:text-gold">Read more testimonials →</Link>
+        <Link to="/resources/testimonials" className="text-sm font-semibold text-teal-deep hover:text-accent-ink">Read more testimonials →</Link>
       </p>
     </div>
   )

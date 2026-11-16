@@ -23,10 +23,10 @@ export function PartnersPage() {
                 <div className="mb-4 flex h-16 items-center">
                   <span className="font-display text-2xl font-bold text-teal-deep">{partner.name}</span>
                 </div>
-                {partner.region && <p className="text-xs font-semibold uppercase tracking-wide text-gold">{partner.region}</p>}
+                {partner.region && <p className="text-xs font-semibold uppercase tracking-wide text-accent-ink">{partner.region}</p>}
                 <p className="mt-3 text-ink-muted">{partner.description}</p>
                 {partner.url && (
-                  <a href={partner.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-gold">
+                  <a href={partner.url} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-accent-ink">
                     Visit website →
                   </a>
                 )}

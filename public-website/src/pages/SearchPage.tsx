@@ -50,9 +50,9 @@ export function SearchPage() {
           )}
           {results.map((result) => (
             <Card key={`${result.type}-${result.id}`}>
-              <span className="text-xs font-semibold uppercase tracking-wide text-gold">{result.type}</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-accent-ink">{result.type}</span>
               <h2 className="mt-1 font-display text-xl text-teal-deep">
-                <Link to={result.url} className="hover:text-gold">{result.title}</Link>
+                <Link to={result.url} className="hover:text-accent-ink">{result.title}</Link>
               </h2>
               <p className="mt-2 text-sm text-ink-muted">{result.summary}</p>
             </Card>

@@ -34,7 +34,7 @@ export function ContactPage() {
             <dl className="mt-4 space-y-4">
               <div>
                 <dt className="text-sm font-semibold text-ink-muted">Email</dt>
-                <dd><a href={`mailto:${settings?.contactEmail}`} className="text-teal-deep hover:text-gold">{settings?.contactEmail}</a></dd>
+                <dd><a href={`mailto:${settings?.contactEmail}`} className="text-teal-deep hover:text-accent-ink">{settings?.contactEmail}</a></dd>
               </div>
               {settings?.contactPhone ? <div><dt className="text-sm font-semibold text-ink-muted">Phone</dt><dd><a href={`tel:${settings.contactPhone}`}>{settings.contactPhone}</a></dd></div> : null}
               {settings?.address && (
@@ -50,7 +50,7 @@ export function ContactPage() {
             <ul className="mt-4 space-y-2">
               {socialLinks.map((link) => (
                 <li key={link.platform}>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-teal-deep hover:text-gold">{link.label}</a>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-teal-deep hover:text-accent-ink">{link.label}</a>
                 </li>
               ))}
             </ul>

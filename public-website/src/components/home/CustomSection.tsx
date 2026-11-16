@@ -14,7 +14,7 @@ export function isSplitHomeSection(section: HomeSection) {
 }
 
 function SplitLink({ href, label }: { href: string; label: string }) {
-  const className = 'mt-8 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-teal-deep hover:text-gold'
+  const className = 'mt-8 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-teal-deep hover:text-accent-ink'
   if (href.startsWith('http')) {
     return <a href={href} className={className}>{label} →</a>
   }
@@ -37,8 +37,8 @@ export function SplitBand({ section, imageLeft, tone = 'white' }: { section: Hom
   const copy = (
     <div className="flex items-center px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
       <div className="mx-auto max-w-xl">
-        {section.eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">{section.eyebrow}</p> : null}
-        <h2 className="font-display text-4xl font-semibold italic leading-tight text-teal-deep md:text-5xl">{title}</h2>
+        {section.eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-ink">{section.eyebrow}</p> : null}
+        <h2 className="font-display text-4xl font-semibold leading-tight text-teal-deep md:text-5xl">{title}</h2>
         {body ? <p className="mt-6 text-lg leading-relaxed text-ink-muted">{body}</p> : null}
         {section.buttonLabel && section.buttonHref ? <SplitLink href={section.buttonHref} label={section.buttonLabel} /> : null}
       </div>
@@ -47,7 +47,7 @@ export function SplitBand({ section, imageLeft, tone = 'white' }: { section: Hom
 
   return (
     <section className={tone === 'mist' ? 'bg-[#f5f8fc]' : 'bg-white'} aria-label={title}>
-      <div className="grid md:grid-cols-2">
+      <div className="home-feature-spread grid md:grid-cols-2">
         {left ? (
           <>
             {image}
@@ -87,7 +87,7 @@ export function CustomHomeSection({ section }: { section: HomeSection }) {
       <section className="border-y border-mist-dark bg-white py-14 text-ink md:py-20" aria-label={title}>
         {section.imageUrl ? <MediaPreview src={section.imageUrl} alt={section.imageAlt || title} className="mx-auto mb-8 h-56 max-w-4xl rounded-xl object-cover px-4" /> : null}
         <div className="mx-auto max-w-4xl px-4 text-center">
-          {section.eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">{section.eyebrow}</p> : null}
+          {section.eyebrow ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-ink">{section.eyebrow}</p> : null}
           <h2 className="mt-3 font-display text-4xl font-bold uppercase tracking-wide text-teal-deep md:text-5xl">{title}</h2>
           {body ? <p className="mt-5 text-lg text-ink-muted">{body}</p> : null}
           {button}
@@ -113,7 +113,7 @@ export function CustomHomeSection({ section }: { section: HomeSection }) {
     return (
       <section className="border-y border-mist-dark bg-white py-20 text-ink" aria-label={title}>
         <div className="mx-auto max-w-4xl px-4 text-center">
-          {title ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">{title}</p> : null}
+          {title ? <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-ink">{title}</p> : null}
           <p className="mt-6 font-display text-2xl italic leading-relaxed text-teal-deep md:text-3xl">{body}</p>
         </div>
       </section>

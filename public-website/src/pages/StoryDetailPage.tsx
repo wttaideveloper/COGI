@@ -29,7 +29,7 @@ export function StoryDetailPage() {
       <SEO title={story.title} description={story.summary} path={`/resources/stories/${story.slug}`} />
       <PageHero title={story.title} subtitle={`${story.country} · ${story.program}`} imageUrl={story.imageUrl} />
       <div className="mx-auto max-w-3xl px-4 py-16">
-        <Link to="/resources/stories" className="mb-8 inline-block text-sm font-semibold text-teal-deep hover:text-gold">← Back to stories</Link>
+        <Link to="/resources/stories" className="mb-8 inline-block text-sm font-semibold text-teal-deep hover:text-accent-ink">← Back to stories</Link>
         {story.type === 'video' && story.videoUrl ? (
           <MediaPreview video src={story.videoUrl} poster={story.imageUrl} alt={story.title} className="relative mb-8 aspect-video w-full overflow-hidden bg-black" />
         ) : story.imageUrl ? (

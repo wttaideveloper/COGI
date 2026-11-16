@@ -36,32 +36,27 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
     .filter((group) => group.items.length)
 
   return (
-    <section id="map" className="scroll-mt-28 bg-white py-14 md:py-20">
-      <div className="mx-auto max-w-7xl px-4">
+    <section id="map" className="scroll-mt-28 bg-white py-9 md:py-12">
+      <div className="mx-auto max-w-3xl px-4">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="flex items-center justify-center gap-4">
-            <span className="h-px w-8 bg-gold/40 sm:w-14" aria-hidden="true" />
-            <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-gold">Where we serve</p>
-            <span className="h-px w-8 bg-gold/40 sm:w-14" aria-hidden="true" />
-          </div>
-          <h2 className="mt-4 font-display text-3xl font-semibold italic tracking-tight text-teal-deep md:text-5xl">
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-teal-deep md:text-5xl">
             {title}
           </h2>
-          <p className="mx-auto mt-5 max-w-3xl text-pretty text-base leading-relaxed text-ink-muted md:text-lg">
+          <p className="mx-auto mt-2 max-w-xl text-pretty text-base leading-relaxed text-ink-muted md:text-lg">
             {subtitle}
           </p>
         </div>
 
         <div ref={keepRef}>
-        <div className="mt-10 md:mt-12">
+        <div className="mt-5">
           <WorldMap locations={locations} activeCountry={activeCountry} onSelect={onSelect} />
         </div>
 
-        <div className="mt-8 grid gap-8 sm:grid-cols-2 md:mt-10">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {locationGroups.map((group) => (
             <div key={group.region}>
               <div className="mb-3.5 flex items-center gap-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.3em] text-gold">{group.region}</h3>
+                <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">{group.region}</h3>
                 <span className="h-px flex-1 bg-mist-dark" aria-hidden="true" />
               </div>
               <div className="flex flex-wrap gap-2">

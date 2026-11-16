@@ -69,7 +69,7 @@ export function Footer() {
   const socialLinks = social.length ? social : settings?.socialLinks || []
 
   return (
-    <footer className="border-t border-mist-dark bg-white text-ink" style={{ backgroundColor: footer.backgroundColor || '#ffffff', color: footer.textColor || '#1A2332' }}>
+    <footer className="site-footer border-t" style={{ '--color-accent-ink': 'color-mix(in srgb, currentColor 75%, var(--color-gold))', backgroundColor: footer.backgroundColor || '#203548', color: footer.textColor || '#edf3f7' } as React.CSSProperties}>
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div>
           {footer.logoUrl ? (
@@ -82,7 +82,7 @@ export function Footer() {
           ) : (
             <div>
               <h2 className="font-display text-2xl font-bold leading-tight">Companions of Grace</h2>
-              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.38em] opacity-80">International</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.38em] opacity-80">International</p>
             </div>
           )}
           {footer.copyright ? (
@@ -90,7 +90,7 @@ export function Footer() {
           ) : null}
           <p className="mt-3 text-sm opacity-80">{footer.description || settings?.tagline}</p>
           <p className="mt-4 text-sm">
-            <a href={`mailto:${settings?.contactEmail}`} className="text-gold hover:underline">
+            <a href={`mailto:${settings?.contactEmail}`} className="text-accent-ink hover:underline">
               {settings?.contactEmail}
             </a>
           </p>
@@ -102,7 +102,7 @@ export function Footer() {
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full bg-teal-deep/10 p-2 text-teal-deep hover:bg-gold hover:text-white"
+                  className="rounded-full bg-current/10 p-2 text-current hover:bg-gold hover:text-white"
                   aria-label={link.label}
                 >
                   {socialIcons[link.platform]}
@@ -113,7 +113,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gold">Explore</h3>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-accent-ink">Explore</h3>
           <ul className="space-y-2">
             {menuLinks.map((link) => (
               <li key={link.id || link.href}>
@@ -126,7 +126,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gold">Legal</h3>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-accent-ink">Legal</h3>
           <ul className="space-y-2">
             {legalLinks.map((link) => (
               <li key={link.to}>
@@ -139,7 +139,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gold">Newsletter</h3>
+          <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-accent-ink">Newsletter</h3>
           <NewsletterForm />
         </div>
       </div>
@@ -148,13 +148,13 @@ export function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-6 text-center text-xs uppercase tracking-[0.16em] opacity-70 md:flex-row md:text-left">
           <p className="normal-case tracking-normal opacity-100">{footer.copyright || `© ${new Date().getFullYear()} Companions of Grace International. All rights reserved.`}</p>
           <p>
-            <Link to="/about" className="hover:text-gold">About</Link>
+            <Link to="/about" className="hover:text-accent-ink">About</Link>
             <span className="mx-2">|</span>
-            <Link to="/donate" className="hover:text-gold">Ways to give</Link>
+            <Link to="/donate" className="hover:text-accent-ink">Ways to give</Link>
             <span className="mx-2">|</span>
-            <Link to="/about" className="hover:text-gold">Vision & mission</Link>
+            <Link to="/about" className="hover:text-accent-ink">Vision & mission</Link>
             <span className="mx-2">|</span>
-            <Link to="/contact" className="hover:text-gold">Contact</Link>
+            <Link to="/contact" className="hover:text-accent-ink">Contact</Link>
           </p>
         </div>
       </div>

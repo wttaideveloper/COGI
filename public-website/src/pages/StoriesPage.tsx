@@ -58,14 +58,14 @@ export function StoriesPage() {
                 <span className="text-xs text-ink-muted">{story.country} · {story.program}</span>
               </div>
               <h2 className="mt-3 font-display text-xl text-teal-deep">
-                <Link to={`/resources/stories/${story.slug}`} className="hover:text-gold">{story.title}</Link>
+                <Link to={`/resources/stories/${story.slug}`} className="hover:text-accent-ink">{story.title}</Link>
               </h2>
               {story.summary ? (
                 <blockquote className="mt-3 font-display text-lg italic text-teal-deep">“{story.summary}”</blockquote>
               ) : (
                 <p className="mt-2 text-ink-muted">{story.summary}</p>
               )}
-              <Link to={`/resources/stories/${story.slug}`} className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-gold">
+              <Link to={`/resources/stories/${story.slug}`} className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-accent-ink">
                 {story.type === 'video' ? 'Watch story →' : 'Read story →'}
               </Link>
               </div>

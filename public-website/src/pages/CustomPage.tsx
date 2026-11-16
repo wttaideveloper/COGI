@@ -50,7 +50,7 @@ function renderSection(section: PublicPageSection, index: number) {
             <blockquote className="font-display text-2xl italic leading-relaxed text-teal-deep md:text-3xl">
               {section.content}
             </blockquote>
-            {section.title ? <p className="mt-4 text-sm font-semibold uppercase tracking-wide text-gold">{section.title}</p> : null}
+            {section.title ? <p className="mt-4 text-sm font-semibold uppercase tracking-wide text-accent-ink">{section.title}</p> : null}
           </div>
         </section>
       )
@@ -172,7 +172,7 @@ export function CustomPage() {
             {page.summary ? <p className="text-lg leading-relaxed text-ink-muted">{page.summary}</p> : (
               <p className="text-ink-muted">This page is published. Add sections in Admin → Create page to show more content here.</p>
             )}
-            <Link to="/" className="mt-8 inline-block text-teal-deep hover:text-gold">← Back home</Link>
+            <Link to="/" className="mt-8 inline-block text-teal-deep hover:text-accent-ink">← Back home</Link>
           </div>
         ) : null}
       </main>

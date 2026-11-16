@@ -6,8 +6,8 @@
     "textColor": "#1F2937",
     "accentColor": "#5B8FB5",
     "buttonHoverColor": "#4A7FA3",
-    "fontFamily": "Plus Jakarta Sans, system-ui, sans-serif",
-    "headingFontFamily": "Bricolage Grotesque, system-ui, sans-serif"
+    "fontFamily": "Arial, Helvetica, sans-serif",
+    "headingFontFamily": "Arial, Helvetica, sans-serif"
   },
   "header": {
     "backgroundColor": "#FFFFFF",
@@ -20,8 +20,8 @@
     "sticky": true
   },
   "footer": {
-    "backgroundColor": "#ffffff",
-    "textColor": "#1A2332",
+    "backgroundColor": "#203548",
+    "textColor": "#edf3f7",
     "logoUrl": "/images/cogi-logo.png",
     "logoHeight": 40,
     "description": "Equipping healthcare professionals for Kingdom engagement through training, community, and mission.",
@@ -160,8 +160,8 @@
     "heroIntro": "We bring healthcare professionals together to live out their Christian faith, learn from one another, and serve their communities.",
     "heroHeadlineSize": 96,
     "heroHeadlineCase": "as-typed",
-    "heroMedia": "images",
-    "heroVideoUrl": "https://www.youtube.com/watch?v=r6bd53UB7mk",
+    "heroMedia": "video",
+    "heroVideoUrl": "/videos/intro.mp4",
     "heroImageUrl": "/images/homepage-workshop.jpg",
     "heroImageAlt": "Participants seated around tables during a workshop",
     "heroSlideDuration": 6,
@@ -379,7 +379,7 @@
       "portfolioTitle": "What we do — our portfolio",
       "portfolioSubtitle": "Our programs are organized around four interconnected areas of ministry, each designed to inspire and prepare healthcare professionals for faithful Kingdom engagement.",
       "mapTitle": "Where we serve",
-      "mapSubtitle": "Explore current areas of engagement. Select a nation to see programs, communities, and partnerships on the ground.",
+      "mapSubtitle": "Choose a country to explore our work.",
       "storiesTitle": "Stories of change",
       "storiesSubtitle": "Featured video and written stories from healthcare professionals on the front lines.",
       "watchStoriesCta": "Watch stories",

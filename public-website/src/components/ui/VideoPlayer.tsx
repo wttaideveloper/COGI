@@ -53,7 +53,7 @@ export function VideoPlayer({ src, poster, title, className, initiallyPlaying = 
       {poster ? <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null}
       <span className="absolute inset-0 bg-black/35 transition-colors group-hover:bg-black/45" />
       <span className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gold text-white shadow-lg transition-transform group-hover:scale-105">
+        <span className="flex h-20 w-20 items-center justify-center rounded-full bg-gold text-on-accent shadow-lg transition-transform group-hover:scale-105">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
         </span>
       </span>

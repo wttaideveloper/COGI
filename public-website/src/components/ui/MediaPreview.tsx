@@ -36,11 +36,7 @@ export function MediaPreview({ src, alt, className, video, poster, overlay }: Pr
     })
     return duration
   }, [])
-  const hoverOpened = useRef(false)
-  const [expandedPhoto, setExpandedPhoto] = useState(false)
   const [open, setOpen] = useState(false)
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-  const [playImmediately, setPlayImmediately] = useState(false)
   const exitTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [closing, setClosing] = useState(false)
   const dismiss = useCallback(() => {
@@ -60,66 +56,28 @@ export function MediaPreview({ src, alt, className, video, poster, overlay }: Pr
     if (open) animatePhoto(false)
     return () => photoMotion.current?.cancel()
   }, [open, animatePhoto])
-  const cancelHover = () => clearTimeout(hoverTimer.current)
-  useEffect(() => () => { clearTimeout(hoverTimer.current); clearTimeout(exitTimer.current) }, [])
-  const show = (play: boolean) => {
-    cancelHover()
-    if (dialog.current?.open || document.querySelector('dialog[open]')) return
-    hoverOpened.current = !play
-    setExpandedPhoto(!video && play)
-    setPlayImmediately(play)
+  useEffect(() => () => clearTimeout(exitTimer.current), [])
+  const show = () => {
+    if (document.querySelector('dialog[open]')) return
     dialog.current?.showModal()
     setOpen(true)
   }
-  useEffect(() => {
-    if (!open || !hoverOpened.current) return
-    const close = dismiss
-    const track = (event: PointerEvent) => {
-      const source = trigger.current?.getBoundingClientRect()
-      if (source && event.clientX >= source.left && event.clientX <= source.right &&
-          event.clientY >= source.top && event.clientY <= source.bottom) return
-      const target = event.target
-      if (target instanceof Element && dialog.current?.contains(target) && target !== dialog.current) return
-      close()
-    }
-    document.addEventListener('pointermove', track)
-    document.documentElement.addEventListener('pointerleave', close)
-    window.addEventListener('blur', close)
-    return () => {
-      document.removeEventListener('pointermove', track)
-      document.documentElement.removeEventListener('pointerleave', close)
-      window.removeEventListener('blur', close)
-    }
-  }, [open, expandedPhoto, dismiss])
   const label = alt || (video ? 'Video' : 'Photograph')
   return (
     <>
       <button ref={trigger} type="button" aria-label={`${video ? 'Watch' : 'Enlarge'} ${label}`}
         className={`home-media ${className} ${overlay ? 'home-media-overlay' : ''}`}
-        onPointerEnter={event => {
-          if (!video && event.pointerType === 'mouse' && matchMedia('(hover: hover)').matches) {
-            cancelHover()
-            hoverTimer.current = setTimeout(() => show(false), 420)
-          }
-        }}
-        onPointerLeave={cancelHover}
-        onPointerDown={cancelHover}
-        onClick={() => show(true)}>
+        onClick={show}>
         {!overlay && (video ? poster : src) && <img src={video ? poster : src} alt="" className="h-full w-full object-cover" />}
         <span aria-hidden="true" className="home-media-icon">{video ? '▶' : '⤢'}</span>
       </button>
-      <dialog ref={dialog} aria-label={label} className={video ? "home-viewer video-viewer" : "home-viewer photo-viewer"} data-expanded={expandedPhoto} data-closing={closing}
+      <dialog ref={dialog} aria-label={label} className={video ? "home-viewer video-viewer" : "home-viewer photo-viewer"} data-expanded={!video} data-closing={closing}
         onCancel={event => { event.preventDefault(); dismiss() }}
         onClose={() => { setOpen(false); setClosing(false) }} onClick={e => { if (e.target === e.currentTarget) dismiss() }}>
         {open && <>
           <button autoFocus type="button" aria-label="Close viewer" className="home-viewer-close" onClick={dismiss}>×</button>
-          {video ? <VideoPlayer initiallyPlaying={playImmediately} src={src} title={label} poster={poster} className="relative aspect-video w-full" />
-            : <button ref={photoStage} type="button" className="photo-stage" aria-label={expandedPhoto ? 'Close enlarged photo' : 'Enlarge photo'}
-                onClick={() => {
-                  if (expandedPhoto) { dismiss(); return }
-                  hoverOpened.current = false
-                  setExpandedPhoto(true)
-                }}>
+          {video ? <VideoPlayer initiallyPlaying src={src} title={label} poster={poster} className="relative aspect-video w-full" />
+            : <button ref={photoStage} type="button" className="photo-stage" aria-label="Close enlarged photo" onClick={dismiss}>
                 <img src={src} alt={label} />
               </button>}
         </>}

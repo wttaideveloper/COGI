@@ -131,11 +131,18 @@ export function Header() {
     document.addEventListener('keydown', closeOnEscape)
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [mobileOpen])
+  const [atTop, setAtTop] = useState(true)
+  useEffect(() => {
+    const update = () => setAtTop(window.scrollY < 32)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
+  }, [])
   const sticky = pathname === '/' || header.sticky !== false
   const light = isLightColor(header.backgroundColor || '#FFFFFF')
 
   return (
-    <header
+    <header data-home-cover={pathname === "/" && atTop && !mobileOpen}
       className={clsx('z-40 border-b', light ? 'border-mist-dark shadow-sm' : 'border-white/15', sticky ? 'sticky top-0' : 'relative')}
       style={{ backgroundColor: header.backgroundColor || '#FFFFFF', color: header.textColor || '#1F2937' }}
     >
@@ -151,7 +158,7 @@ export function Header() {
           ) : (
             <span className="flex flex-col text-current">
               <span className="font-display text-xl font-bold leading-tight md:text-2xl">Companions of Grace</span>
-              <span className="text-[0.65rem] font-semibold uppercase tracking-[0.38em] opacity-80">International</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.38em] opacity-80">International</span>
             </span>
           )}
         </Link>

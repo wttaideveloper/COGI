@@ -21,10 +21,10 @@ function NationPanel({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-3 md:flex-row md:items-start md:gap-8">
       <div className="min-w-0 flex-1 text-center md:text-left">
-        <p className="text-[10px] font-bold uppercase tracking-[0.28em]" style={{ color: palette.pinLight }}>
+        <p className="text-xs font-bold uppercase tracking-[0.28em]" style={{ color: palette.light ? palette.pinDeep : palette.pinLight }}>
           {selected.region}
         </p>
-        <h3 className="mt-1 font-display text-[1.85rem] font-semibold italic leading-tight md:text-3xl" style={{ color: palette.ink }}>
+        <h3 className="mt-1 font-display text-[1.85rem] font-semibold leading-tight md:text-3xl" style={{ color: palette.ink }}>
           {selected.country}
         </h3>
         <p className="mt-2 text-sm leading-relaxed md:text-[0.95rem]" style={{ color: palette.muted }}>
@@ -37,7 +37,7 @@ function NationPanel({
             {selected.programs.map((program) => (
               <span
                 key={program}
-                className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                className="rounded-full px-2.5 py-1 text-xs font-semibold"
                 style={{
                   background: `${palette.pin}1f`,
                   color: palette.light ? palette.pinDeep : palette.pinLight,
@@ -52,7 +52,7 @@ function NationPanel({
         <button
           type="button"
           onClick={onClear}
-          className="min-h-11 rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.16em] md:min-h-0 md:py-1"
+          className="min-h-11 rounded-full px-3 text-xs font-semibold uppercase tracking-[0.16em] md:min-h-0 md:py-1"
           style={{ color: palette.muted }}
           aria-label={`Clear ${selected.country} selection`}
         >
@@ -143,7 +143,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-mist-dark" style={{ background: palette.panel, color: palette.ink }}>
-      <div className="globe-environment"><div className="orbital-backdrop" aria-hidden="true"><i /><i /><i /></div><div className="mx-auto my-6 relative aspect-square w-[min(88%,30rem)]">
+      <div className="globe-environment"><div className="orbital-backdrop" aria-hidden="true"><i /><i /><i /></div><div className="mx-auto my-3 relative aspect-square w-[min(72%,18rem)]">
         <canvas ref={canvas} width={720} height={720} aria-label="Rotatable world globe" tabIndex={0}
           className="h-full w-full cursor-grab touch-none rounded-full active:cursor-grabbing"
           onKeyDown={e => {
@@ -179,7 +179,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
         })}
       </div>
       </div><div className="relative flex flex-wrap items-center justify-center gap-4 px-4 pb-5 text-sm">
-        <span>Drag to rotate, or use the arrow keys.</span>
+        <span>Rotate by dragging or using arrow keys.</span>
         <button type="button" className="rounded-full border px-3 py-1" onClick={() => { onSelect(null); setView(initialView) }}>Reset view</button>
       </div>
       {selected && <div className="border-t px-5 py-5" style={{ borderColor: palette.border }}>

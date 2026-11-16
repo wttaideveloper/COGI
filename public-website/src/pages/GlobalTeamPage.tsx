@@ -37,7 +37,7 @@ export function GlobalTeamPage() {
                     <Card key={member.id}>
                       {member.imageUrl ? <MediaPreview src={member.imageUrl} alt={member.name} className="mb-3 h-16 w-16 rounded-full object-cover" /> : null}
                       <h3 className="font-semibold text-teal-deep">{member.name}</h3>
-                      <p className="text-sm text-gold">{member.title}</p>
+                      <p className="text-sm text-accent-ink">{member.title}</p>
                       {member.country ? <p className="text-xs text-ink-muted">{member.country}</p> : null}
                       <p className="mt-2 whitespace-pre-line text-sm text-ink-muted">{stripHtml(member.bio)}</p>
                     </Card>

@@ -1,6 +1,5 @@
 import { HeroBackground } from '@/components/home/HeroBackground'
 import { getPrograms } from '@/api/programs'
-import { HomeBackdrop } from '@/components/home/HomeBackdrop'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -120,7 +119,9 @@ export function HomePage() {
       <section key="hero" className="home-scroll-scene" data-entrance={'animation' in section ? section.animation : undefined} aria-label="Welcome">
         <div className="home-scroll-stage">
         <div className="home-scene-backdrop" aria-hidden="true" />
-        <HomeBackdrop />
+          <div className="hero-cover-media">
+            <HeroBackground mode={site.homepage.heroMedia || 'images'} videoUrl={site.homepage.heroVideoUrl} poster={site.homepage.heroImageUrl} slides={site.homepage.heroSlides || []} intervalMs={(site.homepage.heroSlideDuration ?? 6) * 1000} reduced={reduced} />
+          </div>
         <div className="home-scroll-layout">
           <div className="home-scroll-copy">
           <div>
@@ -146,9 +147,7 @@ export function HomePage() {
             </div>
           </div>
           </div>
-          <div className="hero-photograph relative">
-            <HeroBackground mode={site.homepage.heroMedia || 'images'} videoUrl={site.homepage.heroVideoUrl} poster={site.homepage.heroImageUrl} slides={site.homepage.heroSlides || []} intervalMs={(site.homepage.heroSlideDuration ?? 6) * 1000} reduced={reduced} />
-          </div>
+
         </div>
         </div>
       </section>
@@ -158,7 +157,7 @@ export function HomePage() {
         <div className="mx-auto grid max-w-5xl gap-10 px-4 md:grid-cols-2 md:items-center">
           <div className="text-center md:text-left">
             <p className="text-xs font-bold uppercase tracking-[0.28em]">{copy.eyebrow}</p>
-            <h2 className="mt-3 font-display text-4xl font-bold italic md:text-5xl">{copy.newsletterBannerTitle}</h2>
+            <h2 className="mt-3 font-display text-4xl font-bold md:text-5xl">{copy.newsletterBannerTitle}</h2>
             <p className="mt-5 text-lg leading-relaxed">{copy.newsletterBannerBody}</p>
             <ButtonLink to="/resources/stories" className="mt-8 rounded-sm uppercase tracking-[0.2em]">
               {copy.newsletterBannerCta}
@@ -172,7 +171,7 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'legacy') return (
-      <section key="legacy" className="border-y border-mist-dark bg-white py-14 md:py-20">
+      <section key="legacy" className="home-legacy border-y border-mist-dark bg-white py-14 md:py-20">
         <div className="relative z-10 mx-auto max-w-5xl px-4 text-center text-ink">
               <h2 className="font-display text-4xl font-bold uppercase tracking-wide text-teal-deep md:text-6xl">{copy.legacyTitle}</h2>
               <p className="mx-auto mt-8 max-w-3xl text-lg leading-relaxed text-ink-muted">{copy.legacyBody}</p>
@@ -186,10 +185,10 @@ export function HomePage() {
           </section>
         )
         if (section.id === 'mission') return (
-      <section key="mission" className="bg-white py-14 md:py-20">
+      <section key="mission" className="home-mission bg-white py-14 md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">{missionTitle}</p>
+            <p className="text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">{missionTitle}</p>
             <p className="mt-6 font-display text-2xl leading-relaxed text-ink md:text-3xl">{missionStatement}</p>
             <p className="mt-8 text-sm font-semibold uppercase tracking-[0.2em] text-teal-deep">{missionScripture}</p>
           </div>
@@ -197,9 +196,9 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'methods') return (
-      <section key="methods" className="bg-white py-14 md:py-20">
+      <section key="methods" className="home-methods bg-white py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">{copy.methodsTitle}</p>
+          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">{copy.methodsTitle}</p>
           <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl font-semibold text-teal-deep md:text-5xl">
             {copy.methodsSubtitle}
           </h2>
@@ -208,7 +207,7 @@ export function HomePage() {
               <div key={method.id} className="overflow-hidden rounded-xl border border-mist-dark bg-white">
                 <MediaPreview src={method.imageUrl ?? methodImages[i] ?? siteImages.missionField} alt={method.title} className="h-52 w-full object-cover" />
                 <div className="p-6">
-                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-gold">{method.title}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent-ink">{method.title}</p>
                   <h3 className="mt-2 font-display text-3xl text-teal-deep">{method.subtitle}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ink-muted">{method.description}</p>
                 </div>
@@ -221,13 +220,13 @@ export function HomePage() {
         if (section.id === 'impact') return (
       <section key="impact" className="home-impact border-y border-mist-dark bg-white py-20 text-ink">
         <div className="mx-auto max-w-6xl px-4 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">{copy.impactTitle}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">{copy.impactTitle}</p>
           <p className="mx-auto mt-5 max-w-3xl text-lg text-ink-muted">{copy.impactIntro}</p>
           <div className="mt-12 grid grid-cols-2 gap-10 md:grid-cols-4">
             {impactStats.map((stat) => (
               <div key={stat.id}>
-                <p className="font-display text-5xl font-bold text-gold md:text-6xl">{stat.value}</p>
-                <p className="mt-3 text-[11px] font-bold uppercase leading-snug tracking-[0.16em] text-teal-deep">{stat.label}</p>
+                <p className="font-display text-5xl font-bold text-accent-ink md:text-6xl">{stat.value}</p>
+                <p className="mt-3 text-xs font-bold uppercase leading-snug tracking-[0.16em] text-teal-deep">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -235,18 +234,18 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'portfolio') return (
-      <section key="portfolio" className="bg-white py-14 md:py-20">
+      <section key="portfolio" className="home-portfolio bg-white py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">What we do</p>
+          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">What we do</p>
           <SectionHeading title={copy.portfolioTitle} subtitle={copy.portfolioSubtitle} />
           <div className="grid gap-6 md:grid-cols-2">
             {(programs || []).map((area, i) => (
               <article key={area.id} className="group overflow-hidden rounded-xl border border-mist-dark bg-white">
                 <MediaPreview src={portfolioImages[i] || siteImages.clinic} alt={area.title} className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="p-6">
-                  <h3 className="font-display text-3xl text-teal-deep group-hover:text-gold">{area.title}</h3>
+                  <h3 className="font-display text-3xl text-teal-deep group-hover:text-accent-ink">{area.title}</h3>
                   <p className="mt-3 max-w-xl text-sm text-ink-muted">{area.summary}</p>
-                  <Link to={`/programs/${area.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-gold">Learn more</Link>
+                  <Link to={`/programs/${area.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-accent-ink">Learn more</Link>
                 </div>
               </article>
             ))}
@@ -265,7 +264,7 @@ export function HomePage() {
           />
         )
         if (section.id === 'stories') return (
-      <section key="stories" className="bg-white py-14 md:py-20">
+      <section key="stories" className="home-stories bg-white py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
           <h2 className="text-center font-display text-3xl text-teal-deep md:text-5xl">{copy.storiesTitle}</h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-ink-muted">{copy.storiesSubtitle}</p>
@@ -282,12 +281,12 @@ export function HomePage() {
                   <MediaPreview src={story.imageUrl} alt={story.title} className="h-72 w-full object-cover" />
                 ) : null}
                 <div className="pt-5">
-                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-gold">{story.country} · {story.program}</span>
+                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-accent-ink">{story.country} · {story.program}</span>
                   <h3 className="mt-2 font-display text-2xl text-teal-deep">{story.title}</h3>
                   {story.summary ? (
                     <blockquote className="mt-2 font-display text-lg italic text-teal-deep">“{story.summary}”</blockquote>
                   ) : null}
-                  <Link to={`/resources/stories/${story.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-teal-deep hover:text-gold">
+                  <Link to={`/resources/stories/${story.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-teal-deep hover:text-accent-ink">
                     {story.type === 'video' ? 'Watch full story' : 'Read'}
                   </Link>
                 </div>
@@ -300,7 +299,7 @@ export function HomePage() {
         if (section.id === 'testimonials') return testimonials?.length ? (
       <section key="testimonials" className="bg-mist-gradient py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-gold">{copy.testimonialsEyebrow}</p>
+          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">{copy.testimonialsEyebrow}</p>
           <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl text-teal-deep md:text-5xl">{copy.testimonialsTitle}</h2>
           <div className="mt-12">
             <TestimonialCarousel items={testimonials} />
@@ -309,12 +308,12 @@ export function HomePage() {
       </section>
         ) : null
         if (section.id === 'events') return featuredEvent ? (
-        <section key="events" className="border-y border-mist-dark bg-white py-20 text-ink">
+        <section key="events" className="home-events border-y border-mist-dark bg-white py-20 text-ink">
           <div className="mx-auto max-w-4xl px-4 text-center">
             {siteImages.historicGathering ? (
               <MediaPreview src={siteImages.historicGathering} alt={featuredEvent.title} className="mb-8 h-56 w-full rounded-xl object-cover" />
             ) : null}
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-gold">Featured Event</p>
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-ink">Featured Event</p>
             <h2 className="mt-3 font-display text-4xl font-bold text-teal-deep">{featuredEvent.title}</h2>
             <p className="mt-2 text-ink-muted">{formatDate(featuredEvent.startDate)} · {featuredEvent.location}</p>
             <p className="mt-4 text-ink-muted">{featuredEvent.summary}</p>
@@ -323,7 +322,7 @@ export function HomePage() {
         </section>
         ) : null
         if (section.id === 'newsletter') return (
-      <section key="newsletter" className="bg-white py-20">
+      <section key="newsletter" className="home-newsletter bg-white py-20">
         <div className="mx-auto max-w-xl px-4">
           <SectionHeading title={copy.newsletterTitle} subtitle={copy.newsletterDescription} />
           <div className="border border-mist-dark bg-white p-6"><NewsletterForm /></div>
@@ -331,7 +330,7 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'donate') return (
-      <section key="donate" className="border-y border-mist-dark bg-white py-14 text-ink md:py-20">
+      <section key="donate" className="home-donate border-y border-mist-dark bg-white py-14 text-ink md:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
           {siteImages.give ? (
             <MediaPreview src={siteImages.give} alt={site.copy.donate.giveTitle} className="mb-8 h-52 w-full rounded-xl object-cover" />
@@ -343,11 +342,11 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'faith') return (
-      <section key="faith" className="border-t border-mist-dark bg-white py-20 text-ink">
+      <section key="faith" className="home-faith border-t border-mist-dark bg-white py-20 text-ink">
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <h2 className="text-xs font-bold uppercase tracking-[0.32em] text-gold">{copy.faithTitle}</h2>
+          <h2 className="text-xs font-bold uppercase tracking-[0.32em] text-accent-ink">{copy.faithTitle}</h2>
           <p className="mt-8 font-display text-xl leading-relaxed text-ink-muted md:text-2xl">{copy.faithStatement}</p>
-          <Link to="/about/beliefs" className="mt-8 inline-block text-xs font-bold uppercase tracking-[0.22em] text-gold hover:text-teal-deep">
+          <Link to="/about/beliefs" className="mt-8 inline-block text-xs font-bold uppercase tracking-[0.22em] text-accent-ink hover:text-teal-deep">
             Read our beliefs
           </Link>
         </div>

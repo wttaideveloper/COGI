@@ -9,8 +9,8 @@ export const colorPresets: Array<{ name: string } & ThemeSettings> = [
     textColor: '#1F2937',
     accentColor: '#5B8FB5',
     buttonHoverColor: '#4A7FA3',
-    fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
-    headingFontFamily: 'Cormorant Garamond, Georgia, serif',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    headingFontFamily: 'Arial, Helvetica, sans-serif',
   },
   {
     name: 'Grace Forest',
@@ -48,6 +48,7 @@ export const colorPresets: Array<{ name: string } & ThemeSettings> = [
 ]
 
 export const fontOptions = [
+  { label: 'Arial', value: 'Arial, Helvetica, sans-serif' },
   { label: 'Plus Jakarta Sans', value: 'Plus Jakarta Sans, system-ui, sans-serif' },
   { label: 'Inter (Modern Clean)', value: 'Inter, system-ui, sans-serif' },
   { label: 'Poppins (Friendly)', value: 'Poppins, Inter, sans-serif' },
@@ -57,6 +58,8 @@ export const fontOptions = [
 ]
 
 export const headingFontOptions = [
+  { label: 'Arial', value: 'Arial, Helvetica, sans-serif' },
+  { label: 'Bricolage Grotesque', value: 'Bricolage Grotesque, system-ui, sans-serif' },
   { label: 'Cormorant Garamond', value: 'Cormorant Garamond, Georgia, serif' },
   { label: 'Merriweather (Editorial)', value: 'Merriweather, Georgia, serif' },
   { label: 'Playfair Display (Elegant)', value: '"Playfair Display", Georgia, serif' },
@@ -87,8 +90,8 @@ export const mockHeader: HeaderSettings = {
 }
 
 export const mockFooter: FooterSettings = {
-  backgroundColor: '#ffffff',
-  textColor: '#1A2332',
+  backgroundColor: '#203548',
+  textColor: '#edf3f7',
   logoUrl: '/images/cogi-logo.png',
   logoHeight: 40,
   description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',

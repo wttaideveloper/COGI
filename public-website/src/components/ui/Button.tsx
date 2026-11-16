@@ -11,7 +11,7 @@ interface ButtonBaseProps {
 }
 
 const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-gold text-white hover:bg-gold-light focus-visible:ring-gold',
+  primary: 'bg-gold text-on-accent hover:bg-gold-light focus-visible:ring-gold',
   secondary: 'bg-teal-deep text-white hover:bg-teal-mid focus-visible:ring-teal-light',
   outline: 'border-2 border-teal-deep text-teal-deep hover:bg-teal-deep hover:text-white',
   ghost: 'text-teal-deep hover:bg-mist-dark',

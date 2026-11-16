@@ -36,12 +36,12 @@ export function BoardPage() {
                   {member.imageUrl ? (
                     <MediaPreview src={member.imageUrl} alt={member.name} className="mb-4 h-20 w-20 rounded-full object-cover" />
                   ) : (
-                    <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-mist-dark bg-white text-2xl font-display font-bold text-gold">
+                    <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-mist-dark bg-white text-2xl font-display font-bold text-accent-ink">
                       {initials(member.name) || '—'}
                     </div>
                   )}
                   <h2 className="font-display text-xl text-teal-deep">{member.name}</h2>
-                  <p className="text-sm font-semibold text-gold">{member.title}</p>
+                  <p className="text-sm font-semibold text-accent-ink">{member.title}</p>
                   {member.country ? <p className="mt-1 text-sm text-ink-muted">{member.country}</p> : null}
                   <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm text-ink-muted">{stripHtml(member.bio)}</p>
                   <button type="button" onClick={() => setSelectedId(member.id)} className="mt-4 inline-block text-sm font-semibold text-teal-mid">Read full bio →</button>
@@ -56,7 +56,7 @@ export function BoardPage() {
       <Modal isOpen={!!selected} onClose={() => setSelectedId(null)} title={selected?.name ?? ''}>
         {selected ? (
           <>
-            <p className="font-semibold text-gold">{selected.title}</p>
+            <p className="font-semibold text-accent-ink">{selected.title}</p>
             {selected.country ? <p className="text-sm text-ink-muted">{selected.country}</p> : null}
             <p className="mt-4 whitespace-pre-line leading-relaxed text-ink">{stripHtml(selected.bio)}</p>
           </>

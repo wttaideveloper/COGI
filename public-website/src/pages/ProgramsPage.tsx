@@ -22,17 +22,17 @@ export function ProgramsPage() {
           <div className="grid gap-8 md:grid-cols-2">
             {programs?.map((program) => (
               <Card key={program.id} as="article" className="flex flex-col">
-                <span className="text-xs font-semibold uppercase tracking-wide text-gold">{program.area}</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-accent-ink">{program.area}</span>
                 <h2 className="mt-2 font-display text-2xl text-teal-deep">
-                  <Link to={`/programs/${program.slug}`} className="hover:text-gold">{program.title}</Link>
+                  <Link to={`/programs/${program.slug}`} className="hover:text-accent-ink">{program.title}</Link>
                 </h2>
                 <p className="mt-3 flex-1 text-ink-muted">{program.summary}</p>
                 <ul className="mt-4 space-y-1">
                   {program.experiences.map((exp) => (
                     <li key={exp.id} className="text-sm text-ink-muted">
                       · {exp.title}
-                      {exp.status === 'development' && <span className="ml-2 text-xs text-gold">(under development)</span>}
-                      {exp.status === 'placeholder' && <span className="ml-2 text-xs text-gold">(coming soon)</span>}
+                      {exp.status === 'development' && <span className="ml-2 text-xs text-accent-ink">(under development)</span>}
+                      {exp.status === 'placeholder' && <span className="ml-2 text-xs text-accent-ink">(coming soon)</span>}
                     </li>
                   ))}
                 </ul>

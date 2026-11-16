@@ -128,8 +128,8 @@ const defaults: SiteConfig = {
     textColor: '#1F2937',
     accentColor: '#5B8FB5',
     buttonHoverColor: '#4A7FA3',
-    fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
-    headingFontFamily: 'Cormorant Garamond, Georgia, serif',
+    fontFamily: 'Arial, Helvetica, sans-serif',
+    headingFontFamily: 'Arial, Helvetica, sans-serif',
   },
   header: {
     backgroundColor: '#FFFFFF',
@@ -142,8 +142,8 @@ const defaults: SiteConfig = {
     sticky: true,
   },
   footer: {
-    backgroundColor: '#ffffff',
-    textColor: '#1A2332',
+    backgroundColor: '#203548',
+    textColor: '#edf3f7',
     logoUrl: '/images/cogi-logo.png',
     logoHeight: 48,
     description: 'Equipping healthcare professionals for Kingdom engagement through training, community, and mission.',
@@ -252,11 +252,13 @@ export function applyTheme(theme: SiteConfig['theme'], chrome?: Pick<SiteConfig,
   root.style.setProperty('--color-teal-mid', theme.secondaryColor)
   root.style.setProperty('--color-teal-light', theme.buttonHoverColor || theme.accentColor)
   root.style.setProperty('--color-gold', theme.accentColor)
+  root.style.setProperty('--color-accent-ink', 'color-mix(in srgb, var(--color-gold) 62%, #10202f)')
+  root.style.setProperty('--color-on-accent', buttonHoverStyle(theme.accentColor)['--button-fill-ink'])
   root.style.setProperty('--color-gold-light', theme.buttonHoverColor || theme.accentColor)
   root.style.setProperty('--color-mist', theme.backgroundColor || '#ffffff')
   root.style.setProperty('--color-mist-dark', '#e8eef3')
   root.style.setProperty('--color-ink', theme.textColor)
-  root.style.setProperty('--color-ink-muted', '#5a6a80')
+  root.style.setProperty('--color-ink-muted', '#4c5c6e')
   root.style.setProperty('--font-body', theme.fontFamily)
   root.style.setProperty('--font-display', theme.headingFontFamily)
   if (chrome?.header?.logoHeight) {

@@ -31,7 +31,7 @@ export function BlogDetailPage() {
       <article className="mx-auto max-w-3xl px-4 py-16 prose prose-teal">
         <div className="leading-relaxed text-ink [&_p]:mb-4 [&_strong]:text-teal-deep" dangerouslySetInnerHTML={{ __html: post.content }} />
         <ShareButtons title={post.title} path={`/resources/blog/${post.slug}`} className="mt-10" />
-        <Link to="/resources/blog" className="mt-8 inline-block text-teal-deep hover:text-gold">← Back to Blog</Link>
+        <Link to="/resources/blog" className="mt-8 inline-block text-teal-deep hover:text-accent-ink">← Back to Blog</Link>
       </article>
     </>
   )

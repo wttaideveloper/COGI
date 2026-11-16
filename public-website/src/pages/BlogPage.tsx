@@ -38,13 +38,13 @@ export function BlogPage() {
               <Card key={post.id} as="article" className="overflow-hidden !p-0">
                 {post.imageUrl ? <MediaPreview src={post.imageUrl} alt={post.imageAlt || ''} className="h-56 w-full object-cover" /> : null}
                 <div className="p-6">
-                <span className="text-xs font-semibold uppercase tracking-wide text-gold">{post.category}</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-accent-ink">{post.category}</span>
                 <h2 className="mt-2 font-display text-2xl text-teal-deep">
-                  <Link to={`/resources/blog/${post.slug}`} className="hover:text-gold">{post.title}</Link>
+                  <Link to={`/resources/blog/${post.slug}`} className="hover:text-accent-ink">{post.title}</Link>
                 </h2>
                 <p className="mt-1 text-sm text-ink-muted">{formatDate(post.publishedAt)} · {post.author}</p>
                 <p className="mt-3 text-ink-muted">{post.summary}</p>
-                <Link to={`/resources/blog/${post.slug}`} className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-gold">Read article →</Link>
+                <Link to={`/resources/blog/${post.slug}`} className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-accent-ink">Read article →</Link>
                 </div>
               </Card>
             ))}

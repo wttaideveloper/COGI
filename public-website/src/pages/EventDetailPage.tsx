@@ -29,7 +29,7 @@ export function EventDetailPage() {
       <SEO title={event.title} description={event.summary} path={`/events/${event.slug}`} />
       <PageHero title={event.title} subtitle={event.category} />
       <div className="mx-auto max-w-3xl px-4 py-16">
-        <Link to="/events" className="mb-8 inline-block text-sm font-semibold text-teal-deep hover:text-gold">← Back to Events</Link>
+        <Link to="/events" className="mb-8 inline-block text-sm font-semibold text-teal-deep hover:text-accent-ink">← Back to Events</Link>
         <Card>
           <dl className="grid gap-4 sm:grid-cols-2">
             <div><dt className="text-sm font-semibold text-ink-muted">Date</dt><dd>{formatDate(event.startDate)}{event.endDate && ` – ${formatDate(event.endDate)}`}</dd></div>
@@ -41,7 +41,7 @@ export function EventDetailPage() {
             Register Interest
           </ButtonLink>
         </Card>
-        <Link to="/events" className="mt-8 inline-block text-teal-deep hover:text-gold">← Back to Events</Link>
+        <Link to="/events" className="mt-8 inline-block text-teal-deep hover:text-accent-ink">← Back to Events</Link>
       </div>
     </>
   )
