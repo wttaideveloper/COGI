@@ -614,3 +614,33 @@ header nav, .site-footer nav, .home-scroll-copy p { font-family: var(--font-body
   padding: 2px;
   object-fit: contain;
 }
+
+.about-hero {
+  background: linear-gradient(112deg, #172b3c, #28465e);
+  color: #fff;
+}
+.about-hero-inner {
+  display: grid; align-items: center; gap: clamp(2rem, 5vw, 5rem);
+  max-width: 76rem; margin: auto; padding: clamp(2rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
+}
+.about-hero h1 {
+  font-family: var(--font-display); font-size: clamp(2.35rem, 1.55rem + 3vw, 4.25rem);
+  font-weight: 700; letter-spacing: -.04em; line-height: 1.08; text-wrap: balance;
+}
+#main-content .about-hero p { max-width: 48ch; margin-top: 1rem; color: #e4edf4; font-size: clamp(1rem, .94rem + .32vw, 1.2rem); line-height: 1.6; }
+.about-hero .about-hero-photo { width: 100%; aspect-ratio: 16 / 9; border-radius: 1.15rem; box-shadow: 0 1rem 2.5rem #0c182840; }
+.about-navigation { border-bottom: 1px solid #d7e3eb; background: #f4f7f9; }
+.about-navigation > div { display: flex; flex-wrap: wrap; gap: .35rem .75rem; max-width: 76rem; margin: auto; padding: .7rem clamp(1rem, 4vw, 3rem); }
+.about-navigation a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .4rem .75rem; border-radius: .55rem; font-size: .875rem; font-weight: 600; color: #334f65; }
+.about-navigation a:is(:hover,:focus-visible) { background: #dfebf2; }
+.about-navigation a[aria-current="page"] { background: #233e53; color: white; }
+.about-body { padding-block: clamp(2.5rem, 5vw, 5rem); padding-inline: clamp(1.25rem, 4vw, 3rem); }
+.about-body .site-depth-card { border-color: #d7e3eb; padding: clamp(1.25rem, 2.5vw, 2rem); }
+.about-body > p:first-child { max-width: 68ch; }
+.about-purpose { display: grid; gap: 1.25rem; max-width: 76rem; }
+.about-purpose section { margin: 0; padding: clamp(1.5rem, 3.5vw, 3rem); border-radius: 1.25rem; background: #edf4f8; }
+.about-purpose section + section { background: #fafcfd; border: 1px solid #d6e3eb; }
+@media (min-width: 768px) {
+  .about-hero-inner { grid-template-columns: 1fr 1.08fr; }
+  .about-purpose { grid-template-columns: 1fr 1.15fr; }
+}

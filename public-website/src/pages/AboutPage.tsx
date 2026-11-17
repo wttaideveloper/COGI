@@ -1,6 +1,5 @@
+import { AboutHero } from '@/components/layout/AboutHero'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero } from '@/components/ui/Card'
-import { ButtonLink } from '@/components/ui/Button'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { defaultSiteCopy } from '@/data/siteCopy'
 
@@ -23,8 +22,8 @@ export function AboutPage() {
   return (
     <>
       <SEO title={heroTitle} description={visionBody} path="/about" />
-      <PageHero title={heroTitle} subtitle={heroSubtitle} imageUrl={page.imageUrl || defaults.imageUrl} />
-      <div className="mx-auto max-w-4xl px-4 py-16">
+      <AboutHero title={heroTitle} subtitle={heroSubtitle} imageUrl={page.imageUrl || defaults.imageUrl} />
+      <div className="about-body about-purpose mx-auto max-w-4xl px-4 py-16">
         <section className="mb-16">
           <h2 className="font-display text-3xl text-teal-deep">{visionTitle}</h2>
           <p className="mt-4 text-lg leading-relaxed text-ink">{visionBody}</p>
@@ -40,12 +39,7 @@ export function AboutPage() {
             </div>
           ) : null}
         </section>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <ButtonLink to="/about/our-story" variant="outline">Our Story</ButtonLink>
-          <ButtonLink to="/about/beliefs" variant="outline">Our Beliefs</ButtonLink>
-          <ButtonLink to="/about/board" variant="outline">Board Members</ButtonLink>
-          <ButtonLink to="/about/partners" variant="outline">Our Partners</ButtonLink>
-        </div>
+
       </div>
     </>
   )

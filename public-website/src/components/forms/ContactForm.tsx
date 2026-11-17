@@ -17,7 +17,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-export function ContactForm({ defaultType }: { defaultType?: string }) {
+export function ContactForm({ defaultType, submitLabel = 'Send Message' }: { defaultType?: string; submitLabel?: string }) {
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const {
     register,
@@ -92,7 +92,7 @@ export function ContactForm({ defaultType }: { defaultType?: string }) {
         </p>
       )}
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Sending…' : 'Send Message'}
+        {isSubmitting ? 'Sending…' : submitLabel}
       </Button>
     </form>
   )

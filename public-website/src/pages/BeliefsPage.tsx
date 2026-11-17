@@ -1,5 +1,6 @@
+import { AboutHero } from '@/components/layout/AboutHero'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero, Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function BeliefsPage() {
@@ -9,10 +10,10 @@ export function BeliefsPage() {
   return (
     <>
       <SEO title={beliefs.heroTitle} description={beliefs.intro} path="/about/beliefs" />
-      <PageHero title={beliefs.heroTitle} subtitle={beliefs.heroSubtitle} imageUrl={beliefs.imageUrl} />
-      <div className="mx-auto max-w-4xl px-4 py-16">
+      <AboutHero title={beliefs.heroTitle} subtitle={beliefs.heroSubtitle} imageUrl={beliefs.imageUrl} />
+      <div className="about-body mx-auto max-w-6xl px-4 py-16">
         <p className="mb-12 text-lg text-ink-muted">{beliefs.intro}</p>
-        <div className="space-y-6">
+        <div className="grid gap-5 md:grid-cols-2">
           {beliefs.items.map((belief) => (
             <Card key={belief.id} as="article">
               <h2 className="font-display text-xl text-teal-deep">{belief.title}</h2>

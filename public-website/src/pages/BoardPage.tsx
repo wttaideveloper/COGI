@@ -1,7 +1,8 @@
+import { AboutHero } from '@/components/layout/AboutHero'
 import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero, Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { stripHtml } from '@/data/siteCopy'
@@ -26,8 +27,8 @@ export function BoardPage() {
   return (
     <>
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/about/board" />
-      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
-      <div className="mx-auto max-w-7xl px-4 py-16">
+      <AboutHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
+      <div className="about-body mx-auto max-w-7xl px-4 py-16">
         {members.length ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {members.map((member) => (

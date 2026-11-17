@@ -473,7 +473,11 @@ export default function WebsiteCopyPage() {
               {tab === 'events' && (
                 <>
                   <HeroFields title="Events" heroTitle={copy.events.heroTitle} heroSubtitle={copy.events.heroSubtitle} imageUrl={copy.events.imageUrl} onChange={(p) => patch('events', { ...copy.events, ...p })} />
-                  <p className="hp-hint">Individual events are created under Website content → Events. This screen only edits the Events page banner.</p>
+                  <Card title="Page wording">
+                    <Field label="Featured badge"><TextInput value={copy.events.featuredLabel} onChange={v => patch('events', { ...copy.events, featuredLabel: v })} /></Field>
+                    <Field label="Event link text"><TextInput value={copy.events.detailsLabel} onChange={v => patch('events', { ...copy.events, detailsLabel: v })} /></Field>
+                  </Card>
+                  <p className="hp-hint">Individual events are created under Website content → Events. Use this screen for the banner and listing labels.</p>
                   <Link className="btn-secondary w-fit" to="/events/new">Create an event</Link>
                 </>
               )}
@@ -486,6 +490,9 @@ export default function WebsiteCopyPage() {
                     imageUrl={copy.resources.imageUrl}
                     onChange={(p) => patch('resources', { ...copy.resources, ...p })}
                   />
+                  <Card title="Page wording">
+                    <Field label="Default card link text"><TextInput value={copy.resources.exploreLabel} onChange={v => patch('resources', { ...copy.resources, exploreLabel: v })} /></Field>
+                  </Card>
                   <Card title="Resource cards">
                     {copy.resources.cards.map((item, index) => (
                       <BlockEditor
@@ -493,6 +500,7 @@ export default function WebsiteCopyPage() {
                         block={item}
                         showLink
                         showImage
+                        showCta
                         onChange={(block) => {
                           const cards = copy.resources.cards.map((row, i) => (i === index ? block : row))
                           patch('resources', { ...copy.resources, cards })
@@ -534,6 +542,11 @@ export default function WebsiteCopyPage() {
                     imageUrl={copy.getInvolved.imageUrl}
                     onChange={(p) => patch('getInvolved', { ...copy.getInvolved, ...p })}
                   />
+                  <Card title="Page wording">
+                    <Field label="Newsletter heading"><TextInput value={copy.getInvolved.newsletterTitle} onChange={v => patch('getInvolved', { ...copy.getInvolved, newsletterTitle: v })} /></Field>
+                    <Field label="Newsletter introduction"><TextInput value={copy.getInvolved.newsletterIntro} onChange={v => patch('getInvolved', { ...copy.getInvolved, newsletterIntro: v })} /></Field>
+                    <Field label="Submit button text"><TextInput value={copy.getInvolved.submitLabel} onChange={v => patch('getInvolved', { ...copy.getInvolved, submitLabel: v })} /></Field>
+                  </Card>
                   <Card title="Form">
                     <Field label="Form title"><TextInput value={copy.getInvolved.formTitle} onChange={(v) => patch('getInvolved', { ...copy.getInvolved, formTitle: v })} /></Field>
                     <Field label="Form intro"><TextArea value={copy.getInvolved.formIntro} onChange={(v) => patch('getInvolved', { ...copy.getInvolved, formIntro: v })} rows={2} /></Field>
@@ -624,6 +637,12 @@ export default function WebsiteCopyPage() {
                     imageUrl={copy.contact.imageUrl}
                     onChange={(p) => patch('contact', { ...copy.contact, ...p })}
                   />
+                  <Card title="Page wording">
+                    <Field label="Public email (overrides global settings)"><TextInput value={copy.contact.email} onChange={v => patch('contact', { ...copy.contact, email: v })} /></Field>
+                    <Field label="Public phone (overrides global settings)"><TextInput value={copy.contact.phone} onChange={v => patch('contact', { ...copy.contact, phone: v })} /></Field>
+                    <Field label="Office address (overrides global settings)"><TextInput value={copy.contact.office} onChange={v => patch('contact', { ...copy.contact, office: v })} /></Field>
+                    <Field label="Submit button text"><TextInput value={copy.contact.submitLabel} onChange={v => patch('contact', { ...copy.contact, submitLabel: v })} /></Field>
+                  </Card>
                   <Card title="Page labels">
                     <Field label="Form title"><TextInput value={copy.contact.formTitle} onChange={(v) => patch('contact', { ...copy.contact, formTitle: v })} /></Field>
                     <Field label="Info title"><TextInput value={copy.contact.infoTitle} onChange={(v) => patch('contact', { ...copy.contact, infoTitle: v })} /></Field>
@@ -859,12 +878,14 @@ function BlockEditor({
   onRemove,
   showLink,
   showImage,
+  showCta,
 }: {
   block: CopyBlock
   onChange: (block: CopyBlock) => void
   onRemove: () => void
   showLink?: boolean
   showImage?: boolean
+  showCta?: boolean
 }) {
   return (
     <div className="space-y-3 rounded-xl border border-[var(--color-border)] p-3">
@@ -873,6 +894,7 @@ function BlockEditor({
         <button type="button" className="btn-danger self-end" onClick={onRemove}>Remove</button>
       </div>
       <Field label="Body"><TextArea value={block.body} onChange={(v) => onChange({ ...block, body: v })} /></Field>
+      {showCta && <Field label="Card link text"><TextInput value={block.cta || ''} onChange={v => onChange({ ...block, cta: v })} /></Field>}
       {showLink ? <Field label="Link" hint="Use a site path like /resources/stories"><TextInput value={block.href || ''} onChange={(v) => onChange({ ...block, href: v })} placeholder="/resources/stories" /></Field> : null}
       {showImage ? <PhotoField label="Photo" value={block.imageUrl} onChange={(v) => onChange({ ...block, imageUrl: v })} /> : null}
     </div>

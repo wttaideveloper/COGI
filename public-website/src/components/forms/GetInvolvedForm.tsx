@@ -24,7 +24,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>
 
-export function GetInvolvedForm({ defaultPathway }: { defaultPathway?: FormData['pathway'] }) {
+export function GetInvolvedForm({ defaultPathway, submitLabel = 'Join the Movement' }: { defaultPathway?: FormData['pathway']; submitLabel?: string }) {
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null)
   const {
     register,
@@ -117,7 +117,7 @@ export function GetInvolvedForm({ defaultPathway }: { defaultPathway?: FormData[
       )}
 
       <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? 'Submitting…' : 'Join the Movement'}
+        {isSubmitting ? 'Submitting…' : submitLabel}
       </Button>
     </form>
   )

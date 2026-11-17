@@ -84,6 +84,7 @@ export type SiteCopy = {
     items: Array<{ id: string; title: string; content: string }>
   }
   getInvolved: {
+    newsletterTitle: string; newsletterIntro: string; submitLabel: string
     heroTitle: string
     heroSubtitle: string
     formTitle: string
@@ -110,14 +111,15 @@ export type SiteCopy = {
     faqs: Array<{ id: string; question: string; answer: string }>
   }
   resources: {
+    exploreLabel: string
     heroTitle: string
     heroSubtitle: string
     imageUrl?: string
     cards: CopyBlock[]
   }
-  contact: PageHeroCopy & { formTitle: string; infoTitle: string; socialTitle: string; mapNote: string }
+  contact: PageHeroCopy & { email: string; phone: string; office: string; submitLabel: string; formTitle: string; infoTitle: string; socialTitle: string; mapNote: string }
   programs: PageHeroCopy & { learnMore: string; expressInterest: string }
-  events: PageHeroCopy
+  events: PageHeroCopy & { featuredLabel: string; detailsLabel: string }
   board: PageHeroCopy & {
     members: Array<{ id: string; name: string; title: string; country: string; bio: string; imageUrl?: string }>
   }
@@ -213,6 +215,9 @@ export const defaultSiteCopy: SiteCopy = {
     ],
   },
   getInvolved: {
+    newsletterTitle: "Stay in touch",
+    newsletterIntro: "Subscribe for stories, events, and ways to serve.",
+    submitLabel: "Join the Movement",
     heroTitle: 'Get involved',
     heroSubtitle: 'Pray · Participate · Partner',
     formTitle: 'Join the movement',
@@ -245,6 +250,7 @@ export const defaultSiteCopy: SiteCopy = {
     ],
   },
   resources: {
+    exploreLabel: "Explore",
     heroTitle: 'Resources',
     heroSubtitle: 'Stories of transformation, testimonials, and insights from the COGI fellowship',
     cards: [
@@ -254,6 +260,10 @@ export const defaultSiteCopy: SiteCopy = {
     ],
   },
   contact: {
+    email: "",
+    phone: "",
+    office: "",
+    submitLabel: "Send Message",
     heroTitle: 'Contact us',
     heroSubtitle: "We'd love to hear from you",
     imageUrl: siteImages.community,
@@ -270,6 +280,8 @@ export const defaultSiteCopy: SiteCopy = {
     expressInterest: 'Express interest',
   },
   events: {
+    featuredLabel: "Featured",
+    detailsLabel: "View details",
     heroTitle: 'Events',
     heroSubtitle: 'Seminars, trainings, and immersive experiences',
     imageUrl: siteImages.historicGathering,

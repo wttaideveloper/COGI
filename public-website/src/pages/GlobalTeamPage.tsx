@@ -1,7 +1,8 @@
+import { AboutHero } from '@/components/layout/AboutHero'
 import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero, Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { stripHtml } from '@/data/siteCopy'
 
@@ -15,8 +16,8 @@ export function GlobalTeamPage() {
   return (
     <>
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/about/global-team" />
-      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
-      <div className="mx-auto max-w-4xl px-4 py-16 space-y-4">
+      <AboutHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
+      <div className="about-body mx-auto max-w-4xl px-4 py-16 space-y-4">
         {regions.length ? regions.map((region) => {
           const group = members.filter((member) => member.region === region)
           const isOpen = expanded === region

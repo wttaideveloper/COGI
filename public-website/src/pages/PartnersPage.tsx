@@ -1,7 +1,8 @@
+import { AboutHero } from '@/components/layout/AboutHero'
 import { useQuery } from '@tanstack/react-query'
 import { getPartners } from '@/api/partners'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero, Card, Skeleton } from '@/components/ui/Card'
+import { Card, Skeleton } from '@/components/ui/Card'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
 export function PartnersPage() {
@@ -12,8 +13,8 @@ export function PartnersPage() {
   return (
     <>
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/about/partners" />
-      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
-      <div className="mx-auto max-w-7xl px-4 py-16">
+      <AboutHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
+      <div className="about-body mx-auto max-w-7xl px-4 py-16">
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-40" />)}</div>
         ) : (

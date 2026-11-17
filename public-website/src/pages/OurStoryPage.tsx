@@ -1,7 +1,6 @@
-import { MediaPreview } from '@/components/ui/MediaPreview'
+import { AboutHero } from '@/components/layout/AboutHero'
 import { motion } from 'framer-motion'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero } from '@/components/ui/Card'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
@@ -33,12 +32,9 @@ export function OurStoryPage() {
   return (
     <>
       <SEO title={story.heroTitle} description={story.intro} path="/about/our-story" />
-      <PageHero title={story.heroTitle} subtitle={story.heroSubtitle} imageUrl={story.imageUrl} />
-      <div className="mx-auto max-w-3xl px-4 py-16">
+      <AboutHero title={story.heroTitle} subtitle={story.heroSubtitle} imageUrl={story.imageUrl} />
+      <div className="about-body mx-auto max-w-3xl px-4 py-16">
         <p className="mb-12 text-lg leading-relaxed text-ink">{story.intro}</p>
-        {story.imageUrl ? (
-          <MediaPreview src={story.imageUrl} alt={story.heroTitle} className="mb-12 h-72 w-full rounded-xl object-cover shadow-lg" />
-        ) : null}
         <div className="relative border-l-2 border-gold pl-8">
           {story.milestones.map((milestone, i) => (
             <motion.article

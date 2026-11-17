@@ -1,5 +1,6 @@
+import { PhotoHero } from '@/components/layout/PhotoHero'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero, Card } from '@/components/ui/Card'
+import { Card } from '@/components/ui/Card'
 import { GetInvolvedForm } from '@/components/forms/GetInvolvedForm'
 import { NewsletterForm } from '@/components/forms/NewsletterForm'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
@@ -14,8 +15,8 @@ export function GetInvolvedPage() {
   return (
     <>
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/get-involved" />
-      <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
-      <div className="mx-auto max-w-5xl px-4 py-16">
+      <PhotoHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
+      <div className="about-body mx-auto max-w-6xl">
         <div className="mb-16 grid gap-6 md:grid-cols-3">
           {page.pathways.map((p) => (
             <Card key={p.title} as="article">
@@ -24,21 +25,22 @@ export function GetInvolvedPage() {
             </Card>
           ))}
         </div>
+        <div className="grid items-start gap-6 lg:grid-cols-[1.6fr_1fr]">
         <Card>
           <h2 id="form" className="font-display text-2xl text-teal-deep">{page.formTitle}</h2>
           <p className="mt-2 text-ink-muted">{page.formIntro}</p>
-          <p className="mt-2 text-sm text-ink-muted">Volunteer applications are stored in the admin inbox and emailed to the team.</p>
           <div className="mt-8">
-            <GetInvolvedForm />
+            <GetInvolvedForm submitLabel={page.submitLabel} />
           </div>
         </Card>
-        <Card className="mt-10">
-          <h2 className="font-display text-2xl text-teal-deep">Stay in touch</h2>
-          <p className="mt-2 text-ink-muted">Subscribe for stories, events, and ways to serve.</p>
+        <Card className="bg-mist-dark/40">
+          <h2 className="font-display text-2xl text-teal-deep">{page.newsletterTitle}</h2>
+          <p className="mt-2 text-ink-muted">{page.newsletterIntro}</p>
           <div className="mt-6 max-w-md">
             <NewsletterForm />
           </div>
         </Card>
+        </div>
       </div>
     </>
   )
