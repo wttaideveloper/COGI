@@ -4,11 +4,22 @@ const { createStrapi } = require('@strapi/strapi');
 
 // Run from strapi-backend after compiling its TypeScript configuration.
 async function main() {
-  const snapshotPath = path.resolve('../public-website/public/site-config.json');
+  const publicDir = path.resolve(process.env.WEBSITE_PUBLIC_DIR || '../public-website/public');
+  const snapshotPath = path.join(publicDir, 'site-config.json');
   const snapshot = JSON.parse(fs.readFileSync(snapshotPath, 'utf8'));
   fs.mkdirSync(path.resolve('public/uploads'), { recursive: true });
   const strapi = await createStrapi({ distDir: './dist' }).load();
   try {
+    if (process.argv.includes('--if-newer')) {
+      const live = await strapi.documents('api::site-config.site-config').findFirst({ status: 'published' });
+      const incomingTime = Date.parse(snapshot.updatedAt) || 0;
+      const liveTime = Date.parse(live?.payload?.updatedAt) || 0;
+      if (!incomingTime) throw new Error('Deployment snapshot needs a valid updatedAt timestamp.');
+      if (liveTime >= incomingTime) {
+        console.log('Published CMS content is already current; preserving it.');
+        return;
+      }
+    }
     async function upsert(uid, key, value, data) {
       const documents = strapi.documents(uid);
       const existing = await documents.findFirst({ filters: { [key]: value }, status: 'draft' });
@@ -45,7 +56,7 @@ async function main() {
     const mediaIds = new Map();
     async function upload(url) {
       if (mediaIds.has(url)) return mediaIds.get(url);
-      const filename = path.resolve('../public-website/public' + url);
+      const filename = path.join(publicDir, url.replace(/^\/+/, ''));
       const name = path.basename(filename);
       const existing = await strapi.db.query('plugin::upload.file').findOne({ where: { name } });
       if (existing) { mediaIds.set(url, existing.id); return existing.id; }

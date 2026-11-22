@@ -9,9 +9,15 @@ const MAX_BODY_BYTES = 10 * 1024 * 1024
 const CONFIG_FILE = path.join(DATA_DIR, 'site-config.json')
 
 function ensureConfig() {
-  if (!fs.existsSync(CONFIG_FILE) && fs.existsSync(SEED_FILE)) {
-    fs.writeFileSync(CONFIG_FILE, fs.readFileSync(SEED_FILE, 'utf8'))
-  }
+  if (!fs.existsSync(SEED_FILE)) return
+  const seedText = fs.readFileSync(SEED_FILE, 'utf8')
+  const seed = JSON.parse(seedText)
+  const current = fs.existsSync(CONFIG_FILE) ? JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) : null
+  // Deploy newer repository content, while preserving subsequent admin publishes.
+  if (current && (Date.parse(seed.updatedAt) || 0) <= (Date.parse(current.updatedAt) || 0)) return
+  fs.mkdirSync(DATA_DIR, { recursive: true })
+  fs.writeFileSync(CONFIG_FILE + '.tmp', seedText)
+  fs.renameSync(CONFIG_FILE + '.tmp', CONFIG_FILE)
 }
 
 function send(res, status, body, contentType) {
@@ -37,9 +43,10 @@ async function verifyWithStrapi(token) {
 
 function createServer(verifyToken = verifyWithStrapi) {
   return http.createServer((req, res) => {
+  const pathname = new URL(req.url, 'http://localhost').pathname
   if (req.method === 'OPTIONS') return send(res, 204, '')
 
-  if (req.method === 'GET' && (req.url === '/site-config.json' || req.url === '/__site-config')) {
+  if (req.method === 'GET' && (pathname === '/site-config.json' || pathname === '/__site-config')) {
     try {
       ensureConfig()
       if (!fs.existsSync(CONFIG_FILE)) return send(res, 404, JSON.stringify({ error: 'not found' }))
@@ -49,7 +56,7 @@ function createServer(verifyToken = verifyWithStrapi) {
     }
   }
 
-  if (req.method === 'POST' && req.url === '/__site-config') {
+  if (req.method === 'POST' && pathname === '/__site-config') {
     const match = /^Bearer\s+(\S+)$/.exec(req.headers.authorization || '')
     if (!match) return send(res, 401, JSON.stringify({ error: 'authentication required' }))
     const chunks = []

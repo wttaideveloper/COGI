@@ -68,6 +68,24 @@ git clone <repo-url> && cd <repo>
 
 ## Post-deploy checklist
 
+### Deploy saved local content
+
+Publish the intended local edits in the local admin first. This updates
+`public-website/public/site-config.json`; include that file and any new public
+images with your code changes. **Save draft** saves to the local database without
+including those unpublished edits in the deployment snapshot.
+
+On the server, pull the changes and run `bash deploy.sh`. It builds the release,
+imports the newer snapshot and its images into Strapi, then starts the apps.
+The importer preserves a newer production admin publish. A failed import stops
+deployment instead of reporting success. The persistent configuration cache also
+adopts a newer bundled snapshot. Existing HTTPS installations automatically use
+`docker-compose.prod.yml`; `COMPOSE_FILE` can override that choice.
+
+Running only `docker compose up -d --build` does not perform the content import.
+Use `deploy.sh` for content releases. The importer upserts snapshot records; it
+does not delete unrelated production records.
+
 - [ ] Strapi health `/_health` (via nginx: `curl http://<IP>/_health`)
 - [ ] Public homepage loads and pulls from API
 - [ ] Admin portal loads at `/admin`

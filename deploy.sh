@@ -8,6 +8,12 @@
 
 set -e
 
+# Keep the HTTPS stack when redeploying an existing SSL installation.
+# COMPOSE_FILE can still explicitly select a different stack.
+if [ -z "${COMPOSE_FILE:-}" ] && [ -f docker-compose.prod.yml ]; then
+    export COMPOSE_FILE=docker-compose.prod.yml
+fi
+
 echo "🚀 COGI Platform - EC2 Deployment"
 echo "=================================="
 
@@ -132,6 +138,13 @@ echo "🔧 Building and starting services..."
 # Build and start all services
 docker compose down --remove-orphans 2>/dev/null || true
 docker compose build --no-cache
+# Import the committed content before serving the new release. The importer
+# preserves a newer admin publish and exits on failure so deployment cannot
+# report success with an out-of-date database.
+docker compose run --rm --no-deps \
+    -e WEBSITE_PUBLIC_DIR=/website-public \
+    -v "$(pwd)/public-website/public:/website-public:ro" \
+    strapi node scripts/sync-website-content.cjs --if-newer
 docker compose up -d
 
 echo ""

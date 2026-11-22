@@ -52,3 +52,16 @@ test('authorised write persists and is served publicly without auth', async () =
     assert.deepEqual(await read.json(), config)
   })
 })
+
+test('cache-busting queries work and deployments replace only older content', async () => {
+  const seed = { updatedAt: '2026-11-22T00:00:00Z', homepage: { heroHeadline: 'Deployed content' } }
+  fs.writeFileSync(process.env.SEED_FILE, JSON.stringify(seed))
+  await withServer(accept, async (base) => {
+    const read = await fetch(`${base}/site-config.json?t=123`)
+    assert.equal(read.status, 200)
+    assert.deepEqual(await read.json(), seed)
+    const newer = { ...seed, updatedAt: '2026-11-23T00:00:00Z' }
+    await post(base, JSON.stringify(newer), { Authorization: 'Bearer good' })
+    assert.deepEqual(await (await fetch(`${base}/__site-config?t=456`)).json(), newer)
+  })
+})

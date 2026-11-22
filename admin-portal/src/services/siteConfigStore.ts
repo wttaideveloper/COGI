@@ -427,9 +427,9 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
   }
 
   if (status === 'draft') {
-    void persistSiteConfigToStrapi(stripDataUrls(structuredClone(next)) as SiteConfig, 'draft').catch(() => {
-      // Local draft is already saved; Strapi can catch up on the next publish.
-    })
+    next = await prepareConfigForStrapi(next)
+    await persistSiteConfigToStrapi(next, 'draft')
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
     return next
   }
 

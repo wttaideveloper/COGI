@@ -85,6 +85,11 @@ describe('website and admin synchronization', () => {
 afterEach(() => { vi.unstubAllGlobals() })
 
 describe('publishing site config', () => {
+  it('reports a failed database draft save instead of claiming it was saved', async () => {
+    strapi.apiUpdateSingle.mockRejectedValue(new Error('Database unavailable'))
+    await expect(saveSiteConfig({}, 'draft')).rejects.toThrow('Database unavailable')
+    expect(strapi.apiPublishSingle).not.toHaveBeenCalled()
+  })
   it('uploads a new logo, saves it to Strapi, publishes, then refreshes the public cache', async () => {
     const header = { ...(await saveSiteConfig({}, 'draft')).header, logoUrl: PNG }
     const saved = await saveSiteConfig({ header }, 'published')
