@@ -110,5 +110,68 @@
     "url": "/images/world-equirectangular.svg",
     "mime": "image/svg+xml",
     "size": 1470874
+  },
+  {
+    "id": "partner-capro.png",
+    "name": "capro.png",
+    "url": "/images/partners/capro.png",
+    "mime": "image/png",
+    "size": 23737
+  },
+  {
+    "id": "partner-cmf.png",
+    "name": "cmf.png",
+    "url": "/images/partners/cmf.png",
+    "mime": "image/png",
+    "size": 43958
+  },
+  {
+    "id": "partner-global-methodist.png",
+    "name": "global-methodist.png",
+    "url": "/images/partners/global-methodist.png",
+    "mime": "image/png",
+    "size": 8923
+  },
+  {
+    "id": "partner-hcfi.png",
+    "name": "hcfi.png",
+    "url": "/images/partners/hcfi.png",
+    "mime": "image/png",
+    "size": 11180
+  },
+  {
+    "id": "partner-lifespring.png",
+    "name": "lifespring.png",
+    "url": "/images/partners/lifespring.png",
+    "mime": "image/png",
+    "size": 31193
+  },
+  {
+    "id": "partner-methodist-ghana.png",
+    "name": "methodist-ghana.png",
+    "url": "/images/partners/methodist-ghana.png",
+    "mime": "image/png",
+    "size": 32444
+  },
+  {
+    "id": "partner-ncfi.png",
+    "name": "ncfi.png",
+    "url": "/images/partners/ncfi.png",
+    "mime": "image/png",
+    "size": 22873
+  },
+  {
+    "id": "partner-portico.png",
+    "name": "portico.png",
+    "url": "/images/partners/portico.png",
+    "mime": "image/png",
+    "size": 7798
+  },
+  {
+    "id": "partner-tms-global.png",
+    "name": "tms-global.png",
+    "url": "/images/partners/tms-global.png",
+    "mime": "image/png",
+    "size": 16243
   }
 ]

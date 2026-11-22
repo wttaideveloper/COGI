@@ -1,6 +1,6 @@
 import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getStories } from '@/api/stories'
 import { getPrograms } from '@/api/programs'
@@ -11,6 +11,8 @@ import { useSiteConfig } from '@/contexts/SiteConfigContext'
 export function StoriesPage() {
   const { data: stories } = useQuery({ queryKey: ['stories'], queryFn: getStories })
   const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms })
+  const [params, setParams] = useSearchParams()
+  const typeFilter = params.get('type') || ''
   const [countryFilter, setCountryFilter] = useState('')
   const [programFilter, setProgramFilter] = useState('')
   const { copy } = useSiteConfig()
@@ -18,6 +20,7 @@ export function StoriesPage() {
 
   const countries = [...new Set(stories?.map((s) => s.country) ?? [])]
   const filtered = stories?.filter((s) => {
+    if (typeFilter && s.type !== typeFilter) return false
     if (countryFilter && s.country !== countryFilter) return false
     if (programFilter && s.program !== programFilter) return false
     return true
@@ -29,6 +32,7 @@ export function StoriesPage() {
       <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-8 flex flex-wrap gap-4">
+          <label className="flex items-center gap-2 text-sm">Format<select value={typeFilter} onChange={e => setParams(e.target.value ? { type: e.target.value } : {})} className="rounded-md border border-mist-dark px-3 py-2"><option value="">All stories</option><option value="video">Watch stories</option><option value="written">Read stories</option></select></label>
           <label className="flex items-center gap-2 text-sm">
             Country:
             <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)} className="rounded-md border border-mist-dark px-3 py-2">
@@ -44,6 +48,7 @@ export function StoriesPage() {
             </select>
           </label>
         </div>
+        {filtered?.length === 0 && <p role="status">No stories match these filters.</p>}
         <div className="grid gap-6 md:grid-cols-2">
           {filtered?.map((story) => (
             <Card key={story.id} as="article" className="overflow-hidden p-0">

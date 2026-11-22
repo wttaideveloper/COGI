@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import type { Location } from '@/types'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { resolveMapPalette } from '@/lib/mapColors'
@@ -18,6 +19,8 @@ function NationPanel({
   palette: ReturnType<typeof resolveMapPalette>
   onClear: () => void
 }) {
+  const { copy } = useSiteConfig()
+  const team = copy.globalTeam.members.filter(member => member.country === selected.country)
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-3 md:flex-row md:items-start md:gap-8">
       <div className="min-w-0 flex-1 text-center md:text-left">
@@ -30,6 +33,8 @@ function NationPanel({
         <p className="mt-2 text-sm leading-relaxed md:text-[0.95rem]" style={{ color: palette.muted }}>
           {selected.summary}
         </p>
+        {team.length > 0 && <div className="mt-4"><h4 className="font-semibold">Team</h4><p className="mt-1 text-sm">{team.map(member => member.name).join(' · ')}</p></div>}
+        {['Ghana', 'Tanzania', 'Uganda', 'Kenya'].includes(selected.country) && <p className="mt-3 text-sm">Local partner: CMF {selected.country}</p>}
       </div>
       <div className="flex flex-col items-center gap-3 md:min-w-[13rem] md:items-end md:pt-5">
         {selected.programs.length ? (
@@ -75,10 +80,21 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   const { homepage } = useSiteConfig()
   const palette = useMemo(() => resolveMapPalette(homepage), [homepage])
   const selected = locations.find(loc => loc.country === activeCountry)
+  const reduced = useReducedMotion()
+  const [autoSpin, setAutoSpin] = useState(true)
+  const [hovered, setHovered] = useState(false)
   const [view, setView] = useState(initialView)
   const [land, setLand] = useState<ReturnType<typeof surface>[]>([])
   const canvas = useRef<HTMLCanvasElement>(null)
   const drag = useRef<{ x: number; y: number; lat: number; lng: number } | null>(null)
+
+  useEffect(() => {
+    if (!autoSpin || reduced || hovered || activeCountry) return
+    const timer = window.setInterval(() => {
+      if (!drag.current) setView(current => ({ ...current, lng: (current.lng + 0.25) % 360 }))
+    }, 50)
+    return () => window.clearInterval(timer)
+  }, [autoSpin, reduced, hovered, activeCountry])
 
   useEffect(() => {
     if (selected?.lat != null && selected.lng != null) setView({ lat: selected.lat, lng: selected.lng })
@@ -143,7 +159,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-mist-dark" style={{ background: palette.panel, color: palette.ink }}>
-      <div className="globe-environment"><div className="orbital-backdrop" aria-hidden="true"><i /><i /><i /></div><div className="mx-auto my-3 relative aspect-square w-[min(72%,18rem)]">
+      <div className="globe-environment" onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)} onFocus={() => setHovered(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setHovered(false) }}><div className="orbital-backdrop" aria-hidden="true"><i /><i /><i /></div><div className="mx-auto my-3 relative aspect-square w-[min(72%,18rem)]">
         <canvas ref={canvas} width={720} height={720} aria-label="Rotatable world globe" tabIndex={0}
           className="h-full w-full cursor-grab touch-none rounded-full active:cursor-grabbing"
           onKeyDown={e => {
@@ -180,6 +196,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
       </div>
       </div><div className="relative flex flex-wrap items-center justify-center gap-4 px-4 pb-5 text-sm">
         <span>Rotate by dragging or using arrow keys.</span>
+        <button type="button" aria-pressed={autoSpin && !reduced} disabled={reduced} className="rounded-full border px-3 py-2 disabled:opacity-50" onClick={() => { onSelect(null); setAutoSpin(value => !value) }}>{autoSpin && !reduced ? 'Pause rotation' : 'Auto spin'}</button>
         <button type="button" className="rounded-full border px-3 py-1" onClick={() => { onSelect(null); setView(initialView) }}>Reset view</button>
       </div>
       {selected && <div className="border-t px-5 py-5" style={{ borderColor: palette.border }}>

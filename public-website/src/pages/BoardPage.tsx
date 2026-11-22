@@ -41,11 +41,11 @@ export function BoardPage() {
                       {initials(member.name) || '—'}
                     </div>
                   )}
-                  <h2 className="font-display text-xl text-teal-deep">{member.name}</h2>
+                  <h2 className="font-display text-xl text-teal-deep"><button type="button" onClick={() => setSelectedId(member.id)} className="text-left hover:underline" aria-label={`View profile for ${member.name}`}>{member.name}</button></h2>
                   <p className="text-sm font-semibold text-accent-ink">{member.title}</p>
                   {member.country ? <p className="mt-1 text-sm text-ink-muted">{member.country}</p> : null}
                   <p className="mt-3 line-clamp-3 whitespace-pre-line text-sm text-ink-muted">{stripHtml(member.bio)}</p>
-                  <button type="button" onClick={() => setSelectedId(member.id)} className="mt-4 inline-block text-sm font-semibold text-teal-mid">Read full bio →</button>
+
                 </Card>
               </div>
             ))}

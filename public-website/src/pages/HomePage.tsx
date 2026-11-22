@@ -1,3 +1,4 @@
+import { UpcomingEvents } from '@/components/home/UpcomingEvents'
 import { HeroBackground } from '@/components/home/HeroBackground'
 import { getPrograms } from '@/api/programs'
 import { useEffect, useState } from 'react'
@@ -7,14 +8,12 @@ import { useQuery } from '@tanstack/react-query'
 import { getHomepage } from '@/api/homepage'
 import { getStories } from '@/api/stories'
 import { getTestimonials } from '@/api/testimonials'
-import { getFeaturedEvent } from '@/api/events'
 import { getLocations } from '@/api/locations'
 import { SEO } from '@/components/ui/SEO'
 import { ButtonLink } from '@/components/ui/Button'
 import { SectionHeading, Skeleton, ErrorState } from '@/components/ui/Card'
 import { NewsletterForm } from '@/components/forms/NewsletterForm'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
-import { formatDate } from '@/lib/utils'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 import { WhereWeServeSection } from '@/components/home/WhereWeServeSection'
 import { CustomHomeSection, SplitBand, isCustomHomeSection, isSplitHomeSection } from '@/components/home/CustomSection'
@@ -34,7 +33,6 @@ export function HomePage() {
   const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms })
   const { data: stories } = useQuery({ queryKey: ['stories'], queryFn: getStories })
   const { data: testimonials } = useQuery({ queryKey: ['testimonials'], queryFn: getTestimonials })
-  const { data: featuredEvent } = useQuery({ queryKey: ['featuredEvent'], queryFn: getFeaturedEvent })
   const { data: locations } = useQuery({ queryKey: ['locations'], queryFn: getLocations })
   const locationParam = searchParams.get('location')
   const [activeCountry, setActiveCountry] = useState<string | null>(locationParam)
@@ -67,7 +65,7 @@ export function HomePage() {
 
   const copy = site.copy.homepage
   const matchedStories = stories?.filter((s) => homepage.storiesTeaser.featuredStoryIds.includes(s.id)) ?? []
-  const featuredStories = (matchedStories.length ? matchedStories : stories?.slice(0, 2) ?? []).slice(0, 2)
+  const featuredStories = [...matchedStories, ...(stories || []).filter(story => !matchedStories.some(item => item.id === story.id))].slice(0, 3)
   const heroHeadline = site.homepage.heroHeadline || homepage.hero.headline
   const heroIntro = site.homepage.heroIntro || homepage.hero.intro
   const heroHeadlineSize = site.homepage.heroHeadlineSize || 64
@@ -196,19 +194,19 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'methods') return (
-      <section key="methods" className="home-methods bg-white py-14 md:py-20">
+      <section key="methods" className="home-methods bg-mist py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
           <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">{copy.methodsTitle}</p>
           <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl font-semibold text-teal-deep md:text-5xl">
             {copy.methodsSubtitle}
           </h2>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="method-path mt-14 grid gap-8 md:grid-cols-2 md:gap-x-16">
             {(copy.methods || homepage.methods).map((method, i) => (
-              <div key={method.id} className="overflow-hidden rounded-xl border border-mist-dark bg-white">
+              <div key={method.id} className="method-step overflow-hidden rounded-xl border border-mist-dark bg-white">
                 <MediaPreview src={method.imageUrl ?? methodImages[i] ?? siteImages.missionField} alt={method.title} className="h-52 w-full object-cover" />
                 <div className="p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent-ink">{method.title}</p>
-                  <h3 className="mt-2 font-display text-3xl text-teal-deep">{method.subtitle}</h3>
+                  {method.subtitle && <h3 className="mt-2 font-display text-3xl text-teal-deep">{method.subtitle}</h3>}
                   <p className="mt-3 text-sm leading-relaxed text-ink-muted">{method.description}</p>
                 </div>
               </div>
@@ -222,7 +220,7 @@ export function HomePage() {
         <div className="mx-auto max-w-6xl px-4 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">{copy.impactTitle}</p>
           <p className="mx-auto mt-5 max-w-3xl text-lg text-ink-muted">{copy.impactIntro}</p>
-          <div className="mt-12 grid grid-cols-2 gap-10 md:grid-cols-4">
+          <div className="mt-12 grid grid-cols-1 gap-10 sm:grid-cols-3">
             {impactStats.map((stat) => (
               <div key={stat.id}>
                 <p className="font-display text-5xl font-bold text-accent-ink md:text-6xl">{stat.value}</p>
@@ -236,15 +234,15 @@ export function HomePage() {
         if (section.id === 'portfolio') return (
       <section key="portfolio" className="home-portfolio bg-white py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4">
-          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">What we do</p>
+          <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">Programs</p>
           <SectionHeading title={copy.portfolioTitle} subtitle={copy.portfolioSubtitle} />
           <div className="grid gap-6 md:grid-cols-2">
             {(programs || []).map((area, i) => (
               <article key={area.id} className="group overflow-hidden rounded-xl border border-mist-dark bg-white">
-                <MediaPreview src={portfolioImages[i] || siteImages.clinic} alt={area.title} className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <Link to={`/programs/${area.slug}`} aria-label={area.title}><img src={portfolioImages[i] || siteImages.clinic} alt="" className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-105" /></Link>
                 <div className="p-6">
                   <h3 className="font-display text-3xl text-teal-deep group-hover:text-accent-ink">{area.title}</h3>
-                  <p className="mt-3 max-w-xl text-sm text-ink-muted">{area.summary}</p>
+
                   <Link to={`/programs/${area.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-accent-ink">Learn more</Link>
                 </div>
               </article>
@@ -269,10 +267,10 @@ export function HomePage() {
           <h2 className="text-center font-display text-3xl text-teal-deep md:text-5xl">{copy.storiesTitle}</h2>
           <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-ink-muted">{copy.storiesSubtitle}</p>
           <div className="mt-8 mb-12 flex flex-wrap justify-center gap-4">
-            <ButtonLink to="/resources/stories" className="rounded-sm uppercase tracking-[0.2em]">{copy.watchStoriesCta}</ButtonLink>
-            <ButtonLink to="/resources/stories" variant="outline" className="rounded-sm uppercase tracking-[0.2em]">{copy.readStoriesCta}</ButtonLink>
+            <ButtonLink to="/resources/stories?type=video" className="rounded-sm uppercase tracking-[0.2em]">{copy.watchStoriesCta}</ButtonLink>
+            <ButtonLink to="/resources/stories?type=written" variant="outline" className="rounded-sm uppercase tracking-[0.2em]">{copy.readStoriesCta}</ButtonLink>
           </div>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-3">
             {featuredStories.map((story) => (
               <article key={story.id} className="overflow-hidden">
                 {story.type === 'video' && story.videoUrl ? (
@@ -307,20 +305,7 @@ export function HomePage() {
         </div>
       </section>
         ) : null
-        if (section.id === 'events') return featuredEvent ? (
-        <section key="events" className="home-events border-y border-mist-dark bg-white py-20 text-ink">
-          <div className="mx-auto max-w-4xl px-4 text-center">
-            {siteImages.historicGathering ? (
-              <MediaPreview src={siteImages.historicGathering} alt={featuredEvent.title} className="mb-8 h-56 w-full rounded-xl object-cover" />
-            ) : null}
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-ink">Featured Event</p>
-            <h2 className="mt-3 font-display text-4xl font-bold text-teal-deep">{featuredEvent.title}</h2>
-            <p className="mt-2 text-ink-muted">{formatDate(featuredEvent.startDate)} · {featuredEvent.location}</p>
-            <p className="mt-4 text-ink-muted">{featuredEvent.summary}</p>
-            <ButtonLink to={`/events/${featuredEvent.slug}`} className="mt-6 rounded-sm uppercase tracking-[0.2em]">View Event Details</ButtonLink>
-          </div>
-        </section>
-        ) : null
+        if (section.id === 'events') return <UpcomingEvents key="events" />
         if (section.id === 'newsletter') return (
       <section key="newsletter" className="home-newsletter bg-white py-20">
         <div className="mx-auto max-w-xl px-4">
@@ -335,9 +320,9 @@ export function HomePage() {
           {siteImages.give ? (
             <MediaPreview src={siteImages.give} alt={site.copy.donate.giveTitle} className="mb-8 h-52 w-full rounded-xl object-cover" />
           ) : null}
-          <h2 className="font-display text-4xl uppercase tracking-wide text-teal-deep md:text-5xl">{homepage.donateCta.title}</h2>
-          <p className="mt-5 text-lg text-ink-muted">{site.copy.donate.giveBody}</p>
-          <ButtonLink to="/donate" size="lg" className="mt-8 rounded-sm uppercase tracking-[0.22em]">{site.copy.donate.giveCta}</ButtonLink>
+          <h2 className="font-display text-4xl uppercase tracking-wide text-teal-deep md:text-5xl">Your calling can make a difference</h2>
+          <p className="mt-5 text-lg text-ink-muted">Pray with us, join a learning community, or help bring training to healthcare professionals around the world.</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4"><ButtonLink to="/get-involved" size="lg">Join the movement</ButtonLink><ButtonLink to="/donate" variant="outline" size="lg">Support the mission</ButtonLink></div>
         </div>
       </section>
         )

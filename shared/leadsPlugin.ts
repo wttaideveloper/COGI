@@ -466,7 +466,7 @@ async function addSubscriber(input: { name?: string; email?: string; whatsapp?: 
 }
 
 function enquiryEmail(row: LeadEnquiry) {
-  const subject = `New ${row.type} from ${row.name}`
+  const subject = row.type === 'join' && row.pathway ? `${row.pathway.charAt(0).toUpperCase() + row.pathway.slice(1)} — ${row.name}` : `New ${row.type} from ${row.name}`
   const text = `A new form submission arrived on the COGI website.\n\nName: ${row.name}\nEmail: ${row.email}\nPhone: ${row.phone || '—'}\nType: ${row.type}\nPathway: ${row.pathway || '—'}\nRole: ${row.roleArea || '—'}\nProgram: ${row.programInterest || '—'}\n\n${row.message}\n\nOpen Admin → Inbox → Messages to follow up.`
   const html = `<div style="font-family:Georgia,serif;line-height:1.6;color:#1A2332"><p>A new form submission arrived on the COGI website.</p><ul><li><strong>Name:</strong> ${escapeHtml(row.name)}</li><li><strong>Email:</strong> ${escapeHtml(row.email)}</li><li><strong>Phone:</strong> ${escapeHtml(row.phone || '—')}</li><li><strong>Type:</strong> ${escapeHtml(row.type)}</li><li><strong>Pathway:</strong> ${escapeHtml(row.pathway || '—')}</li><li><strong>Role:</strong> ${escapeHtml(row.roleArea || '—')}</li><li><strong>Program:</strong> ${escapeHtml(row.programInterest || '—')}</li></ul><p>${escapeHtml(row.message)}</p></div>`
   return { subject, text, html }

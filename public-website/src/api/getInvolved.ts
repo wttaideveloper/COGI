@@ -19,6 +19,10 @@ async function notifyInbox(payload: Record<string, unknown>) {
 export async function submitGetInvolved(data: GetInvolvedFormData): Promise<{ success: boolean; message: string }> {
   const message = [
     data.message,
+    data.profession ? `Profession / course: ${data.profession}` : '',
+    data.organization ? `Organization / church: ${data.organization}` : '',
+    data.country ? `Country: ${data.country}` : '',
+    data.preferredContact ? `Preferred contact: ${data.preferredContact}` : '',
     data.roleArea ? `Role / area: ${data.roleArea}` : '',
     data.programInterest ? `Program: ${data.programInterest}` : '',
   ].filter(Boolean).join('\n')
@@ -48,5 +52,5 @@ export async function submitGetInvolved(data: GetInvolvedFormData): Promise<{ su
     return { success: true, message: 'Thank you for joining the movement! Our team will be in touch shortly.' }
   }
 
-  return { success: true, message: 'Thank you for your interest. If you do not hear back, email info@coginternational.org.' }
+  return { success: false, message: 'Your message could not be saved. Please try again or email info@coginternational.org.' }
 }

@@ -136,6 +136,7 @@ export interface TeamMember {
 }
 
 export interface Partner {
+  logoUrl?: string
   id: string
   name: string
   description: string
@@ -235,6 +236,10 @@ export interface GetInvolvedFormData {
   email: string
   phone?: string
   pathway: 'pray' | 'participate' | 'partner'
+  profession?: string
+  organization?: string
+  country?: string
+  preferredContact?: 'email' | 'whatsapp'
   roleArea?: string
   message?: string
   programInterest?: string

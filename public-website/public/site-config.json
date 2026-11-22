@@ -82,6 +82,12 @@
           "label": "Our Partners",
           "href": "/about/partners",
           "visible": true
+        },
+        {
+          "id": "where-we-serve",
+          "label": "Where We Serve",
+          "href": "/about#map",
+          "visible": true
         }
       ]
     },
@@ -89,7 +95,33 @@
       "id": "c",
       "label": "Programs",
       "href": "/programs",
-      "visible": true
+      "visible": true,
+      "children": [
+        {
+          "id": "kingdom-of-god",
+          "label": "Discover the Kingdom of God",
+          "href": "/programs/kingdom-of-god",
+          "visible": true
+        },
+        {
+          "id": "missional-training",
+          "label": "Missional Healthcare Courses",
+          "href": "/programs/missional-training",
+          "visible": true
+        },
+        {
+          "id": "care-for-the-caregiver",
+          "label": "Care for the Caregiver",
+          "href": "/programs/care-for-the-caregiver",
+          "visible": true
+        },
+        {
+          "id": "missional-church-healthcare",
+          "label": "The Church and Missional Healthcare",
+          "href": "/programs/missional-church-healthcare",
+          "visible": true
+        }
+      ]
     },
     {
       "id": "ev",
@@ -156,8 +188,8 @@
   ],
   "customPages": [],
   "homepage": {
-    "heroHeadline": "A fellowship for people who care.",
-    "heroIntro": "We bring healthcare professionals together to live out their Christian faith, learn from one another, and serve their communities.",
+    "heroHeadline": "Equipping healthcare professionals to advance the Kingdom of God",
+    "heroIntro": "Join our global Christian community actively on mission for God.",
     "heroHeadlineSize": 96,
     "heroHeadlineCase": "as-typed",
     "heroMedia": "video",
@@ -179,28 +211,23 @@
     "primaryCtaLabel": "Give now",
     "primaryCtaHref": "/donate",
     "missionTitle": "Our Mission",
-    "missionStatement": "Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God's love, and offer hope, healing, and wholeness through Jesus Christ.",
+    "missionStatement": "Inspire and enable Christian healthcare workers to think, live and work missionally through Christ-centered training and companionship - advancing the Kingdom of God.",
     "missionScripture": "Colossians 3:17  ·  Romans 12:2",
     "impactStats": [
       {
-        "id": "Patients served through partners",
-        "value": "1,000+",
-        "label": "Patients served through partners"
-      },
-      {
-        "id": "Volunteers & facilitators mobilized",
-        "value": "200+",
-        "label": "Volunteers & facilitators mobilized"
-      },
-      {
-        "id": "Countries engaged",
-        "value": "10+",
+        "id": "countries",
+        "value": "15+",
         "label": "Countries engaged"
       },
       {
-        "id": "Healthcare professionals equipped",
-        "value": "500+",
-        "label": "Healthcare professionals equipped"
+        "id": "workers",
+        "value": "5,000+",
+        "label": "Healthcare workers equipped"
+      },
+      {
+        "id": "workshops",
+        "value": "200+",
+        "label": "Workshops"
       }
     ],
     "sections": [
@@ -216,16 +243,16 @@
       {
         "id": "newsletterBanner",
         "label": "Highlight banner",
-        "enabled": true,
-        "order": 2,
+        "enabled": false,
+        "order": 102,
         "summary": "A short callout under the welcome",
         "kind": "built-in"
       },
       {
         "id": "legacy",
         "label": "Our story",
-        "enabled": true,
-        "order": 3,
+        "enabled": false,
+        "order": 103,
         "summary": "Who we are and why we exist",
         "kind": "built-in"
       },
@@ -233,23 +260,23 @@
         "id": "mission",
         "label": "Mission",
         "enabled": true,
-        "order": 4,
+        "order": 2,
         "summary": "Mission statement and scripture",
         "kind": "built-in"
       },
       {
         "id": "video",
         "label": "Intro video",
-        "enabled": true,
-        "order": 5,
+        "enabled": false,
+        "order": 105,
         "summary": "Film or photo introduction",
         "kind": "built-in"
       },
       {
         "id": "splitPrograms",
         "label": "Programs (photo + text)",
-        "enabled": true,
-        "order": 6,
+        "enabled": false,
+        "order": 106,
         "summary": "Photo on one side, words on the other",
         "kind": "built-in",
         "title": "Programs",
@@ -264,8 +291,8 @@
       {
         "id": "splitStories",
         "label": "Stories (photo + text)",
-        "enabled": true,
-        "order": 7,
+        "enabled": false,
+        "order": 107,
         "summary": "Photo on one side, words on the other",
         "kind": "built-in",
         "title": "Stories of transformation",
@@ -280,7 +307,7 @@
         "id": "methods",
         "label": "How we work",
         "enabled": true,
-        "order": 8,
+        "order": 4,
         "summary": "Enable, train, and support",
         "kind": "built-in"
       },
@@ -288,7 +315,7 @@
         "id": "impact",
         "label": "Key numbers",
         "enabled": true,
-        "order": 9,
+        "order": 5,
         "summary": "Countries, people, and programs",
         "kind": "built-in",
         "animation": "zoom"
@@ -297,15 +324,15 @@
         "id": "portfolio",
         "label": "What we do",
         "enabled": true,
-        "order": 10,
+        "order": 3,
         "summary": "Ministry areas",
         "kind": "built-in"
       },
       {
         "id": "map",
         "label": "Where we serve",
-        "enabled": true,
-        "order": 11,
+        "enabled": false,
+        "order": 111,
         "summary": "Map of countries",
         "kind": "built-in"
       },
@@ -313,7 +340,7 @@
         "id": "stories",
         "label": "Featured stories",
         "enabled": true,
-        "order": 12,
+        "order": 6,
         "summary": "Story cards from the library",
         "kind": "built-in",
         "animation": "fade"
@@ -321,8 +348,8 @@
       {
         "id": "testimonials",
         "label": "Testimonials",
-        "enabled": true,
-        "order": 13,
+        "enabled": false,
+        "order": 113,
         "summary": "Rotating quotes and short clips",
         "kind": "built-in"
       },
@@ -330,15 +357,15 @@
         "id": "events",
         "label": "Next event",
         "enabled": true,
-        "order": 14,
+        "order": 7,
         "summary": "The upcoming featured event",
         "kind": "built-in"
       },
       {
         "id": "newsletter",
         "label": "Email signup",
-        "enabled": true,
-        "order": 15,
+        "enabled": false,
+        "order": 115,
         "summary": "Newsletter form",
         "kind": "built-in"
       },
@@ -346,15 +373,15 @@
         "id": "donate",
         "label": "Give",
         "enabled": true,
-        "order": 16,
+        "order": 8,
         "summary": "Invite people to donate",
         "kind": "built-in"
       },
       {
         "id": "faith",
         "label": "Statement of faith",
-        "enabled": true,
-        "order": 17,
+        "enabled": false,
+        "order": 117,
         "summary": "Closing faith statement",
         "kind": "built-in"
       }
@@ -362,6 +389,10 @@
   },
   "copy": {
     "homepage": {
+      "newsletterTitle": "Stay connected",
+      "newsletterDescription": "Subscribe to receive updates on programs, events, and stories from the COGI community.",
+      "testimonialsEyebrow": "Voices from the fellowship",
+      "testimonialsTitle": "From volunteers and partners",
       "eyebrow": "Companions of Grace International",
       "secondaryCtaLabel": "Explore Our Programs",
       "secondaryCtaHref": "/programs",
@@ -375,134 +406,168 @@
       "videoImageUrl": "/images/cogi-video-thumb.png",
       "videoUrl": "https://www.youtube.com/watch?v=r6bd53UB7mk",
       "methodsTitle": "Our methods",
-      "methodsSubtitle": "Enable · Train · Support",
-      "portfolioTitle": "What we do — our portfolio",
-      "portfolioSubtitle": "Our programs are organized around four interconnected areas of ministry, each designed to inspire and prepare healthcare professionals for faithful Kingdom engagement.",
+      "methodsSubtitle": "Companionship for a life of mission",
+      "portfolioTitle": "What we do",
+      "portfolioSubtitle": "",
       "mapTitle": "Where we serve",
-      "mapSubtitle": "Choose a country to explore our work.",
-      "storiesTitle": "Stories of change",
+      "mapSubtitle": "Explore the programs and people serving across our global community.",
+      "storiesTitle": "Stories of transformation",
       "storiesSubtitle": "Featured video and written stories from healthcare professionals on the front lines.",
       "watchStoriesCta": "Watch stories",
       "readStoriesCta": "Read stories",
       "impactTitle": "Our impact",
       "impactIntro": "Through communities of learning, mentoring, and mission, Companions of Grace is witnessing healthcare professionals, churches, and communities being transformed across nations. Every story reflects God's ongoing work of renewal through faithful healthcare witness.",
       "faithTitle": "Our beliefs",
-      "faithStatement": "We believe in the full authority of Scripture; in God the Father, Son, and Holy Spirit; in the virgin birth, sinless life, atoning death, physical resurrection and return of our Lord Jesus Christ; in salvation by grace through faith; in the present ministry of the Holy Spirit; and in the urgency of fulfilling the Great Commission through the local church and every vocation — including healthcare."
+      "faithStatement": "We believe in the full authority of Scripture; in God the Father, Son, and Holy Spirit; in the virgin birth, sinless life, atoning death, physical resurrection and return of our Lord Jesus Christ; in salvation by grace through faith; in the present ministry of the Holy Spirit; and in the urgency of fulfilling the Great Commission through the local church and every vocation — including healthcare.",
+      "methods": [
+        {
+          "id": "encourage",
+          "title": "Encourage",
+          "subtitle": "",
+          "description": "Encourage healthcare professionals through intentional companionship and mutual encouragement.",
+          "imageUrl": "/images/cogi-gathering.png"
+        },
+        {
+          "id": "equip",
+          "title": "Equip",
+          "subtitle": "",
+          "description": "Equip healthcare professionals for missional healthcare engagement.",
+          "imageUrl": "/images/cogi-train.png"
+        },
+        {
+          "id": "envision",
+          "title": "Envision",
+          "subtitle": "",
+          "description": "Envision healthcare professionals to become Christ-centered in life and vocation.",
+          "imageUrl": "/images/cogi-india.png"
+        },
+        {
+          "id": "empower",
+          "title": "Empower",
+          "subtitle": "",
+          "description": "Empower healthcare professionals to embrace a biblical and missional perspective for healthcare.",
+          "imageUrl": "/images/cogi-support.png"
+        }
+      ]
     },
     "about": {
       "heroTitle": "Vision & mission",
       "heroSubtitle": "Equipping healthcare professionals for Kingdom engagement",
       "imageUrl": "/images/cogi-enable.png",
       "visionTitle": "Our vision",
-      "visionBody": "The Global Christian Healthcare Community actively on Mission for God, reflecting His love, witnessing Christ in word and deed, ushering in God's Kingdom.",
+      "visionBody": "The Global Christian Healthcare Community actively on Mission for God.",
       "missionTitle": "Our mission",
-      "missionBody": "Our mission is to inspire and enable the global Christian healthcare community to be transformed so they think, live and work missionally and thrive in their calling to serve. We equip them to provide whole-person care, demonstrate God's love, and offer hope, healing, and wholeness through Jesus Christ.",
+      "missionBody": "Inspire and enable Christian healthcare workers to think, live and work missionally through Christ-centered training and companionship - advancing the Kingdom of God.",
       "scripture": "Colossians 3:17  ·  Romans 12:2"
     },
     "story": {
       "heroTitle": "Our story",
       "heroSubtitle": "A fellowship born from prayer, friendship, and Kingdom vision",
-      "intro": "What began as God knitting hearts together among healthcare leaders has become a global movement. COGI exists to ignite Communities of Grace — catalytic healthcare professionals who lift spiritual and practical hope in their nations.",
+      "intro": "Companions of Grace International was born in 2019 through prayer and discernment among like-minded individuals carrying a shared conviction for Kingdom engagement and faithful Christian witness in the health fields of the world.",
       "imageUrl": "/images/homepage-c4c-india.jpg",
       "milestones": [
         {
-          "year": "2013",
-          "title": "A pathway opened",
-          "description": "A medical mission journey to Duncan Hospital in Raxaul, Bihar knit together friendships that would later become COGI."
-        },
-        {
-          "year": "2019",
-          "title": "Vision conceived",
-          "description": "Weekly prayer and fellowship among leaders in India and the United States clarified the call: healthcare is sacred vocation."
-        },
-        {
           "year": "2020",
-          "title": "COGI established",
-          "description": "Companions of Grace International was formally launched with a founding board, initial partnerships, and the first Kingdom of God seminars."
+          "title": "Genesis",
+          "description": "COGI takes shape as a focused initiative for missional healthcare and Kingdom living."
         },
         {
           "year": "2023",
-          "title": "Global expansion",
-          "description": "Programs expanded across Africa, South Asia, and North America through partnerships with churches and mission networks."
+          "title": "Feet on the Ground",
+          "description": "The vision hits the ground. New places. New people. New partnerships. A growing movement begins to take shape beyond India."
         },
         {
           "year": "2026",
-          "title": "Growing fellowship",
-          "description": "More than 500 healthcare professionals equipped across 10+ countries as Communities of Grace continue to grow."
+          "title": "Crossing Borders",
+          "description": "The movement goes global—crossing different countries, spanning cultures and building communities of healthcare professionals, having a shared vision and calling for missional engagement."
         }
       ]
     },
     "beliefs": {
       "heroTitle": "Our beliefs",
       "heroSubtitle": "Essential convictions that underlie our mission and purpose",
-      "intro": "These essential beliefs shape how we equip healthcare professionals for Kingdom engagement.",
+      "intro": "We subscribe to the central beliefs of the historic church.",
       "imageUrl": "/images/cogi-video-thumb.png",
       "items": [
         {
-          "id": "god",
+          "id": "belief-1",
           "title": "God",
-          "content": "There is one true God, eternally existing in three persons — Father, Son, and Holy Spirit."
+          "content": "We believe there is one true God, eternally existing in three persons – Father, Son, and Holy Spirit- who we worship and glorify."
         },
         {
-          "id": "jesus",
+          "id": "belief-2",
           "title": "Jesus Christ",
-          "content": "The Son is the living Word who became flesh through miraculous conception and virgin birth. We affirm His full deity and humanity, sinless life, atoning death, resurrection, and ascension."
+          "content": "We believe in Jesus Christ, The Son of God, the Living Word (Logos), born of the virgin Mary, fully God and fully human - our Savior and Lord."
         },
         {
-          "id": "holy-spirit",
-          "title": "Holy Spirit",
-          "content": "The Spirit brings glory to Christ, convicts of sin, accomplishes saving work in those who repent and believe, transforms lives, and empowers believers for witness and service."
+          "id": "belief-3",
+          "title": "The Holy Spirit",
+          "content": "We believe in the Holy Spirit – The Third Person of the Godhead, the giver of life, who glorifies Christ, convicts the world of sin, and accomplishes God's saving work in those who repent and believe — transforming and empowering them for witness and service through His gifts."
         },
         {
-          "id": "bible",
+          "id": "belief-4",
           "title": "The Bible",
-          "content": "The Bible is the fully inspired written Word of God in the 66 books of the Old and New Testaments — unique, authoritative, and the standard for faith and life."
+          "content": "We believe the Bible is the inspired, inerrant, and authoritative Word of God, forming the foundation of our faith, life, and mission."
         },
         {
-          "id": "salvation",
-          "title": "Salvation",
-          "content": "Restoration to God is possible only through Jesus Christ. Salvation is offered by grace and received by repentance and faith — not earned by human effort."
+          "id": "belief-5",
+          "title": "The Universal Church",
+          "content": "We believe in the Universal Church, for whom Christ is coming again, and with whom we seek to collaborate and partner in discipling and envisioning healthcare workers for missional healthcare"
         },
         {
-          "id": "church",
-          "title": "Church",
-          "content": "The Church is the Body of Christ. Endowed with gifts by the Spirit, it glorifies God, makes disciples, and witnesses His redemptive grace to the world."
+          "id": "belief-6",
+          "title": "The Image of God",
+          "content": "We believe in the Imago Dei that all people are created in God's image, yet fallen and under the power of sin and death and cannot belong to the Kingdom of God except through the new birth in Christ Jesus. Justification is by grace through faith in Christ alone."
         },
         {
-          "id": "calling",
-          "title": "Calling",
-          "content": "Christ sends each believer to share the good news, make disciples, and love God and neighbor. Healthcare is one of the most strategic missional vocations on earth."
+          "id": "belief-7",
+          "title": "The Kingdom of God",
+          "content": "We believe the Kingdom of God is His sovereign reign over creation, revealed and redeemed in Christ Jesus through His sinless life, atoning death, bodily resurrection, Heavenly ascension."
+        },
+        {
+          "id": "belief-8",
+          "title": "Redemption",
+          "content": "We believe His redemptive work is restorative, reconciling, and life-giving, renewing all things toward God’s purposes and bringing justice, peace, and flourishing to creation."
+        },
+        {
+          "id": "belief-9",
+          "title": "The Return of Christ",
+          "content": "We believe the Kingdom will be consummated at the return of Christ Jesus. Until then, we are called to follow Jesus and join Him in building His Kingdom."
+        },
+        {
+          "id": "belief-10",
+          "title": "Our Calling in Healthcare",
+          "content": "We believe, the calling in healthcare, is lived out through faithful witness, missional engagement and compassionate care."
         }
       ]
     },
     "getInvolved": {
+      "newsletterTitle": "Stay in touch",
+      "newsletterIntro": "Subscribe for stories, events, and ways to serve.",
+      "submitLabel": "Join the Movement",
       "heroTitle": "Get involved",
-      "heroSubtitle": "Pray · Participate · Partner",
+      "heroSubtitle": "Individual engagement and organizational partnership",
       "formTitle": "Join the movement",
-      "formIntro": "Tell us how you would like to engage and we will connect you with the right pathway.",
+      "formIntro": "Join a growing global fellowship of healthcare students, professionals, churches, and organizations committed to serving Christ and advancing God’s Kingdom through healthcare.",
       "imageUrl": "/images/cogi-kenya.png",
       "pathways": [
         {
-          "title": "Pray",
-          "body": "Join our global prayer network for healthcare professionals, programs, and communities that need the hope of Christ."
+          "title": "Individual engagement",
+          "body": "Pray with our global community, participate in a training program, or volunteer your time and skills to support healthcare learning and ministry."
         },
         {
-          "title": "Participate",
-          "body": "Enroll in a program, attend an event, or become a facilitator in your region."
-        },
-        {
-          "title": "Partner",
-          "body": "Churches, mission agencies, and healthcare institutions — explore collaboration that multiplies Communities of Grace."
+          "title": "Become a partner",
+          "body": "Collaborate as a church, institution, organization, or ministry. Host a training program, connect healthcare professionals, or explore shared opportunities for mission."
         }
       ]
     },
     "donate": {
       "heroTitle": "Donate",
-      "heroSubtitle": "Partner with us to equip healthcare professionals for Kingdom engagement",
-      "intro": "Your generosity equips healthcare professionals worldwide to live and serve missionally. Every gift extends the reach of Communities of Grace.",
+      "heroSubtitle": "You may not be able to travel, but your gift can.",
+      "intro": "Help faculty travel to equip healthcare workers. Your support brings training and companionship to communities and helps missional healthcare grow.",
       "imageUrl": "/images/cogi-give.png",
-      "giveTitle": "Give securely online",
-      "giveBody": "Choose a one-time or recurring gift. Every donation is stewarded with care for the glory of God and the equipping of healthcare professionals.",
+      "giveTitle": "Send. Equip. Multiply.",
+      "giveBody": "Support faculty travel and training with a one-time or recurring gift.",
       "giveCta": "Give today",
       "mailTitle": "Mail a check",
       "mailBody": "Companions of Grace International · Northern New Jersey, United States. Email info@coginternational.org for mailing details.",
@@ -521,10 +586,16 @@
           "id": "donate-mail",
           "question": "Where should I mail a check?",
           "answer": "Companions of Grace International · Northern New Jersey, United States. Email info@coginternational.org for mailing details."
+        },
+        {
+          "id": "faculty-travel",
+          "question": "How does my gift support training?",
+          "answer": "Gifts help faculty travel to training locations and equip healthcare workers. Contact us to discuss supporting a particular country or training journey."
         }
       ]
     },
     "resources": {
+      "exploreLabel": "Explore",
       "heroTitle": "Resources",
       "heroSubtitle": "Stories of transformation, testimonials, and insights from the COGI fellowship",
       "cards": [
@@ -550,6 +621,10 @@
       ]
     },
     "contact": {
+      "email": "",
+      "phone": "",
+      "office": "",
+      "submitLabel": "Send Message",
       "heroTitle": "Contact us",
       "heroSubtitle": "We'd love to hear from you",
       "imageUrl": "/images/cogi-hero.png",
@@ -566,6 +641,8 @@
       "expressInterest": "Express interest"
     },
     "events": {
+      "featuredLabel": "Featured",
+      "detailsLabel": "View details",
       "heroTitle": "Events",
       "heroSubtitle": "Seminars, trainings, and immersive experiences",
       "imageUrl": "/images/cogi-gathering.png"
@@ -577,83 +654,283 @@
       "members": [
         {
           "id": "abraham-thomas",
-          "name": "Dr. Abraham Thomas",
+          "name": "Abraham Thomas",
           "title": "Chairman",
           "country": "United States",
-          "bio": "Abe is a practicing pediatrician in Northern NJ. After completing medical education in India, he migrated to the US with his wife Ruby. Once empty nesters, God opened a pathway to partner with Mathew in discipleship amongst healthcare workers. He is privileged to serve as Chairman of the COGI Board."
+          "bio": "With over three decades of experience in healthcare and church leadership, Abe serves as Chairman of the COGI Board. Based in New Jersey, he is a practicing pediatrician, President of the U.S. Chapter of Helping Hands for Hospitals, and an Elder at The Life Christian Church in West Orange. He and his wife, Ruby, have two sons, Ashish and Vivek; Vivek is married to Savannah, and they have a daughter, Georgia."
         },
         {
           "id": "mathew-george",
-          "name": "Dr. Mathew George",
-          "title": "CEO",
+          "name": "Mathew George Mulavelil",
+          "title": "CEO & President",
           "country": "India",
-          "bio": "Mathew is a dentist by profession who worked at Duncan Hospital, a unit of Emmanuel Hospital Association (EHA). He later served as Missions Secretary of EMFI. God called him to form COGI — a missions effort focused on helping healthcare professionals live lives that advance the Kingdom of God."
+          "bio": "Mathew George Mulavelil has devoted much of his career to healthcare mission, leadership, and formation. He spent two decades with the Emmanuel Hospital Association (EHA), based at Duncan Hospital, where he and his wife, Latha Mathew, pioneered its dental missions, establishing 14 dental units across the network, including the first at Duncan Hospital. He later served as Managing Director of Duncan Hospital. He then spent seven years with the Evangelical Medical Fellowship of India (EMFI), leading its Missions Department, where he developed mission training initiatives and strengthened its graduate ministry. As CEO and President of COGI, he continues to equip and mentor healthcare professionals for Kingdom engagement. He and Latha have a daughter, Rachel."
         },
         {
           "id": "charles-faust",
-          "name": "Mr. Charles Faust",
-          "title": "Secretary",
+          "name": "Charles Faust",
+          "title": "Treasurer",
           "country": "United States",
-          "bio": "Chuck is a retired business executive having served in chief operating and chief financial roles for multi-national companies. In 2013, God opened a pathway through a medical mission trip to Duncan Hospital where he met Mathew and formed a close Christian brotherhood that led to COGI."
-        },
-        {
-          "id": "paul-east",
-          "name": "Mr. Paul East",
-          "title": "Board Member",
-          "country": "United States",
-          "bio": "Paul supports COGI because healthcare professionals have a unique opportunity to come alongside, care, and witness by action and words. Christian healthcare professionals need training and nurturing to grow in faith, be effective in their profession, and bless their families, patients, and communities."
-        },
-        {
-          "id": "sunil-abraham",
-          "name": "Dr. Sunil Abraham",
-          "title": "Board Member",
-          "country": "United States",
-          "bio": "Dr. Sunil Abraham supports the work of COGI because of its vision to equip and strengthen the disciples of Christ in healthcare. Healthcare workers need encouragement, fellowship, and a fresh vision to perceive their work beyond their job."
-        },
-        {
-          "id": "manoj-jacob",
-          "name": "Dr. Manoj Jacob",
-          "title": "Board Member",
-          "country": "India",
-          "bio": "Dr. Manoj Jacob served as General Secretary of the Evangelical Medical Fellowship of India (EMFI) while Mathew was Managing Director of Duncan Hospital. He joined the Board to lend support as the vision gained momentum — impressed by partnerships and geographical engagements formed in the first year."
+          "bio": "Chuck is a retired business executive who brings extensive global leadership experience from senior operating and financial roles with multinational companies headquartered in the United States, Japan, and Hong Kong. As COGI’s Treasurer and a close advisor to the CEO, he provides leadership in the development and oversight of the organization’s financial and administrative systems. He also contributes to COGI’s curriculum, particularly the Care for the Caregiver program, and assists with editing training resources. Chuck serves as an Elder in his local church. He and his wife, Mary, have been married for 40 years and live near Boise, Idaho, where they enjoy time with their three children and six grandchildren."
         },
         {
           "id": "ted-lang",
           "name": "Ted Lang",
-          "title": "Board Member",
+          "title": "Secretary",
           "country": "United States",
-          "bio": "Bio pending. Please update when ministry provides full biography text."
+          "bio": ""
+        },
+        {
+          "id": "sunil-abraham",
+          "name": "Sunil Abraham",
+          "title": "Board Member",
+          "country": "Australia",
+          "bio": "Sunil Abraham is a practising Family Physician based in Rockhampton, Queensland, Australia. He previously served as Professor and Head of the Department of Family Medicine at Christian Medical College (CMC), Vellore, India, becoming India’s first Professor of Family Medicine. Known for his wisdom, warmth, and thoughtful approach, he is deeply committed to serving God through healthcare, with a particular passion for discipleship and mentoring. He is also actively involved in ministry among the homeless through his church and community organizations. He is married to Mary, an ENT surgeon, and they have two daughters, Joanna and Erica."
+        },
+        {
+          "id": "enoch-osafo",
+          "name": "Enoch Osafo",
+          "title": "Board Member",
+          "country": "Ghana",
+          "bio": "Mr. Enoch Osafo is a Lay Preacher in the Methodist Church Ghana, a registered Pharmacist with a Master’s in Public Health and an LLB. He is deeply committed to discipleship, initiatives of compassion, and the integration of faith and work. As former Health Director of the Methodist Church Ghana and Acting Director of Methodist Development and Relief Services, he helped strengthen the Church’s health and humanitarian ministries. His commitment to equipping healthcare professionals for mission led to the formation of the Annual Methodist Health Professionals Conference and Methodist Health Students in Mission. He has also engaged with US-based 501(c) organizations and the World Bank, strengthening systems that promote health and human dignity. He and his wife, Dr. Charlotte Osafo, a nephrologist and pioneer in kidney transplantation in Ghana, have four children—Sally, Benny, Lisbeth, and Lizette."
+        },
+        {
+          "id": "molly-thomas",
+          "name": "Molly Thomas",
+          "title": "Board Member",
+          "country": "United Kingdom",
+          "bio": "Molly is a dermatologist with over two decades of experience in mission healthcare, having served as a Consultant and Head of the Department at two mission hospitals in rural India before relocating to the United Kingdom. She remains deeply committed to nurturing Kingdom-minded healthcare professionals and strengthening healthcare mission initiatives. She and her husband, Viju John, a pediatric surgeon, have three children."
         }
       ]
     },
     "globalTeam": {
       "heroTitle": "Global team",
-      "heroSubtitle": "Facilitators, mentors, and coordinators across our regions",
+      "heroSubtitle": "The faces of COGI",
       "imageUrl": "/images/cogi-hero.png",
       "members": [
         {
-          "id": "gt-africa",
-          "name": "East Africa team",
-          "title": "Regional facilitators",
-          "region": "Americas & Africa",
+          "id": "uganda-proscovia",
+          "name": "Proscovia",
+          "country": "Uganda",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "uganda-gideon",
+          "name": "Gideon",
+          "country": "Uganda",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "tanzania-lindeal",
+          "name": "Lindeal",
+          "country": "Tanzania",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "tanzania-cornell",
+          "name": "Cornell",
+          "country": "Tanzania",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "tanzania-samwell",
+          "name": "Samwell",
+          "country": "Tanzania",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "tanzania-emile",
+          "name": "Emile",
+          "country": "Tanzania",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "kenya-joan",
+          "name": "Joan",
           "country": "Kenya",
-          "bio": "Facilitating programs, mentoring, and Communities of Grace across East Africa."
+          "region": "Africa",
+          "title": "",
+          "bio": ""
         },
         {
-          "id": "gt-asia",
-          "name": "Asia-Pacific team",
-          "title": "Regional facilitators",
-          "region": "Asia-Pacific",
+          "id": "kenya-mugo",
+          "name": "Mugo",
+          "country": "Kenya",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "kenya-cynthia",
+          "name": "Cynthia",
+          "country": "Kenya",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "kenya-lorna",
+          "name": "Lorna",
+          "country": "Kenya",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "kenya-lorraine",
+          "name": "Lorraine",
+          "country": "Kenya",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "kenya-crystal",
+          "name": "Crystal",
+          "country": "Kenya",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "kenya-paul",
+          "name": "Paul",
+          "country": "Kenya",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "kenya-joash",
+          "name": "Joash",
+          "country": "Kenya",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "ghana-enoch",
+          "name": "Enoch",
+          "country": "Ghana",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "ghana-king",
+          "name": "King",
+          "country": "Ghana",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "ghana-diladem",
+          "name": "Diladem",
+          "country": "Ghana",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "ghana-samuel-elorm",
+          "name": "Samuel Elorm",
+          "country": "Ghana",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "ghana-kupalorm",
+          "name": "Kupalorm",
+          "country": "Ghana",
+          "region": "Africa",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "india-blessena",
+          "name": "Blessena",
           "country": "India",
-          "bio": "Coordinating Kingdom of God seminars, missional training, and partnerships across Asia-Pacific."
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
         },
         {
-          "id": "gt-americas",
-          "name": "North America team",
-          "title": "Regional coordinators",
-          "region": "Americas & Africa",
-          "country": "United States",
-          "bio": "Supporting board leadership, fellowship, and North American healthcare community engagement."
+          "id": "india-swaroop",
+          "name": "Swaroop",
+          "country": "India",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "india-vivek-sunny",
+          "name": "Vivek Sunny",
+          "country": "India",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "india-abilash",
+          "name": "Abilash",
+          "country": "India",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "india-martin",
+          "name": "Martin",
+          "country": "India",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "india-vineeth",
+          "name": "Vineeth",
+          "country": "India",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "philippines-stella-osorio",
+          "name": "Stella Osorio",
+          "country": "Philippines",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "singapore-wee-king",
+          "name": "Wee King",
+          "country": "Singapore",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
+        },
+        {
+          "id": "indonesia-junirita",
+          "name": "Junirita",
+          "country": "Indonesia",
+          "region": "Asia-Pacific",
+          "title": "",
+          "bio": ""
         }
       ]
     },
@@ -686,5 +963,466 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-09-03T18:59:46.262Z"
+  "updatedAt": "2026-11-22T07:45:04.231Z",
+  "content": {
+    "/programs": [
+      {
+        "id": "1",
+        "slug": "kingdom-of-god",
+        "title": "Discover the Kingdom of God",
+        "summary": "Formational studies that reshape how you see, serve, and shape healthcare.",
+        "description": "The Kingdom of God Program is a progressive formational journey that helps you align your life, calling, and service with God’s grand narrative.",
+        "area": "Discover the Kingdom of God",
+        "order": 1,
+        "audience": "Healthcare students and professionals",
+        "highlights": [],
+        "experiences": [
+          {
+            "id": "kog-seminar",
+            "title": "Kingdom of God Seminar",
+            "description": "A focused one-day or two-session formation experience introducing the biblical narrative of the Kingdom of God and its implications for life, calling, and healthcare praxis",
+            "status": "active"
+          },
+          {
+            "id": "kog-discovery",
+            "title": "Discovery Series",
+            "description": "A three-series small group study exploring Jesus’ teachings on the Kingdom of God, integral health and healing, and compassionate care.",
+            "status": "active"
+          }
+        ],
+        "body": "The Kingdom of God Program is a progressive formational journey that helps you align your life, calling, and service with God’s grand narrative.",
+        "status": "published"
+      },
+      {
+        "id": "2",
+        "slug": "missional-training",
+        "title": "Missional Healthcare Courses",
+        "summary": "Missional trainings that shape you for Kingdom engagement.",
+        "description": "The Missional Training Program helps healthcare students and professionals discern their place within God’s mission in the world. Grounded in Scripture, it invites you to see healthcare as missional.",
+        "area": "Missional Healthcare Courses",
+        "order": 2,
+        "audience": "Healthcare students and professionals",
+        "highlights": [],
+        "experiences": [
+          {
+            "id": "m-trail",
+            "title": "M-Trail",
+            "description": "An immersive internship that places healthcare students in real-world missional settings, with mentorship and community engagement.",
+            "status": "active"
+          },
+          {
+            "id": "mhc",
+            "title": "Missional Health Course",
+            "description": "A five-day residential training program that invites you to see your life and healthcare calling within the bigger picture of God’s mission in the world.",
+            "status": "active"
+          }
+        ],
+        "body": "The Missional Training Program helps healthcare students and professionals discern their place within God’s mission in the world. Grounded in Scripture, it invites you to see healthcare as missional.",
+        "status": "published"
+      },
+      {
+        "id": "3",
+        "slug": "care-for-the-caregiver",
+        "title": "Care for the Caregiver",
+        "summary": "Trainings and workshops that equip you to navigate the emotional, relational, and vocational challenges of caregiving.",
+        "description": "Caregivers need care too. Those who devote themselves to caring for others often find it difficult to receive care themselves. The demands of caregiving can take a toll on emotional, relational, and personal well-being.",
+        "area": "Care for the Caregiver",
+        "order": 3,
+        "audience": "Healthcare students and professionals",
+        "highlights": [],
+        "experiences": [
+          {
+            "id": "c4c-journey",
+            "title": "Eight-module journey",
+            "description": "Develop Christ-centered resilience and relational wisdom to navigate life at work, at home, and in your community, caring for yourself and other caregivers.",
+            "status": "active"
+          }
+        ],
+        "body": "Caregivers need care too. Those who devote themselves to caring for others often find it difficult to receive care themselves. The demands of caregiving can take a toll on emotional, relational, and personal well-being.",
+        "status": "published"
+      },
+      {
+        "id": "4",
+        "slug": "missional-church-healthcare",
+        "title": "The Church and Missional Healthcare",
+        "summary": "Seminars and programs envisioning church leaders and healthcare professionals for collaborative, missional engagement.",
+        "description": "Equipping church leaders and healthcare workers to embrace healthcare as a vital expression of God’s redemptive work in the world.",
+        "area": "The Church and Missional Healthcare",
+        "order": 4,
+        "audience": "Church leaders and healthcare professionals",
+        "highlights": [],
+        "experiences": [
+          {
+            "id": "heal-seminar",
+            "title": "HEAL Seminars",
+            "description": "An eight-hour seminar helping church leaders rediscover healthcare as an integral expression of the Church’s mission.",
+            "status": "active"
+          },
+          {
+            "id": "heal-week",
+            "title": "HEAL Week",
+            "description": "An annual church initiative celebrating and commissioning healthcare professionals. Get in touch to learn about this initiative as it develops.",
+            "status": "development"
+          }
+        ],
+        "body": "Equipping church leaders and healthcare workers to embrace healthcare as a vital expression of God’s redemptive work in the world.",
+        "status": "published"
+      }
+    ],
+    "/partners": [
+      {
+        "id": "capro",
+        "name": "CAPRO",
+        "description": "",
+        "order": 1,
+        "logoUrl": "/images/partners/capro.png",
+        "url": "https://capromissions.org",
+        "status": "published"
+      },
+      {
+        "id": "tms-global",
+        "name": "TMS Global",
+        "description": "",
+        "order": 2,
+        "logoUrl": "/images/partners/tms-global.png",
+        "url": "https://www.tms-global.org/",
+        "status": "published"
+      },
+      {
+        "id": "nurses-christian-fellowship-international",
+        "name": "Nurses Christian Fellowship International",
+        "description": "",
+        "order": 3,
+        "logoUrl": "/images/partners/ncfi.png",
+        "url": "https://ncfi.org",
+        "status": "published"
+      },
+      {
+        "id": "lifespring-church-idaho",
+        "name": "LifeSpring Church, Idaho",
+        "description": "",
+        "order": 4,
+        "logoUrl": "/images/partners/lifespring.png",
+        "status": "published",
+        "url": "https://mylifespringchurch.org/"
+      },
+      {
+        "id": "the-methodist-church-ghana",
+        "name": "The Methodist Church Ghana",
+        "description": "",
+        "order": 5,
+        "logoUrl": "/images/partners/methodist-ghana.png",
+        "status": "published",
+        "url": "https://website.methodistchurch.org.gh/"
+      },
+      {
+        "id": "global-methodist-church",
+        "name": "Global Methodist Church",
+        "description": "",
+        "order": 6,
+        "logoUrl": "/images/partners/global-methodist.png",
+        "url": "https://globalmethodist.org",
+        "status": "published"
+      },
+      {
+        "id": "cmf-ghana",
+        "name": "CMF Ghana",
+        "description": "",
+        "order": 7,
+        "logoUrl": "/images/partners/cmf.png",
+        "status": "published"
+      },
+      {
+        "id": "cmf-tanzania",
+        "name": "CMF Tanzania",
+        "description": "",
+        "order": 8,
+        "status": "published"
+      },
+      {
+        "id": "cmf-uganda",
+        "name": "CMF Uganda",
+        "description": "",
+        "order": 9,
+        "status": "published"
+      },
+      {
+        "id": "cmf-kenya",
+        "name": "CMF Kenya",
+        "description": "",
+        "order": 10,
+        "status": "published"
+      },
+      {
+        "id": "portico-church-charlottesville",
+        "name": "Portico Church, Charlottesville",
+        "description": "",
+        "order": 11,
+        "logoUrl": "/images/partners/portico.png",
+        "url": "https://porticocville.org",
+        "status": "published"
+      },
+      {
+        "id": "healthcare-christian-fellowship-international",
+        "name": "Healthcare Christian Fellowship International",
+        "description": "",
+        "order": 12,
+        "logoUrl": "/images/partners/hcfi.png",
+        "url": "https://www.hcfglobal.org/",
+        "status": "published"
+      }
+    ],
+    "/testimonials": [
+      {
+        "id": "stella-osorio",
+        "author": "Stella Osorio",
+        "country": "Singapore",
+        "program": "Care for the Caregiver",
+        "quote": "The Care for the Caregiver (C4C) Program helps create a safe space for reflection, emotional renewal, and spiritual strengthening. Through practical sessions on listening, communication, caring for the grieving, resilience, and Christ-centered caregiving, it equips us with valuable tools to care for ourselves and others more effectively. A deeply enriching and transformative experience that affirms the vital importance of caring for caregivers.",
+        "featured": true,
+        "mediaType": "written",
+        "status": "published"
+      },
+      {
+        "id": "abhilash-pappala",
+        "author": "Abhilash Pappala",
+        "country": "India",
+        "program": "Discover the Kingdom of God",
+        "quote": "Kingdom of God studies have transformed the way I understand and live my faith. They led me to genuine repentance and a deeper understanding of God’s grace and Kingdom purpose. Seeing life through a Kingdom lens has reshaped my attitudes, relationships, decisions, and stewardship, bringing greater clarity, purpose, and joy to everyday life.",
+        "featured": true,
+        "mediaType": "written",
+        "status": "published"
+      },
+      {
+        "id": "blessena",
+        "author": "Blessena",
+        "country": "India",
+        "program": "Discover the Kingdom of God",
+        "quote": "Kingdom of God studies are highly interactive and practical, helping translate biblical teaching into everyday Kingdom living. They move beyond theory, guiding participants toward intentional steps shaped by God’s reign. The “I WILL” statements provide a simple framework for reflection and accountability, helping participants recognize and sustain their growth toward a Kingdom-centered lifestyle.",
+        "featured": true,
+        "mediaType": "written",
+        "status": "published"
+      }
+    ],
+    "/locations": [
+      {
+        "id": "india",
+        "country": "India",
+        "lat": 20.6,
+        "lng": 79,
+        "programs": [
+          "Care for the Caregiver",
+          "Discover the Kingdom of God"
+        ],
+        "summary": "",
+        "region": "Asia-Pacific",
+        "status": "published"
+      },
+      {
+        "id": "uganda",
+        "country": "Uganda",
+        "lat": 1.37,
+        "lng": 32.3,
+        "programs": [
+          "Missional Health Course"
+        ],
+        "summary": "",
+        "region": "Americas & Africa",
+        "status": "published"
+      },
+      {
+        "id": "kenya",
+        "country": "Kenya",
+        "lat": -0.02,
+        "lng": 37.9,
+        "programs": [
+          "Care for the Caregiver",
+          "Missional Health Course"
+        ],
+        "summary": "",
+        "region": "Americas & Africa",
+        "status": "published"
+      },
+      {
+        "id": "tanzania",
+        "country": "Tanzania",
+        "lat": -6.37,
+        "lng": 34.9,
+        "programs": [
+          "Missional Health Course"
+        ],
+        "summary": "",
+        "region": "Americas & Africa",
+        "status": "published"
+      },
+      {
+        "id": "rwanda",
+        "country": "Rwanda",
+        "lat": -1.94,
+        "lng": 29.87,
+        "programs": [
+          "Missional Health Course"
+        ],
+        "summary": "",
+        "region": "Americas & Africa",
+        "status": "published"
+      },
+      {
+        "id": "ghana",
+        "country": "Ghana",
+        "lat": 7.95,
+        "lng": -1.02,
+        "programs": [
+          "Missional Health Course",
+          "Care for the Caregiver"
+        ],
+        "summary": "",
+        "region": "Americas & Africa",
+        "status": "published"
+      },
+      {
+        "id": "united-states",
+        "country": "United States",
+        "lat": 37.1,
+        "lng": -95.7,
+        "programs": [
+          "The Church and Missional Healthcare",
+          "Care for the Caregiver"
+        ],
+        "summary": "",
+        "region": "Americas & Africa",
+        "status": "published"
+      },
+      {
+        "id": "philippines",
+        "country": "Philippines",
+        "lat": 12.88,
+        "lng": 121.77,
+        "programs": [
+          "Care for the Caregiver"
+        ],
+        "summary": "",
+        "region": "Asia-Pacific",
+        "status": "published"
+      },
+      {
+        "id": "singapore",
+        "country": "Singapore",
+        "lat": 1.35,
+        "lng": 103.82,
+        "programs": [
+          "Care for the Caregiver"
+        ],
+        "summary": "",
+        "region": "Asia-Pacific",
+        "status": "published"
+      },
+      {
+        "id": "indonesia",
+        "country": "Indonesia",
+        "lat": -0.79,
+        "lng": 113.92,
+        "programs": [
+          "Care for the Caregiver",
+          "Missional Health Course"
+        ],
+        "summary": "",
+        "region": "Asia-Pacific",
+        "status": "published"
+      },
+      {
+        "id": "australia",
+        "country": "Australia",
+        "lat": -25.27,
+        "lng": 133.78,
+        "programs": [
+          "Care for the Caregiver"
+        ],
+        "summary": "",
+        "region": "Asia-Pacific",
+        "status": "published"
+      },
+      {
+        "id": "new-zealand",
+        "country": "New Zealand",
+        "lat": -40.9,
+        "lng": 174.89,
+        "programs": [
+          "Care for the Caregiver"
+        ],
+        "summary": "",
+        "region": "Asia-Pacific",
+        "status": "published"
+      }
+    ],
+    "/stories": [
+      {
+        "id": "kenya-video-story",
+        "slug": "kenya-video-story",
+        "title": "Communities of Grace in East Africa",
+        "summary": "Healthcare professionals in Kenya learning to serve with a Kingdom perspective.",
+        "type": "video",
+        "country": "Kenya",
+        "program": "Missional Healthcare Courses",
+        "featured": true,
+        "imageUrl": "/images/cogi-kenya.png",
+        "videoUrl": "/videos/kenya-story.mp4",
+        "content": "Through communities of learning, mentoring, and mission, healthcare professionals in Kenya are being equipped to think, live, and work missionally.",
+        "status": "published"
+      },
+      {
+        "id": "india-written-story",
+        "slug": "india-written-story",
+        "title": "A Kingdom perspective at the bedside",
+        "summary": "How Kingdom of God studies are shaping vocation and service in South Asia.",
+        "type": "video",
+        "country": "India",
+        "program": "Discover the Kingdom of God",
+        "featured": true,
+        "imageUrl": "/images/cogi-india.png",
+        "videoUrl": "/videos/india-story.mp4",
+        "content": "What began as God knitting hearts together among healthcare leaders has become a growing fellowship. In India, Kingdom of God seminars help professionals develop a perspective that shapes life, vocation, and service.",
+        "status": "published"
+      },
+      {
+        "id": "stella-osorio-story",
+        "slug": "stella-osorio-story",
+        "title": "Caregivers need care too",
+        "summary": "The Care for the Caregiver (C4C) Program helps create a safe space for reflection, emotional renewal, and spiritual strengthening.",
+        "content": "The Care for the Caregiver (C4C) Program helps create a safe space for reflection, emotional renewal, and spiritual strengthening. Through practical sessions on listening, communication, caring for the grieving, resilience, and Christ-centered caregiving, it equips us with valuable tools to care for ourselves and others more effectively. A deeply enriching and transformative experience that affirms the vital importance of caring for caregivers.\n\n— Stella Osorio",
+        "type": "written",
+        "country": "Singapore",
+        "program": "Care for the Caregiver",
+        "featured": true,
+        "imageUrl": "/images/cogi-support.png",
+        "status": "published"
+      },
+      {
+        "id": "abhilash-pappala-story",
+        "slug": "abhilash-pappala-story",
+        "title": "Seeing life through a Kingdom lens",
+        "summary": "Kingdom of God studies have transformed the way I understand and live my faith.",
+        "content": "Kingdom of God studies have transformed the way I understand and live my faith. They led me to genuine repentance and a deeper understanding of God’s grace and Kingdom purpose. Seeing life through a Kingdom lens has reshaped my attitudes, relationships, decisions, and stewardship, bringing greater clarity, purpose, and joy to everyday life.\n\n— Abhilash Pappala",
+        "type": "written",
+        "country": "India",
+        "program": "Discover the Kingdom of God",
+        "featured": true,
+        "imageUrl": "/images/cogi-india.png",
+        "status": "published"
+      },
+      {
+        "id": "blessena-story",
+        "slug": "blessena-story",
+        "title": "From biblical teaching to everyday Kingdom living",
+        "summary": "Kingdom of God studies are highly interactive and practical, helping translate biblical teaching into everyday Kingdom living.",
+        "content": "Kingdom of God studies are highly interactive and practical, helping translate biblical teaching into everyday Kingdom living. They move beyond theory, guiding participants toward intentional steps shaped by God’s reign. The “I WILL” statements provide a simple framework for reflection and accountability, helping participants recognize and sustain their growth toward a Kingdom-centered lifestyle.\n\n— Blessena",
+        "type": "written",
+        "country": "India",
+        "program": "Discover the Kingdom of God",
+        "featured": true,
+        "imageUrl": "/images/cogi-india.png",
+        "status": "published"
+      }
+    ]
+  }
 }

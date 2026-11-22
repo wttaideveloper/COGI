@@ -22,8 +22,11 @@ export function PartnersPage() {
             {partners?.map((partner) => (
               <Card key={partner.id} as="article">
                 <div className="mb-4 flex h-16 items-center">
-                  <span className="font-display text-2xl font-bold text-teal-deep">{partner.name}</span>
+                  {partner.logoUrl ? (
+                    partner.url ? <a href={partner.url} target="_blank" rel="noopener noreferrer" aria-label={partner.name}><img src={partner.logoUrl} alt={partner.name} className="h-16 max-w-56 object-contain" /></a> : <img src={partner.logoUrl} alt={partner.name} className="h-16 max-w-56 object-contain" />
+                  ) : <span className="font-display text-2xl font-bold text-teal-deep">{partner.name}</span>}
                 </div>
+                {partner.logoUrl && <h2 className="font-display text-xl text-teal-deep">{partner.name}</h2>}
                 {partner.region && <p className="text-xs font-semibold uppercase tracking-wide text-accent-ink">{partner.region}</p>}
                 <p className="mt-3 text-ink-muted">{partner.description}</p>
                 {partner.url && (

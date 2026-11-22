@@ -11,11 +11,12 @@ import { useSiteConfig } from '@/contexts/SiteConfigContext'
 export function TestimonialsPage() {
   const { data: testimonials } = useQuery({ queryKey: ['testimonials'], queryFn: getTestimonials })
   const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms })
+  const [countryFilter, setCountryFilter] = useState('')
   const [programFilter, setProgramFilter] = useState('')
   const { copy } = useSiteConfig()
   const page = copy.testimonials
 
-  const filtered = testimonials?.filter((t) => !programFilter || t.program === programFilter) || []
+  const filtered = testimonials?.filter((t) => (!programFilter || t.program === programFilter) && (!countryFilter || t.country === countryFilter)) || []
   const videos = filtered.filter((t) => t.mediaType === 'video' && t.videoUrl)
 
   return (
@@ -28,6 +29,7 @@ export function TestimonialsPage() {
             <TestimonialCarousel items={filtered} />
           </div>
         ) : null}
+        <label className="mb-4 flex items-center gap-2 text-sm">Country<select aria-label="Filter by country" value={countryFilter} onChange={e => setCountryFilter(e.target.value)} className="rounded-md border border-mist-dark px-3 py-2"><option value="">All countries</option>{[...new Set(testimonials?.map(t => t.country).filter(Boolean))].map(country => <option key={country} value={country}>{country}</option>)}</select></label>
         <label className="mb-8 flex items-center gap-2 text-sm">
           Filter by program:
           <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} className="rounded-md border border-mist-dark px-3 py-2">
@@ -48,6 +50,7 @@ export function TestimonialsPage() {
             ))}
           </div>
         ) : null}
+        {filtered.length === 0 && <p role="status">No testimonials match these filters.</p>}
         <div className="grid gap-6 md:grid-cols-2">
           {filtered.map((t, index) => (
             <Card

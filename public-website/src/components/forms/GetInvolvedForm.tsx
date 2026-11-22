@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -12,11 +13,18 @@ const schema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Valid email required'),
   phone: z.string().optional(),
+  profession: z.string().min(2, 'Profession or course is required'),
+  organization: z.string().optional(),
+  country: z.string().min(2, 'Country is required'),
+  preferredContact: z.enum(['email', 'whatsapp']),
   pathway: z.enum(['pray', 'participate', 'partner']),
   roleArea: z.string().optional(),
   programInterest: z.string().optional(),
   message: z.string().optional(),
 }).superRefine((data, ctx) => {
+  if (data.preferredContact === 'whatsapp' && !data.phone?.trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Enter a WhatsApp number for WhatsApp replies', path: ['phone'] })
+  }
   if (data.pathway !== 'pray' && !data.roleArea) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Select a role / area', path: ['roleArea'] })
   }
@@ -25,6 +33,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export function GetInvolvedForm({ defaultPathway, submitLabel = 'Join the Movement' }: { defaultPathway?: FormData['pathway']; submitLabel?: string }) {
+  const [params] = useSearchParams()
   const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null)
   const {
     register,
@@ -34,7 +43,7 @@ export function GetInvolvedForm({ defaultPathway, submitLabel = 'Join the Moveme
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { pathway: defaultPathway ?? 'participate' },
+    defaultValues: { pathway: defaultPathway ?? 'participate', preferredContact: 'email', programInterest: params.get('program') || '' },
   })
   const pathway = watch('pathway')
 
@@ -42,7 +51,7 @@ export function GetInvolvedForm({ defaultPathway, submitLabel = 'Join the Moveme
     setStatus(null)
     const result = await submitGetInvolved(data)
     setStatus({ ok: result.success, text: result.message })
-    if (result.success) reset({ pathway: data.pathway })
+    if (result.success) reset({ pathway: data.pathway, preferredContact: 'email' })
   }
 
   const fieldClass = (hasError: boolean) =>
@@ -53,18 +62,14 @@ export function GetInvolvedForm({ defaultPathway, submitLabel = 'Join the Moveme
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-      <fieldset>
-        <legend className="mb-3 text-sm font-medium text-ink">How would you like to engage? <span className="text-red-500">*</span></legend>
-        <div className="flex flex-wrap gap-4">
-          {(['pray', 'participate', 'partner'] as const).map((value) => (
-            <label key={value} className="flex items-center gap-2 cursor-pointer">
-              <input type="radio" value={value} {...register('pathway')} className="accent-teal-deep" />
-              <span className="capitalize text-sm">{value}</span>
-            </label>
-          ))}
-        </div>
-        {errors.pathway && <p className="mt-1 text-sm text-red-600" role="alert">{errors.pathway.message}</p>}
-      </fieldset>
+      <div>
+        <label htmlFor="gi-pathway" className="mb-2 block text-sm font-medium">How would you like to engage?</label>
+        <select id="gi-pathway" {...register('pathway')} className={fieldClass(!!errors.pathway)}>
+          <option value="pray">Pray with our global community</option>
+          <option value="participate">Participate in programs or volunteer</option>
+          <option value="partner">Partner as a church or organization</option>
+        </select>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
@@ -81,8 +86,9 @@ export function GetInvolvedForm({ defaultPathway, submitLabel = 'Join the Moveme
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label htmlFor="gi-phone" className="mb-1 block text-sm font-medium text-ink">Phone</label>
-          <input id="gi-phone" type="tel" className={fieldClass(false)} {...register('phone')} />
+          <label htmlFor="gi-phone" className="mb-1 block text-sm font-medium text-ink">WhatsApp number (optional)</label>
+          <input id="gi-phone" type="tel" className={fieldClass(!!errors.phone)} {...register('phone')} />
+          {errors.phone && <p role="alert" className="text-sm text-red-600">{errors.phone.message}</p>}
         </div>
         <div>
           <label htmlFor="gi-role" className="mb-1 block text-sm font-medium text-ink">Role / area preference {pathway !== 'pray' ? <span className="text-red-500">*</span> : null}</label>
@@ -94,6 +100,12 @@ export function GetInvolvedForm({ defaultPathway, submitLabel = 'Join the Moveme
         </div>
       </div>
 
+      <div className="grid gap-4 md:grid-cols-2">
+        <div><label htmlFor="gi-profession" className="mb-1 block text-sm font-medium">Profession / course *</label><input id="gi-profession" {...register('profession')} className={fieldClass(!!errors.profession)} />{errors.profession && <p role="alert" className="text-sm text-red-600">{errors.profession.message}</p>}</div>
+        <div><label htmlFor="gi-country" className="mb-1 block text-sm font-medium">Country *</label><input id="gi-country" {...register('country')} className={fieldClass(!!errors.country)} />{errors.country && <p role="alert" className="text-sm text-red-600">{errors.country.message}</p>}</div>
+        <div><label htmlFor="gi-organization" className="mb-1 block text-sm font-medium">Organization / church (optional)</label><input id="gi-organization" {...register('organization')} className={fieldClass(false)} /></div>
+        <div><label htmlFor="gi-contact" className="mb-1 block text-sm font-medium">Preferred means of communication</label><select id="gi-contact" {...register('preferredContact')} className={fieldClass(false)}><option value="email">Email</option><option value="whatsapp">WhatsApp</option></select></div>
+      </div>
       <div>
         <label htmlFor="gi-program" className="mb-1 block text-sm font-medium text-ink">Program interest</label>
         <select id="gi-program" className={fieldClass(false)} {...register('programInterest')}>

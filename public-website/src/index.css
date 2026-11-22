@@ -644,3 +644,11 @@ header nav, .site-footer nav, .home-scroll-copy p { font-family: var(--font-body
   .about-hero-inner { grid-template-columns: 1fr 1.08fr; }
   .about-purpose { grid-template-columns: 1fr 1.15fr; }
 }
+
+@media (min-width: 768px) {
+  .method-path { padding-bottom: 5rem; }
+  .method-step:nth-child(even) { transform: translateY(5rem); }
+}
+.region-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(280px, 85%); gap: 1.5rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 1.5rem; }
+.region-track > section { scroll-snap-align: start; }
+@media (min-width: 1024px) { .region-track { grid-auto-columns: calc(50% - .75rem); } }

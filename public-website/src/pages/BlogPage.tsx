@@ -12,15 +12,17 @@ export function BlogPage() {
   const { data: posts, isLoading } = useQuery({ queryKey: ['blog'], queryFn: getBlogPosts })
   const { copy } = useSiteConfig()
   const page = copy.blog
+  const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
   const categories = [...new Set((posts || []).map((post) => post.category).filter(Boolean))]
-  const visible = posts?.filter((post) => !category || post.category === category)
+  const visible = posts?.filter(post => (!category || post.category === category) && (post.title + ' ' + post.summary).toLowerCase().includes(query.toLowerCase())).sort((a,b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
 
   return (
     <>
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/resources/blog" />
       <PageHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="mx-auto max-w-4xl px-4 py-16">
+<label className="mb-6 block">Search articles<input type="search" value={query} onChange={e => setQuery(e.target.value)} className="mt-2 block w-full rounded-md border border-mist-dark p-3" /></label>
         {categories.length ? (
           <label className="mb-8 flex items-center gap-2 text-sm">
             Category:

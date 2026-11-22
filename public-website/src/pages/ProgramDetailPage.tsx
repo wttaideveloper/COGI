@@ -27,14 +27,15 @@ export function ProgramDetailPage() {
     <>
       <SEO title={program.title} description={program.summary} path={`/programs/${program.slug}`} />
       <PageHero title={program.title} subtitle={program.area} />
-      <div className="mx-auto max-w-4xl px-4 py-16">
-        <p className="text-lg leading-relaxed text-ink">{program.description}</p>
-        <p className="mt-4 text-ink-muted"><strong>Audience:</strong> {program.audience}</p>
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 md:grid-cols-2">
+        <div className="rounded-xl bg-[#182d43] p-8 text-white"><p className="text-lg leading-relaxed text-white">{program.description}</p>
+        <p className="mt-4 text-white/85"><strong>Audience:</strong> {program.audience}</p>
 
-        <h2 className="mt-12 font-display text-2xl text-teal-deep">Program Experiences</h2>
+        <ButtonLink to={`/get-involved?program=${program.slug}#form`} size="lg" className="mt-8">Express interest</ButtonLink></div>
+        <div><h2 className="font-display text-2xl text-teal-deep">Learning experiences</h2>
         <div className="mt-6 space-y-6">
           {program.experiences.map((exp) => (
-            <Card key={exp.id} as="article">
+            <Card key={exp.id} as="article" className="bg-[#e6eadc]">
               <div className="flex items-start justify-between gap-4">
                 <h3 className="font-display text-xl text-teal-deep">{exp.title}</h3>
                 {exp.status === 'development' && <span className="shrink-0 rounded-full bg-gold/20 px-3 py-1 text-xs font-semibold text-accent-ink">Under Development</span>}
@@ -45,14 +46,6 @@ export function ProgramDetailPage() {
           ))}
         </div>
 
-        <h2 className="mt-12 font-display text-2xl text-teal-deep">Highlights</h2>
-        <ul className="mt-4 list-inside list-disc space-y-2 text-ink-muted">
-          {program.highlights.map((h) => <li key={h}>{h}</li>)}
-        </ul>
-
-        <div className="mt-12 flex flex-wrap gap-4">
-          <ButtonLink to="/get-involved" size="lg">Express Interest</ButtonLink>
-          <ButtonLink to="/contact" variant="outline" size="lg">Contact Us</ButtonLink>
         </div>
       </div>
     </>

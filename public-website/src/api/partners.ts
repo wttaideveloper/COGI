@@ -16,8 +16,12 @@ function sanitizePartners(rows: Partner[]): Partner[] {
 export async function getPartners(): Promise<Partner[]> {
   const data = await fetchFromStrapi<{ data: Partner[] }>('/partners', {
     sort: 'order:asc',
+    populate: '*',
   })
-  const rows = sanitizePartners(data?.data ?? [])
+  const rows = sanitizePartners((data?.data ?? []).map(partner => ({
+    ...partner,
+    logoUrl: partner.logoUrl || fallbackPartners.find(item => item.name === partner.name)?.logoUrl,
+  })))
   if (!data) return sanitizePartners(fallbackPartners)
   return rows
 }

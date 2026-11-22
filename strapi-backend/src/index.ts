@@ -327,7 +327,7 @@ async function seedCollection(strapi: Core.Strapi, uid: string, data: Record<str
   try {
     const docs: any = strapi.documents(uid as any);
     const existing = await docs.findMany({});
-    if (existing?.results?.length) return;
+    if (Array.isArray(existing) ? existing.length : existing?.results?.length) return;
 
     const doc = await docs.create({ data });
     const documentId = doc?.documentId;

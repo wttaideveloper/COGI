@@ -1,3 +1,4 @@
+import { EventCalendar } from '@/components/ui/EventCalendar'
 import { PhotoHero } from '@/components/layout/PhotoHero'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -16,7 +17,7 @@ export function EventsPage() {
     <>
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/events" />
       <PhotoHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
-      <div className="about-body mx-auto max-w-6xl grid gap-6 md:grid-cols-2">
+      <div className="about-body mx-auto max-w-6xl"><EventCalendar events={events || []} /><div className="grid gap-6 md:grid-cols-2">
         {events?.map((event) => (
           <Card key={event.id} as="article">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -37,7 +38,7 @@ export function EventsPage() {
             <Link to={`/events/${event.slug}`} className="mt-4 inline-block text-sm font-semibold text-teal-mid hover:text-accent-ink">{page.detailsLabel} ?</Link>
           </Card>
         ))}
-      </div>
+      </div></div>
     </>
   )
 }

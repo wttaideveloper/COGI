@@ -17,7 +17,7 @@ export function GetInvolvedPage() {
       <SEO title={page.heroTitle} description={page.heroSubtitle} path="/get-involved" />
       <PhotoHero title={page.heroTitle} subtitle={page.heroSubtitle} imageUrl={page.imageUrl} />
       <div className="about-body mx-auto max-w-6xl">
-        <div className="mb-16 grid gap-6 md:grid-cols-3">
+        <div className="mb-16 grid gap-6 md:grid-cols-2">
           {page.pathways.map((p) => (
             <Card key={p.title} as="article">
               <h2 className="font-display text-2xl text-teal-deep">{p.title}</h2>

@@ -14,7 +14,7 @@ import type {
   Testimonial,
   TimelineMilestone,
 } from './publicTypes'
-import { siteImages, siteVideos } from './siteCopy'
+import { siteVideos } from './siteCopy'
 
 const heroIdentity =
   'We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service. In a rapidly changing global context, Companions of Grace seek to envision, empower, and engage healthcare professionals and communities in creative mission engagement, cultivating thriving Kingdom communities.'
@@ -147,82 +147,117 @@ export const fallbackHomepage: Homepage = {
 
 export const fallbackPrograms: Program[] = [
   {
-    id: '1',
-    slug: 'kingdom-of-god',
-    title: 'Kingdom of God Studies & Seminars',
-    summary:
-      'Seminars and study platforms that help healthcare professionals develop a Kingdom perspective and cultivate Kingdom-shaped communities.',
-    description:
-      'Facilitated deeper studies on the perspectives and lifestyles of the Kingdom in healthcare. An introductory one-day seminar with life application, plus Discovery Series for small groups, equips professionals to honor the Lord Jesus in their profession and be a blessing to patients and communities.',
-    area: 'Kingdom of God Studies & Seminars',
-    experiences: [
-      { id: 'kog-seminar', title: 'Kingdom of God Seminar', description: 'One-day introductory seminar on the Kingdom of God in healthcare.', status: 'active' },
-      { id: 'kog-discovery', title: 'Discovery Series', description: 'Two series of studies for small groups exploring Kingdom perspectives.', status: 'active' },
-    ],
-    highlights: ['Kingdom perspective', 'Study platforms', 'Kingdom-shaped communities'],
-    audience: 'Healthcare professionals and small groups',
-    order: 1,
+    "id": "1",
+    "slug": "kingdom-of-god",
+    "title": "Discover the Kingdom of God",
+    "summary": "Formational studies that reshape how you see, serve, and shape healthcare.",
+    "description": "The Kingdom of God Program is a progressive formational journey that helps you align your life, calling, and service with God’s grand narrative.",
+    "area": "Discover the Kingdom of God",
+    "order": 1,
+    "audience": "Healthcare students and professionals",
+    "highlights": [],
+    "experiences": [
+      {
+        "id": "kog-seminar",
+        "title": "Kingdom of God Seminar",
+        "description": "A focused one-day or two-session formation experience introducing the biblical narrative of the Kingdom of God and its implications for life, calling, and healthcare praxis",
+        "status": "active"
+      },
+      {
+        "id": "kog-discovery",
+        "title": "Discovery Series",
+        "description": "A three-series small group study exploring Jesus’ teachings on the Kingdom of God, integral health and healing, and compassionate care.",
+        "status": "active"
+      }
+    ]
   },
   {
-    id: '2',
-    slug: 'missional-training',
-    title: 'Missional Healthcare Training',
-    summary:
-      'Formation experiences that prepare healthcare professionals for faithful participation in God\'s mission through healthcare.',
-    description:
-      'M-Trail missions taster, Missional Health Course, mentoring, and the future Institute of Missional Healthcare — comprehensive training pathways for healthcare professionals called to mission.',
-    area: 'Missional Healthcare Training',
-    experiences: [
-      { id: 'm-trail', title: 'M-Trail', description: 'One-day missions taster for students and professionals in healthcare.', status: 'active' },
-      { id: 'mhc', title: 'Missional Health Course', description: 'Eight-module intense residential or blended course in Missional Healthcare.', status: 'active' },
-      { id: 'mentoring', title: 'Mentoring Program', description: 'Intentional mentoring and coaching for those in healthcare.', status: 'active' },
-      { id: 'institute', title: 'Institute of Missional Healthcare', description: 'Future institute — placeholder for expanded training.', status: 'development' },
-    ],
-    highlights: ['M-Trail', 'Missional Health Course', 'Mentoring', 'Formation experiences'],
-    audience: 'Students and healthcare professionals',
-    order: 2,
+    "id": "2",
+    "slug": "missional-training",
+    "title": "Missional Healthcare Courses",
+    "summary": "Missional trainings that shape you for Kingdom engagement.",
+    "description": "The Missional Training Program helps healthcare students and professionals discern their place within God’s mission in the world. Grounded in Scripture, it invites you to see healthcare as missional.",
+    "area": "Missional Healthcare Courses",
+    "order": 2,
+    "audience": "Healthcare students and professionals",
+    "highlights": [],
+    "experiences": [
+      {
+        "id": "m-trail",
+        "title": "M-Trail",
+        "description": "An immersive internship that places healthcare students in real-world missional settings, with mentorship and community engagement.",
+        "status": "active"
+      },
+      {
+        "id": "mhc",
+        "title": "Missional Health Course",
+        "description": "A five-day residential training program that invites you to see your life and healthcare calling within the bigger picture of God’s mission in the world.",
+        "status": "active"
+      }
+    ]
   },
   {
-    id: '3',
-    slug: 'care-for-the-caregiver',
-    title: 'Care for the Caregiver',
-    summary:
-      'Equipping healthcare professionals to navigate the emotional, relational, and vocational demands of caregiving.',
-    description:
-      'An 8-module group training journey focused on caring for health workers — addressing burnout, spiritual health, and community support so Christian healthcare professionals can thrive in their calling.',
-    area: 'Care for the Caregiver',
-    experiences: [
-      { id: 'c4c-journey', title: '8-Module Journey', description: 'Group training focused on caring for health workers.', status: 'active' },
-    ],
-    highlights: ['Emotional health', 'Relational support', 'Vocational calling'],
-    audience: 'Christian healthcare workers',
-    order: 3,
+    "id": "3",
+    "slug": "care-for-the-caregiver",
+    "title": "Care for the Caregiver",
+    "summary": "Trainings and workshops that equip you to navigate the emotional, relational, and vocational challenges of caregiving.",
+    "description": "Caregivers need care too. Those who devote themselves to caring for others often find it difficult to receive care themselves. The demands of caregiving can take a toll on emotional, relational, and personal well-being.",
+    "area": "Care for the Caregiver",
+    "order": 3,
+    "audience": "Healthcare students and professionals",
+    "highlights": [],
+    "experiences": [
+      {
+        "id": "c4c-journey",
+        "title": "Eight-module journey",
+        "description": "Develop Christ-centered resilience and relational wisdom to navigate life at work, at home, and in your community, caring for yourself and other caregivers.",
+        "status": "active"
+      }
+    ]
   },
   {
-    id: '4',
-    slug: 'missional-church-healthcare',
-    title: 'Missional Church & Healthcare',
-    summary:
-      'Enabling church leaders and key healthcare professionals within the church to engage collaboratively in God\'s mission through healthcare.',
-    description:
-      'One-Day Seminar and HEAL Week — integrating missional church principles with healthcare practice so local churches and healthcare professionals can partner together for Kingdom impact.',
-    area: 'Missional Church & Healthcare',
-    experiences: [
-      { id: 'one-day', title: 'One-Day Seminar', description: 'Seminar on missional church and healthcare integration.', status: 'active' },
-      { id: 'heal-week', title: 'HEAL Week', description: 'Intensive week program — under development.', status: 'development' },
-    ],
-    highlights: ['Church partnership', 'Collaborative mission', 'Healthcare witness'],
-    audience: 'Church leaders and healthcare professionals',
-    order: 4,
-  },
+    "id": "4",
+    "slug": "missional-church-healthcare",
+    "title": "The Church and Missional Healthcare",
+    "summary": "Seminars and programs envisioning church leaders and healthcare professionals for collaborative, missional engagement.",
+    "description": "Equipping church leaders and healthcare workers to embrace healthcare as a vital expression of God’s redemptive work in the world.",
+    "area": "The Church and Missional Healthcare",
+    "order": 4,
+    "audience": "Church leaders and healthcare professionals",
+    "highlights": [],
+    "experiences": [
+      {
+        "id": "heal-seminar",
+        "title": "HEAL Seminars",
+        "description": "An eight-hour seminar helping church leaders rediscover healthcare as an integral expression of the Church’s mission.",
+        "status": "active"
+      },
+      {
+        "id": "heal-week",
+        "title": "HEAL Week",
+        "description": "An annual church initiative celebrating and commissioning healthcare professionals. Get in touch to learn about this initiative as it develops.",
+        "status": "development"
+      }
+    ]
+  }
 ]
 
 export const fallbackTimeline: TimelineMilestone[] = [
-  { year: '2013', title: 'A pathway opened', description: 'A medical mission journey to Duncan Hospital in Raxaul, Bihar knit together friendships that would later become COGI.' },
-  { year: '2019', title: 'Vision conceived', description: 'Weekly prayer and fellowship among leaders in India and the United States clarified the call: healthcare is sacred vocation.' },
-  { year: '2020', title: 'COGI established', description: 'Companions of Grace International was formally launched with a founding board, initial partnerships, and the first Kingdom of God seminars.' },
-  { year: '2023', title: 'Global expansion', description: 'Programs expanded across Africa, South Asia, and North America through partnerships with churches and mission networks.' },
-  { year: '2026', title: 'Growing fellowship', description: 'More than 500 healthcare professionals equipped across 10+ countries as Communities of Grace continue to grow.' },
+  {
+    "year": "2020",
+    "title": "Genesis",
+    "description": "COGI takes shape as a focused initiative for missional healthcare and Kingdom living."
+  },
+  {
+    "year": "2023",
+    "title": "Feet on the Ground",
+    "description": "The vision hits the ground. New places. New people. New partnerships. A growing movement begins to take shape beyond India."
+  },
+  {
+    "year": "2026",
+    "title": "Crossing Borders",
+    "description": "The movement goes global—crossing different countries, spanning cultures and building communities of healthcare professionals, having a shared vision and calling for missional engagement."
+  }
 ]
 
 export const fallbackBeliefs: Belief[] = [
@@ -252,73 +287,190 @@ export const fallbackGlobalTeam: TeamMember[] = [
 ]
 
 export const fallbackPartners: Partner[] = [
-  { id: 'eha', name: 'Emmanuel Hospital Association (EHA)', description: 'Partner hospital network in India.', url: 'https://www.eha-health.org/', region: 'India', order: 1 },
-  { id: 'emfi', name: 'Evangelical Medical Fellowship of India (EMFI)', description: 'Medical missions training and mentoring partner.', url: 'https://emfi.in/', region: 'India', order: 2 },
-  { id: 'duncan', name: 'Duncan Hospital', description: 'Raxaul, Bihar — founding partnership location.', url: 'https://coginternational.org/', region: 'India', order: 3 },
-  { id: 'global-advance', name: 'Global Advance', description: 'Mission training and church partnership network.', url: 'https://globaladvance.org/', region: 'International', order: 4 },
-  { id: 'healthcare-missions', name: 'Healthcare Missions Network', description: 'A collaborative network of healthcare mission partners walking with COGI.', url: 'https://coginternational.org/', region: 'International', order: 5 },
+  {
+    "id": "capro",
+    "name": "CAPRO",
+    "description": "",
+    "order": 1,
+    "logoUrl": "/images/partners/capro.png",
+    "url": "https://capromissions.org"
+  },
+  {
+    "id": "tms-global",
+    "name": "TMS Global",
+    "description": "",
+    "order": 2,
+    "logoUrl": "/images/partners/tms-global.png",
+    "url": "https://www.tms-global.org/"
+  },
+  {
+    "id": "nurses-christian-fellowship-international",
+    "name": "Nurses Christian Fellowship International",
+    "description": "",
+    "order": 3,
+    "logoUrl": "/images/partners/ncfi.png",
+    "url": "https://ncfi.org"
+  },
+  {
+    "id": "lifespring-church-idaho",
+    "name": "LifeSpring Church, Idaho",
+    "description": "",
+    "order": 4,
+    "logoUrl": "/images/partners/lifespring.png",
+    "url": "https://mylifespringchurch.org/"
+  },
+  {
+    "id": "the-methodist-church-ghana",
+    "name": "The Methodist Church Ghana",
+    "description": "",
+    "order": 5,
+    "logoUrl": "/images/partners/methodist-ghana.png",
+    "url": "https://website.methodistchurch.org.gh/"
+  },
+  {
+    "id": "global-methodist-church",
+    "name": "Global Methodist Church",
+    "description": "",
+    "order": 6,
+    "logoUrl": "/images/partners/global-methodist.png",
+    "url": "https://globalmethodist.org"
+  },
+  {
+    "id": "cmf-ghana",
+    "name": "CMF Ghana",
+    "description": "",
+    "order": 7,
+    "logoUrl": "/images/partners/cmf.png"
+  },
+  {
+    "id": "cmf-tanzania",
+    "name": "CMF Tanzania",
+    "description": "",
+    "order": 8
+  },
+  {
+    "id": "cmf-uganda",
+    "name": "CMF Uganda",
+    "description": "",
+    "order": 9
+  },
+  {
+    "id": "cmf-kenya",
+    "name": "CMF Kenya",
+    "description": "",
+    "order": 10
+  },
+  {
+    "id": "portico-church-charlottesville",
+    "name": "Portico Church, Charlottesville",
+    "description": "",
+    "order": 11,
+    "logoUrl": "/images/partners/portico.png",
+    "url": "https://porticocville.org"
+  },
+  {
+    "id": "healthcare-christian-fellowship-international",
+    "name": "Healthcare Christian Fellowship International",
+    "description": "",
+    "order": 12,
+    "logoUrl": "/images/partners/hcfi.png",
+    "url": "https://www.hcfglobal.org/"
+  }
 ]
 
 export const fallbackStories: Story[] = [
   {
-    id: 'kenya-video-story',
-    slug: 'kenya-video-story',
-    title: 'Communities of Grace in East Africa',
-    summary: 'Healthcare professionals in Kenya learning to serve with a Kingdom perspective.',
-    type: 'video',
-    country: 'Kenya',
-    program: 'Missional Healthcare Training',
-    featured: true,
-    imageUrl: siteImages.kenya,
-    videoUrl: siteVideos.kenya,
-    content:
-      'Through communities of learning, mentoring, and mission, healthcare professionals in Kenya are being equipped to think, live, and work missionally.',
+    "id": "kenya-video-story",
+    "slug": "kenya-video-story",
+    "title": "Communities of Grace in East Africa",
+    "summary": "Healthcare professionals in Kenya learning to serve with a Kingdom perspective.",
+    "type": "video",
+    "country": "Kenya",
+    "program": "Missional Healthcare Courses",
+    "featured": true,
+    "imageUrl": "/images/cogi-kenya.png",
+    "videoUrl": "/videos/kenya-story.mp4",
+    "content": "Through communities of learning, mentoring, and mission, healthcare professionals in Kenya are being equipped to think, live, and work missionally."
   },
   {
-    id: 'india-written-story',
-    slug: 'india-written-story',
-    title: 'A Kingdom perspective at the bedside',
-    summary: 'How Kingdom of God studies are shaping vocation and service in South Asia.',
-    type: 'video',
-    country: 'India',
-    program: 'Kingdom of God Studies & Seminars',
-    featured: true,
-    imageUrl: siteImages.missionField,
-    videoUrl: siteVideos.india,
-    content:
-      'What began as God knitting hearts together among healthcare leaders has become a growing fellowship. In India, Kingdom of God seminars help professionals develop a perspective that shapes life, vocation, and service.',
+    "id": "india-written-story",
+    "slug": "india-written-story",
+    "title": "A Kingdom perspective at the bedside",
+    "summary": "How Kingdom of God studies are shaping vocation and service in South Asia.",
+    "type": "video",
+    "country": "India",
+    "program": "Discover the Kingdom of God",
+    "featured": true,
+    "imageUrl": "/images/cogi-india.png",
+    "videoUrl": "/videos/india-story.mp4",
+    "content": "What began as God knitting hearts together among healthcare leaders has become a growing fellowship. In India, Kingdom of God seminars help professionals develop a perspective that shapes life, vocation, and service."
   },
+  {
+    "id": "stella-osorio-story",
+    "slug": "stella-osorio-story",
+    "title": "Caregivers need care too",
+    "summary": "The Care for the Caregiver (C4C) Program helps create a safe space for reflection, emotional renewal, and spiritual strengthening.",
+    "content": "The Care for the Caregiver (C4C) Program helps create a safe space for reflection, emotional renewal, and spiritual strengthening. Through practical sessions on listening, communication, caring for the grieving, resilience, and Christ-centered caregiving, it equips us with valuable tools to care for ourselves and others more effectively. A deeply enriching and transformative experience that affirms the vital importance of caring for caregivers.\n\n— Stella Osorio",
+    "type": "written",
+    "country": "Singapore",
+    "program": "Care for the Caregiver",
+    "featured": true,
+    "imageUrl": "/images/cogi-support.png"
+  },
+  {
+    "id": "abhilash-pappala-story",
+    "slug": "abhilash-pappala-story",
+    "title": "Seeing life through a Kingdom lens",
+    "summary": "Kingdom of God studies have transformed the way I understand and live my faith.",
+    "content": "Kingdom of God studies have transformed the way I understand and live my faith. They led me to genuine repentance and a deeper understanding of God’s grace and Kingdom purpose. Seeing life through a Kingdom lens has reshaped my attitudes, relationships, decisions, and stewardship, bringing greater clarity, purpose, and joy to everyday life.\n\n— Abhilash Pappala",
+    "type": "written",
+    "country": "India",
+    "program": "Discover the Kingdom of God",
+    "featured": true,
+    "imageUrl": "/images/cogi-india.png"
+  },
+  {
+    "id": "blessena-story",
+    "slug": "blessena-story",
+    "title": "From biblical teaching to everyday Kingdom living",
+    "summary": "Kingdom of God studies are highly interactive and practical, helping translate biblical teaching into everyday Kingdom living.",
+    "content": "Kingdom of God studies are highly interactive and practical, helping translate biblical teaching into everyday Kingdom living. They move beyond theory, guiding participants toward intentional steps shaped by God’s reign. The “I WILL” statements provide a simple framework for reflection and accountability, helping participants recognize and sustain their growth toward a Kingdom-centered lifestyle.\n\n— Blessena",
+    "type": "written",
+    "country": "India",
+    "program": "Discover the Kingdom of God",
+    "featured": true,
+    "imageUrl": "/images/cogi-india.png"
+  }
 ]
 
 export const fallbackTestimonials: Testimonial[] = [
   {
-    id: 'charles-faust',
-    quote:
-      'It was in February, 2013 that God opened a pathway to my being a part of this movement. Only a few months earlier I would have scoffed if someone had told me I would shortly be headed to India, but God is amazing!',
-    author: 'Mr. Charles Faust',
-    role: 'Secretary, COGI Board',
-    country: 'United States',
-    program: 'Our Story',
-    featured: true,
+    "id": "stella-osorio",
+    "author": "Stella Osorio",
+    "country": "Singapore",
+    "program": "Care for the Caregiver",
+    "quote": "The Care for the Caregiver (C4C) Program helps create a safe space for reflection, emotional renewal, and spiritual strengthening. Through practical sessions on listening, communication, caring for the grieving, resilience, and Christ-centered caregiving, it equips us with valuable tools to care for ourselves and others more effectively. A deeply enriching and transformative experience that affirms the vital importance of caring for caregivers.",
+    "featured": true,
+    "mediaType": "written"
   },
   {
-    id: 'paul-east',
-    quote:
-      'Healthcare professionals have a unique opportunity to come alongside, to care and to witness, by action and words, to persons who are often at critical times in their lives and open to respond to the Good News.',
-    author: 'Mr. Paul East',
-    role: 'Board Member',
-    country: 'United States',
-    program: 'Missional Healthcare Training',
-    featured: true,
+    "id": "abhilash-pappala",
+    "author": "Abhilash Pappala",
+    "country": "India",
+    "program": "Discover the Kingdom of God",
+    "quote": "Kingdom of God studies have transformed the way I understand and live my faith. They led me to genuine repentance and a deeper understanding of God’s grace and Kingdom purpose. Seeing life through a Kingdom lens has reshaped my attitudes, relationships, decisions, and stewardship, bringing greater clarity, purpose, and joy to everyday life.",
+    "featured": true,
+    "mediaType": "written"
   },
   {
-    id: 'sunil-abraham',
-    quote: 'COGI provides healthcare workers resources and people who will walk with them in this often hard and lonely journey.',
-    author: 'Dr. Sunil Abraham',
-    role: 'Board Member',
-    program: 'Care for the Caregiver',
-    featured: true,
-  },
+    "id": "blessena",
+    "author": "Blessena",
+    "country": "India",
+    "program": "Discover the Kingdom of God",
+    "quote": "Kingdom of God studies are highly interactive and practical, helping translate biblical teaching into everyday Kingdom living. They move beyond theory, guiding participants toward intentional steps shaped by God’s reign. The “I WILL” statements provide a simple framework for reflection and accountability, helping participants recognize and sustain their growth toward a Kingdom-centered lifestyle.",
+    "featured": true,
+    "mediaType": "written"
+  }
 ]
 
 export const fallbackBlogPosts: BlogPost[] = [
@@ -404,16 +556,143 @@ export const fallbackEvents: Event[] = [
 ]
 
 export const fallbackLocations: Location[] = [
-  { id: 'us', country: 'United States', region: 'Americas & Africa', summary: 'Board leadership and North American healthcare fellowship.', programs: ['Kingdom of God Studies & Seminars', 'Care for the Caregiver'], lat: 40.7128, lng: -74.006 },
-  { id: 'ug', country: 'Uganda', region: 'Americas & Africa', summary: 'Healthcare professional fellowship and formation experiences.', programs: ['Missional Healthcare Training'], lat: 1.3733, lng: 32.2903 },
-  { id: 'ke', country: 'Kenya', region: 'Americas & Africa', summary: 'Missional healthcare training and Communities of Grace.', programs: ['Missional Healthcare Training', 'Care for the Caregiver'], lat: -0.0236, lng: 37.9062 },
-  { id: 'rw', country: 'Rwanda', region: 'Americas & Africa', summary: 'Workshops and companionship among healthcare professionals.', programs: ['Missional Healthcare Training'], lat: -1.9403, lng: 29.8739 },
-  { id: 'tz', country: 'Tanzania', region: 'Americas & Africa', summary: 'Formation experiences and Kingdom engagement in healthcare.', programs: ['Missional Healthcare Training'], lat: -6.369, lng: 34.8888 },
-  { id: 'in', country: 'India', region: 'Asia-Pacific', summary: 'Primary ministry hub including Duncan Hospital, Bihar, and Kingdom of God seminars.', programs: ['Kingdom of God Studies & Seminars', 'Missional Church & Healthcare'], lat: 26.9784, lng: 84.8528 },
-  { id: 'ph', country: 'Philippines', region: 'Asia-Pacific', summary: 'Medical missions and Kingdom of God seminars.', programs: ['Kingdom of God Studies & Seminars'], lat: 12.8797, lng: 121.774 },
-  { id: 'sg', country: 'Singapore', region: 'Asia-Pacific', summary: 'Regional gathering point for Asia-Pacific healthcare professionals.', programs: ['Missional Healthcare Training'], lat: 1.3521, lng: 103.8198 },
-  { id: 'au', country: 'Australia', region: 'Asia-Pacific', summary: 'Missional healthcare networking and formation.', programs: ['Care for the Caregiver'], lat: -25.2744, lng: 133.7751 },
-  { id: 'nz', country: 'New Zealand', region: 'Asia-Pacific', summary: 'Fellowship and training among healthcare professionals.', programs: ['Care for the Caregiver'], lat: -40.9006, lng: 174.886 },
+  {
+    "id": "india",
+    "country": "India",
+    "lat": 20.6,
+    "lng": 79,
+    "programs": [
+      "Care for the Caregiver",
+      "Discover the Kingdom of God"
+    ],
+    "summary": "",
+    "region": "Asia-Pacific"
+  },
+  {
+    "id": "uganda",
+    "country": "Uganda",
+    "lat": 1.37,
+    "lng": 32.3,
+    "programs": [
+      "Missional Health Course"
+    ],
+    "summary": "",
+    "region": "Americas & Africa"
+  },
+  {
+    "id": "kenya",
+    "country": "Kenya",
+    "lat": -0.02,
+    "lng": 37.9,
+    "programs": [
+      "Care for the Caregiver",
+      "Missional Health Course"
+    ],
+    "summary": "",
+    "region": "Americas & Africa"
+  },
+  {
+    "id": "tanzania",
+    "country": "Tanzania",
+    "lat": -6.37,
+    "lng": 34.9,
+    "programs": [
+      "Missional Health Course"
+    ],
+    "summary": "",
+    "region": "Americas & Africa"
+  },
+  {
+    "id": "rwanda",
+    "country": "Rwanda",
+    "lat": -1.94,
+    "lng": 29.87,
+    "programs": [
+      "Missional Health Course"
+    ],
+    "summary": "",
+    "region": "Americas & Africa"
+  },
+  {
+    "id": "ghana",
+    "country": "Ghana",
+    "lat": 7.95,
+    "lng": -1.02,
+    "programs": [
+      "Missional Health Course",
+      "Care for the Caregiver"
+    ],
+    "summary": "",
+    "region": "Americas & Africa"
+  },
+  {
+    "id": "united-states",
+    "country": "United States",
+    "lat": 37.1,
+    "lng": -95.7,
+    "programs": [
+      "The Church and Missional Healthcare",
+      "Care for the Caregiver"
+    ],
+    "summary": "",
+    "region": "Americas & Africa"
+  },
+  {
+    "id": "philippines",
+    "country": "Philippines",
+    "lat": 12.88,
+    "lng": 121.77,
+    "programs": [
+      "Care for the Caregiver"
+    ],
+    "summary": "",
+    "region": "Asia-Pacific"
+  },
+  {
+    "id": "singapore",
+    "country": "Singapore",
+    "lat": 1.35,
+    "lng": 103.82,
+    "programs": [
+      "Care for the Caregiver"
+    ],
+    "summary": "",
+    "region": "Asia-Pacific"
+  },
+  {
+    "id": "indonesia",
+    "country": "Indonesia",
+    "lat": -0.79,
+    "lng": 113.92,
+    "programs": [
+      "Care for the Caregiver",
+      "Missional Health Course"
+    ],
+    "summary": "",
+    "region": "Asia-Pacific"
+  },
+  {
+    "id": "australia",
+    "country": "Australia",
+    "lat": -25.27,
+    "lng": 133.78,
+    "programs": [
+      "Care for the Caregiver"
+    ],
+    "summary": "",
+    "region": "Asia-Pacific"
+  },
+  {
+    "id": "new-zealand",
+    "country": "New Zealand",
+    "lat": -40.9,
+    "lng": 174.89,
+    "programs": [
+      "Care for the Caregiver"
+    ],
+    "summary": "",
+    "region": "Asia-Pacific"
+  }
 ]
 
 export const fallbackFAQs: FAQ[] = [
