@@ -114,7 +114,7 @@ async function main() {
       : await configDocuments.create({ data: { payload: snapshot } });
     await configDocuments.publish({ documentId: config.documentId });
     const saved = await configDocuments.findFirst({ status: 'published' });
-    if (JSON.stringify(saved.payload) !== JSON.stringify(snapshot)) throw new Error('Published site configuration did not match the import.');
+    if (!require('node:util').isDeepStrictEqual(saved.payload, snapshot)) throw new Error('Published site configuration did not match the import.');
     console.log(`Imported and verified site configuration, programs, locations, partners, testimonials, teams, and ${mediaIds.size} media files.`);
   } finally {
     await strapi.destroy();
