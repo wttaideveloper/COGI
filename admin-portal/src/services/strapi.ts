@@ -57,11 +57,22 @@ export function unwrapItem<T extends object>(item: unknown): T {
 export function unwrapList<T extends object>(response: unknown): T[] { const data = (response as { data?: unknown })?.data; return Array.isArray(data) ? data.map((item) => unwrapItem<T>(item)) : [] }
 export async function apiList<T extends object>(endpoint: string, params: Record<string, unknown> = { populate: '*' }): Promise<T[]> { const { data } = await strapiClient.get(endpoint, { params }); return unwrapList<T>(data) }
 export async function apiListAll<T extends object & { id: string; documentId?: string }>(endpoint: string, params: Record<string, unknown> = { populate: '*' }): Promise<T[]> {
-  const [drafts, published] = await Promise.all([
-    strapiClient.get(endpoint, { params: { ...params, status: 'draft' } }),
-    strapiClient.get(endpoint, { params: { ...params, status: 'published' } }),
-  ])
-  const rows = [...unwrapList<T>((drafts as { data: unknown }).data), ...unwrapList<T>((published as { data: unknown }).data)]
+  async function readPages(status: 'draft' | 'published') {
+    const records: T[] = []
+    let page = 1
+    let pageCount = 1
+    do {
+      const { data } = await strapiClient.get(endpoint, {
+        params: { ...params, status, 'pagination[page]': page, 'pagination[pageSize]': 100 },
+      })
+      records.push(...unwrapList<T>(data))
+      pageCount = data.meta?.pagination?.pageCount || 1
+      page += 1
+    } while (page <= pageCount)
+    return records
+  }
+  const [drafts, published] = await Promise.all([readPages('draft'), readPages('published')])
+  const rows = [...drafts, ...published]
   const byDoc = new Map<string, T>()
   for (const row of rows) {
     const key = row.documentId || row.id

@@ -14,13 +14,13 @@ function sanitizePartners(rows: Partner[]): Partner[] {
 }
 
 export async function getPartners(): Promise<Partner[]> {
-  const data = await fetchFromStrapi<{ data: Partner[] }>('/partners', {
+  const data = await fetchFromStrapi<{ data: Array<Partner & { logo?: { url?: string } | null }> }>('/partners', {
     sort: 'order:asc',
     populate: '*',
   })
   const rows = sanitizePartners((data?.data ?? []).map(partner => ({
     ...partner,
-    logoUrl: partner.logoUrl || fallbackPartners.find(item => item.name === partner.name)?.logoUrl,
+    logoUrl: partner.logo?.url ? (partner.logo.url.startsWith('http') ? partner.logo.url : (import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337') + partner.logo.url) : partner.logoUrl,
   })))
   if (!data) return sanitizePartners(fallbackPartners)
   return rows

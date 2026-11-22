@@ -6,6 +6,7 @@ import { defaultSiteCopy, mergeSiteCopy, type SiteCopy } from '@/data/siteCopy'
 import { apiPublishSingle, apiSingle, apiUpdateSingle, getJwt, getStrapiUrl, isDemoMode, uploadMedia } from '@/services/strapi'
 
 export type SiteConfig = {
+  contentSource?: 'strapi' | 'snapshot'
   legalPages?: Array<{ slug: string; title: string; content: string; lastUpdated: string }>
   content?: Record<string, Record<string, unknown>[]>
   globalSettings?: Record<string, unknown>
@@ -446,7 +447,7 @@ export async function saveSiteConfig(partial: Partial<SiteConfig>, status: 'draf
 // Collection publishing must not publish unrelated unsaved page drafts.
 export async function publishLocalContent(patch: Pick<SiteConfig, 'content' | 'globalSettings'>) {
   const published = await resolvePublishedSiteConfig() || defaultSiteConfig()
-  const next = mergeConfig({ ...published, ...patch, updatedAt: new Date().toISOString() })
+  const next = mergeConfig({ ...published, ...patch, contentSource: 'snapshot', updatedAt: new Date().toISOString() })
   await writePublicFile(next)
   rememberPublishedSiteConfig(next)
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...loadSiteConfig(), ...patch }))

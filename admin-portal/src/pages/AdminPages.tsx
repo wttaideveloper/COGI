@@ -30,13 +30,13 @@ const yesNo = [{ label: 'Yes', value: 'true' }, { label: 'No', value: 'false' }]
 
 export const moduleConfigs: Record<string, ModuleConfig<AnyRecord>> = {
   pages: { key: 'pages', title: 'Custom pages', endpoint: '/pages', route: '/pages', singular: 'Page', description: 'Extra pages beyond the main site. Edit About, Donate, Contact, and other live wording under Site pages.', columns: [{ key: 'title', label: 'Title' }, { key: 'slug', label: 'URL' }, { key: 'status', label: 'Status' }, { key: 'updatedAt', label: 'Updated' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  programs: { key: 'programs', title: 'Programs', endpoint: '/programs', route: '/programs', singular: 'Program', description: 'The training and ministry areas listed on the Programs page.', columns: [{ key: 'title', label: 'Title' }, { key: 'area', label: 'Area' }, { key: 'status', label: 'Status' }, { key: 'order', label: 'Order' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'area', label: 'Area', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }, { name: 'order', label: 'Order', type: 'number' }] },
+  programs: { key: 'programs', title: 'Programs', endpoint: '/programs', route: '/programs', singular: 'Program', description: 'The training and ministry areas listed on the Programs page.', columns: [{ key: 'title', label: 'Title' }, { key: 'area', label: 'Area' }, { key: 'status', label: 'Status' }, { key: 'order', label: 'Order' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'experiencesText', label: 'Learning experiences (JSON)', type: 'textarea' }, { name: 'area', label: 'Area', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }, { name: 'order', label: 'Order', type: 'number' }] },
   blog: { key: 'blog', title: 'Blog / News', endpoint: '/news-articles', route: '/blog', singular: 'Article', description: 'News and articles that appear in Resources → Blog.', columns: [{ key: 'title', label: 'Title' }, { key: 'category', label: 'Category' }, { key: 'author', label: 'Author' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'body', label: 'Body', type: 'richtext', required: true }, { name: 'imageUrl', label: 'Article photo', type: 'image' }, { name: 'author', label: 'Author', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   events: { key: 'events', title: 'Events', endpoint: '/events', route: '/events', singular: 'Event', description: 'Upcoming gatherings shown on the Events page and homepage.', columns: [{ key: 'title', label: 'Title' }, { key: 'startDate', label: 'Starts' }, { key: 'venue', label: 'Venue' }, { key: 'status', label: 'Status' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'startDate', label: 'Start date', type: 'date', required: true }, { name: 'endDate', label: 'End date', type: 'date' }, { name: 'venue', label: 'Venue', type: 'text' }, { name: 'category', label: 'Category', type: 'text' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   stories: { key: 'stories', title: 'Stories', endpoint: '/stories', route: '/stories', singular: 'Story', description: 'Video and written stories of transformation.', columns: [{ key: 'title', label: 'Title' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'summary', label: 'Quote / summary', type: 'textarea' }, { name: 'body', label: 'Story', type: 'richtext' }, { name: 'type', label: 'Type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'imageUrl', label: 'Photo', type: 'image' }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
-  testimonials: { key: 'testimonials', title: 'Testimonials', endpoint: '/testimonials', route: '/testimonials', singular: 'Testimonial', description: 'Quotes from board members and the healthcare community.', columns: [{ key: 'author', label: 'Author' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'quote', label: 'Quote', type: 'textarea', required: true }, { name: 'author', label: 'Author', type: 'text', required: true }, { name: 'mediaType', label: 'Media type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  testimonials: { key: 'testimonials', title: 'Testimonials', endpoint: '/testimonials', route: '/testimonials', singular: 'Testimonial', description: 'Testimonies from participants in COGI programs.', columns: [{ key: 'author', label: 'Author' }, { key: 'country', label: 'Country' }, { key: 'program', label: 'Program' }, { key: 'featured', label: 'Featured' }], fields: [{ name: 'quote', label: 'Quote', type: 'textarea', required: true }, { name: 'author', label: 'Author', type: 'text', required: true }, { name: 'mediaType', label: 'Media type', type: 'select', options: ['written', 'video'].map((v) => ({ label: v, value: v })) }, { name: 'videoUrl', label: 'Video URL', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'program', label: 'Program', type: 'text' }, { name: 'featured', label: 'Featured', type: 'select', options: yesNo }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   team: { key: 'team', title: 'Team Members', endpoint: '/team-members', route: '/team', singular: 'Team member', description: 'Board and global team profiles shown on the public site.', columns: [{ key: 'name', label: 'Name' }, { key: 'title', label: 'Title' }, { key: 'role', label: 'Role' }, { key: 'status', label: 'Status' }, { key: 'publicVisibility', label: 'Visible' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'title', label: 'Title', type: 'text' }, { name: 'role', label: 'Role', type: 'select', options: ['board', 'global-team', 'staff', 'advisor'].map((v) => ({ label: v, value: v })) }, { name: 'region', label: 'Region', type: 'text' }, { name: 'country', label: 'Country', type: 'text' }, { name: 'bio', label: 'Bio', type: 'textarea' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'publicVisibility', label: 'Public visibility', type: 'select', options: yesNo }] },
-  partners: { key: 'partners', title: 'Partners', endpoint: '/partners', route: '/partners', singular: 'Partner', description: 'Partner names, logos, and links on the Partners page.', columns: [{ key: 'name', label: 'Name' }, { key: 'region', label: 'Region' }, { key: 'url', label: 'URL' }, { key: 'status', label: 'Status' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'url', label: 'URL', type: 'text' }, { name: 'region', label: 'Region', type: 'text' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
+  partners: { key: 'partners', title: 'Partners', endpoint: '/partners', route: '/partners', singular: 'Partner', description: 'Partner names, logos, and links on the Partners page.', columns: [{ key: 'name', label: 'Name' }, { key: 'region', label: 'Region' }, { key: 'url', label: 'URL' }, { key: 'status', label: 'Status' }], fields: [{ name: 'name', label: 'Name', type: 'text', required: true }, { name: 'imageUrl', label: 'Partner logo', type: 'image' }, { name: 'description', label: 'Description', type: 'textarea' }, { name: 'url', label: 'URL', type: 'text' }, { name: 'region', label: 'Region', type: 'text' }, { name: 'order', label: 'Order', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
   locations: { key: 'locations', title: 'Locations', endpoint: '/locations', route: '/locations', singular: 'Location', description: 'Country pins for the Where we serve map.', columns: [{ key: 'country', label: 'Country' }, { key: 'region', label: 'Region' }, { key: 'latitude', label: 'Lat' }, { key: 'longitude', label: 'Lng' }], fields: [{ name: 'country', label: 'Country', type: 'text', required: true }, { name: 'region', label: 'Region', type: 'text' }, { name: 'summary', label: 'Summary', type: 'textarea' }, { name: 'programs', label: 'Programs (comma-separated)', type: 'text' }, { name: 'latitude', label: 'Latitude', type: 'number' }, { name: 'longitude', label: 'Longitude', type: 'number' }, { name: 'status', label: 'Status', type: 'select', options: statusOptions }] },
 }
 
@@ -66,7 +66,10 @@ function normalizeForForm(record: AnyRecord | undefined, fields: FormField<AnyRe
     const name = String(field.name)
     if (name === 'sectionsText' && record?.sections) value[name] = JSON.stringify(record.sections, null, 2)
     else if (name === 'itemsText' && record?.items) value[name] = (record.items as Array<{ label: string; href: string }>).map((i) => `${i.label} | ${i.href}`).join('\n')
-    else if (name === 'imageUrl') value[name] = mediaToUrl(record?.imageUrl) || mediaToUrl(record?.thumbnail) || mediaToUrl(record?.featuredImage) || ''
+    else if (name === 'imageUrl') value[name] = mediaToUrl(record?.imageUrl) || mediaToUrl(record?.logo) || mediaToUrl(record?.thumbnail) || mediaToUrl(record?.featuredImage) || ''
+    else if (name === 'experiencesText') value[name] = JSON.stringify(record?.experiences || [], null, 2)
+    else if (name === 'programs' && Array.isArray(record?.programs)) value[name] = record.programs.join(', ')
+    else if (name === 'program' && record?.program && typeof record.program === 'object') value[name] = (record.program as { title?: string }).title || ''
     else if (name === 'description' && record?.body != null) value[name] = record.body
     else if (record?.[name] != null && record[name] !== '') value[name] = record[name]
     else if (field.type === 'number') value[name] = 0
@@ -87,14 +90,14 @@ function formatDate(value: unknown): string {
 function cleanPayload(values: Record<string, unknown>) { const out: Record<string, unknown> = { ...values }; for (const [key, value] of Object.entries(out)) { if (value === 'true') out[key] = true; if (value === 'false') out[key] = false; if (key.endsWith('Text')) out[key] = value } return out }
 const schemaFieldMap: Record<string, Record<string, string>> = {
   '/pages': { title: 'title', slug: 'slug', status: 'status', pageType: 'pageType', summary: 'summary', heroImageUrl: 'heroImageUrl', externalUrl: 'externalUrl', showInHeader: 'showInHeader', showInFooter: 'showInFooter', templateId: 'templateId', sections: 'sections', seo: 'seo' },
-  '/programs': { title: 'title', slug: 'slug', summary: 'summary', description: 'body', area: 'area', order: 'order', featured: 'featured' },
+  '/programs': { title: 'title', slug: 'slug', summary: 'summary', description: 'body', area: 'area', experiencesText: 'experiences', order: 'order', featured: 'featured' },
   '/news-articles': { title: 'title', slug: 'slug', summary: 'summary', body: 'body', author: 'author', tags: 'tags', featured: 'featured' },
   '/events': { title: 'title', slug: 'slug', summary: 'summary', description: 'body', startDate: 'startDate', endDate: 'endDate', venue: 'venue', featured: 'featured' },
   '/stories': { title: 'title', slug: 'slug', summary: 'summary', body: 'body', country: 'country', featured: 'featured', type: 'type', program: 'program', videoUrl: 'videoUrl' },
   '/testimonials': { quote: 'quote', author: 'author', mediaType: 'mediaType', country: 'country', featured: 'featured', videoUrl: 'videoUrl' },
   '/team-members': { name: 'name', title: 'title', role: 'role', region: 'region', bio: 'bio', order: 'order', publicVisibility: 'publicVisibility' },
   '/partners': { name: 'name', description: 'description', url: 'url', region: 'region', order: 'order' },
-  '/locations': { country: 'country', region: 'region', summary: 'summary', latitude: 'latitude', longitude: 'longitude' },
+  '/locations': { programs: 'programs', country: 'country', region: 'region', summary: 'summary', latitude: 'latitude', longitude: 'longitude' },
 }
 function slugifyTitle(value: string) {
   return value
@@ -154,13 +157,20 @@ function buildPayload(endpoint: string, values: Record<string, unknown>, _status
       if (n !== undefined) out[apiKey] = n
       continue
     }
+    if (apiKey === 'experiences') {
+      const experiences = JSON.parse(String(cleaned[formKey] || '[]'))
+      if (!Array.isArray(experiences)) throw new Error('Learning experiences must be a list.')
+      out[apiKey] = experiences
+      continue
+    }
+    if (apiKey === 'programs') { out[apiKey] = String(cleaned[formKey]).split(',').map(value => value.trim()).filter(Boolean); continue }
     out[apiKey] = apiKey === 'startDate' || apiKey === 'endDate' ? toDateTime(cleaned[formKey]) : cleaned[formKey]
   }
   return out
 }
 function locationPreviewUrl(country?: unknown) {
   const name = String(country || '').trim()
-  return getPreviewUrl(name ? `/?location=${encodeURIComponent(name)}#map` : '/#map')
+  return getPreviewUrl(name ? `/about?location=${encodeURIComponent(name)}#map` : '/about#map')
 }
 function recordPreviewUrl(moduleKey: ModuleKey, values: Record<string, unknown>, row?: AnyRecord) {
   if (moduleKey === 'locations') return locationPreviewUrl(values.country || row?.country)
@@ -607,9 +617,14 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
       if (config.endpoint === '/events' && !payload.startDate) payload.startDate = toDateTime(new Date().toISOString().slice(0, 10))
       if (config.endpoint === '/news-articles' && !payload.body) payload.body = String(values.summary || values.title || 'Article')
       if (config.endpoint === '/stories') {
-        const program = payload.program
-        if (typeof program === 'string' && !/^\d+$/.test(program)) delete payload.program
         if (!payload.body) payload.body = String(values.summary || values.title || 'Story')
+      }
+      if ((config.endpoint === '/stories' || config.endpoint === '/testimonials') && !isDemoMode()) {
+        const title = String(values.program || '').trim()
+        const programs = title ? await apiListAll<AnyRecord>('/programs') : []
+        const match = programs.find(program => String(program.title).toLowerCase() === title.toLowerCase())
+        if (title && !match) throw new Error('Choose an existing program by its title.')
+        payload.program = match ? match.documentId || match.id : null
       }
       const imageValue = String(values.imageUrl || '')
       if (imageValue.startsWith('data:') && !isDemoMode()) {
@@ -622,6 +637,14 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
           const uploaded = await uploadMedia(dataUrlToUploadFile(imageValue, String(payload.slug || 'story')), String(values.title || 'Story photo'))
           const mediaId = Number(uploaded.id)
           payload.thumbnail = Number.isFinite(mediaId) ? mediaId : uploaded.id
+        }
+      }
+      if (config.endpoint === '/partners' && Object.hasOwn(values, 'imageUrl')) {
+        if (imageValue.startsWith('data:') && !isDemoMode()) {
+          const uploaded = await uploadMedia(dataUrlToUploadFile(imageValue, String(values.name || 'partner')), String(values.name || 'Partner logo'))
+          payload.logo = Number(uploaded.id)
+        } else if (!imageValue) {
+          payload.logo = null
         }
       }
       const saveLocal = async () => {
@@ -810,7 +833,9 @@ function GenericContentInner({ moduleKey, config }: { moduleKey: ModuleKey; conf
                         ? <StatusBadge value={row[col.key]} />
                         : String(col.key).toLowerCase().includes('updated') || String(col.key).toLowerCase().includes('created') || dateFieldKeys.has(String(col.key))
                           ? formatDate(row[col.key])
-                          : String(row[col.key] ?? '')}
+                          : String(col.key) === 'program' && typeof row[col.key] === 'object' && row[col.key]
+                            ? String((row[col.key] as { title?: string }).title || '')
+                            : String(row[col.key] ?? '')}
                     </td>
                   ))}
                   <td>

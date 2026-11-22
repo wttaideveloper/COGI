@@ -1,4 +1,4 @@
-type Snapshot = { content?: Record<string, Record<string, unknown>[]>; globalSettings?: Record<string, unknown> }
+type Snapshot = { contentSource?: 'strapi' | 'snapshot'; content?: Record<string, Record<string, unknown>[]>; globalSettings?: Record<string, unknown> }
 let pending: Promise<Snapshot | null> | undefined
 let loadedAt = 0
 
@@ -10,6 +10,7 @@ export async function readPublishedContent(endpoint: string, params?: Record<str
     pending = fetch('/site-config.json', { cache: 'no-store' }).then(r => r.ok ? r.json() as Promise<Snapshot> : null).catch(() => null)
   }
   const snapshot = await pending
+  if (snapshot?.contentSource === 'strapi') return undefined
   if (endpoint === '/global-setting' && snapshot?.globalSettings) return { data: snapshot.globalSettings }
   const source = snapshot?.content?.[endpoint]
   if (!Array.isArray(source)) return undefined

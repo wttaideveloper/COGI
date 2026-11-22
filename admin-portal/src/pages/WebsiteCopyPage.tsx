@@ -729,7 +729,6 @@ function firstBlankPublishIssue(copy: SiteCopy): { tab: TabId; label: string; fi
       ...copy.board.members.flatMap((item, index) => [
         [`Member ${index + 1} name`, item.name] as [string, string],
         [`Member ${index + 1} title`, item.title] as [string, string],
-        [`Member ${index + 1} bio`, item.bio] as [string, string],
       ]),
     ] },
     { tab: 'globalTeam', label: 'Global Team', fields: [
@@ -737,8 +736,6 @@ function firstBlankPublishIssue(copy: SiteCopy): { tab: TabId; label: string; fi
       ['Subtitle', copy.globalTeam.heroSubtitle],
       ...(copy.globalTeam.members ?? []).flatMap((item, index) => [
         [`Member ${index + 1} name`, item.name] as [string, string],
-        [`Member ${index + 1} title`, item.title] as [string, string],
-        [`Member ${index + 1} bio`, item.bio] as [string, string],
       ]),
     ] },
     { tab: 'partners', label: 'Partners', fields: [['Page title', copy.partners.heroTitle], ['Subtitle', copy.partners.heroSubtitle]] },

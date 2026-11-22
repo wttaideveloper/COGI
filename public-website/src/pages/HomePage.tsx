@@ -318,11 +318,11 @@ export function HomePage() {
       <section key="donate" className="home-donate border-y border-mist-dark bg-white py-14 text-ink md:py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
           {siteImages.give ? (
-            <MediaPreview src={siteImages.give} alt={site.copy.donate.giveTitle} className="mb-8 h-52 w-full rounded-xl object-cover" />
+            <MediaPreview src={copy.closingImageUrl || siteImages.give} alt="" className="mb-8 h-52 w-full rounded-xl object-cover" />
           ) : null}
-          <h2 className="font-display text-4xl uppercase tracking-wide text-teal-deep md:text-5xl">Your calling can make a difference</h2>
-          <p className="mt-5 text-lg text-ink-muted">Pray with us, join a learning community, or help bring training to healthcare professionals around the world.</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4"><ButtonLink to="/get-involved" size="lg">Join the movement</ButtonLink><ButtonLink to="/donate" variant="outline" size="lg">Support the mission</ButtonLink></div>
+          <h2 className="font-display text-4xl uppercase tracking-wide text-teal-deep md:text-5xl">{copy.closingTitle}</h2>
+          <p className="mt-5 text-lg text-ink-muted">{copy.closingBody}</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4"><ButtonLink to={copy.closingPrimaryHref || '/get-involved'} size="lg">{copy.closingPrimaryLabel}</ButtonLink><ButtonLink to={copy.closingSecondaryHref || '/donate'} variant="outline" size="lg">{copy.closingSecondaryLabel}</ButtonLink></div>
         </div>
       </section>
         )

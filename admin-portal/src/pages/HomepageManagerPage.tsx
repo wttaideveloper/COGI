@@ -1086,9 +1086,17 @@ export default function HomepageManagerPage() {
             </div>
           ) : null}
           {activeTab === 'donate' ? (
-            <div className="hp-note">
-              This block invites people to give. Edit donate page copy in Website Copy or the Donate page.
-              <div className="hp-note-actions"><Link className="btn-secondary" to="/website-copy">Edit website copy</Link></div>
+            <div className="hp-fields">
+              {([
+                ['closingTitle', 'Heading'], ['closingBody', 'Invitation'],
+                ['closingPrimaryLabel', 'Main button label'], ['closingPrimaryHref', 'Main button link'],
+                ['closingSecondaryLabel', 'Second button label'], ['closingSecondaryHref', 'Second button link'],
+              ] as const).map(([key, label]) => (
+                <Field key={key} label={label}>
+                  <input className="admin-input" value={copyHome[key] || ''} onChange={event => patchCopy(key, event.target.value)} />
+                </Field>
+              ))}
+              <MediaUpload kind="image" label="Invitation image" value={copyHome.closingImageUrl} onLoaded={url => patchCopy('closingImageUrl', url)} onClear={() => patchCopy('closingImageUrl', '')} />
             </div>
           ) : null}
 

@@ -36,6 +36,13 @@ export type PageHeroCopy = {
 
 export type SiteCopy = {
   homepage: {
+    closingTitle?: string
+    closingBody?: string
+    closingImageUrl?: string
+    closingPrimaryLabel?: string
+    closingPrimaryHref?: string
+    closingSecondaryLabel?: string
+    closingSecondaryHref?: string
     eyebrow: string
     secondaryCtaLabel: string
     secondaryCtaHref: string
@@ -135,6 +142,13 @@ export type SiteCopy = {
 
 export const defaultSiteCopy: SiteCopy = {
   "homepage": {
+    "closingTitle": "Your calling can make a difference",
+    "closingBody": "Pray with us, join a learning community, or help bring training to healthcare professionals around the world.",
+    "closingImageUrl": "/images/cogi-give.png",
+    "closingPrimaryLabel": "Join the movement",
+    "closingPrimaryHref": "/get-involved",
+    "closingSecondaryLabel": "Support the mission",
+    "closingSecondaryHref": "/donate",
     "newsletterTitle": "Stay connected",
     "newsletterDescription": "Subscribe to receive updates on programs, events, and stories from the COGI community.",
     "testimonialsEyebrow": "Voices from the fellowship",

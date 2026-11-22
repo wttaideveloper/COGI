@@ -233,28 +233,12 @@
     "sections": [
       {
         "id": "hero",
-        "animation": "editorial",
         "label": "Welcome banner",
         "enabled": true,
         "order": 1,
         "summary": "The first thing visitors see",
-        "kind": "built-in"
-      },
-      {
-        "id": "newsletterBanner",
-        "label": "Highlight banner",
-        "enabled": false,
-        "order": 102,
-        "summary": "A short callout under the welcome",
-        "kind": "built-in"
-      },
-      {
-        "id": "legacy",
-        "label": "Our story",
-        "enabled": false,
-        "order": 103,
-        "summary": "Who we are and why we exist",
-        "kind": "built-in"
+        "kind": "built-in",
+        "animation": "editorial"
       },
       {
         "id": "mission",
@@ -265,10 +249,76 @@
         "kind": "built-in"
       },
       {
+        "id": "portfolio",
+        "label": "What we do",
+        "enabled": true,
+        "order": 3,
+        "summary": "Ministry areas",
+        "kind": "built-in"
+      },
+      {
+        "id": "methods",
+        "label": "How we work",
+        "enabled": true,
+        "order": 4,
+        "summary": "Encourage, Equip, Envision, Empower",
+        "kind": "built-in"
+      },
+      {
+        "id": "impact",
+        "label": "Key numbers",
+        "enabled": true,
+        "order": 5,
+        "summary": "Countries, people, and programs",
+        "kind": "built-in",
+        "animation": "zoom"
+      },
+      {
+        "id": "stories",
+        "label": "Featured stories",
+        "enabled": true,
+        "order": 6,
+        "summary": "Story cards from the library",
+        "kind": "built-in",
+        "animation": "fade"
+      },
+      {
+        "id": "events",
+        "label": "Next event",
+        "enabled": true,
+        "order": 7,
+        "summary": "The upcoming featured event",
+        "kind": "built-in"
+      },
+      {
+        "id": "donate",
+        "label": "Give",
+        "enabled": true,
+        "order": 8,
+        "summary": "Invite people to donate",
+        "kind": "built-in"
+      },
+      {
+        "id": "newsletterBanner",
+        "label": "Highlight banner",
+        "enabled": false,
+        "order": 9,
+        "summary": "A short callout under the welcome",
+        "kind": "built-in"
+      },
+      {
+        "id": "legacy",
+        "label": "Our story",
+        "enabled": false,
+        "order": 10,
+        "summary": "Who we are and why we exist",
+        "kind": "built-in"
+      },
+      {
         "id": "video",
         "label": "Intro video",
         "enabled": false,
-        "order": 105,
+        "order": 11,
         "summary": "Film or photo introduction",
         "kind": "built-in"
       },
@@ -276,7 +326,7 @@
         "id": "splitPrograms",
         "label": "Programs (photo + text)",
         "enabled": false,
-        "order": 106,
+        "order": 12,
         "summary": "Photo on one side, words on the other",
         "kind": "built-in",
         "title": "Programs",
@@ -292,7 +342,7 @@
         "id": "splitStories",
         "label": "Stories (photo + text)",
         "enabled": false,
-        "order": 107,
+        "order": 13,
         "summary": "Photo on one side, words on the other",
         "kind": "built-in",
         "title": "Stories of transformation",
@@ -304,84 +354,34 @@
         "buttonHref": "/resources/stories"
       },
       {
-        "id": "methods",
-        "label": "How we work",
-        "enabled": true,
-        "order": 4,
-        "summary": "Enable, train, and support",
-        "kind": "built-in"
-      },
-      {
-        "id": "impact",
-        "label": "Key numbers",
-        "enabled": true,
-        "order": 5,
-        "summary": "Countries, people, and programs",
-        "kind": "built-in",
-        "animation": "zoom"
-      },
-      {
-        "id": "portfolio",
-        "label": "What we do",
-        "enabled": true,
-        "order": 3,
-        "summary": "Ministry areas",
-        "kind": "built-in"
-      },
-      {
         "id": "map",
         "label": "Where we serve",
         "enabled": false,
-        "order": 111,
+        "order": 14,
         "summary": "Map of countries",
         "kind": "built-in"
-      },
-      {
-        "id": "stories",
-        "label": "Featured stories",
-        "enabled": true,
-        "order": 6,
-        "summary": "Story cards from the library",
-        "kind": "built-in",
-        "animation": "fade"
       },
       {
         "id": "testimonials",
         "label": "Testimonials",
         "enabled": false,
-        "order": 113,
+        "order": 15,
         "summary": "Rotating quotes and short clips",
-        "kind": "built-in"
-      },
-      {
-        "id": "events",
-        "label": "Next event",
-        "enabled": true,
-        "order": 7,
-        "summary": "The upcoming featured event",
         "kind": "built-in"
       },
       {
         "id": "newsletter",
         "label": "Email signup",
         "enabled": false,
-        "order": 115,
+        "order": 16,
         "summary": "Newsletter form",
-        "kind": "built-in"
-      },
-      {
-        "id": "donate",
-        "label": "Give",
-        "enabled": true,
-        "order": 8,
-        "summary": "Invite people to donate",
         "kind": "built-in"
       },
       {
         "id": "faith",
         "label": "Statement of faith",
         "enabled": false,
-        "order": 117,
+        "order": 17,
         "summary": "Closing faith statement",
         "kind": "built-in"
       }
@@ -389,6 +389,13 @@
   },
   "copy": {
     "homepage": {
+      "closingTitle": "Your calling can make a difference",
+      "closingBody": "Pray with us, join a learning community, or help bring training to healthcare professionals around the world.",
+      "closingImageUrl": "/images/cogi-give.png",
+      "closingPrimaryLabel": "Join the movement",
+      "closingPrimaryHref": "/get-involved",
+      "closingSecondaryLabel": "Support the mission",
+      "closingSecondaryHref": "/donate",
       "newsletterTitle": "Stay connected",
       "newsletterDescription": "Subscribe to receive updates on programs, events, and stories from the COGI community.",
       "testimonialsEyebrow": "Voices from the fellowship",
@@ -963,7 +970,7 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-11-22T07:45:04.231Z",
+  "updatedAt": "2026-11-22T14:00:40.316Z",
   "content": {
     "/programs": [
       {
@@ -1424,5 +1431,6 @@
         "status": "published"
       }
     ]
-  }
+  },
+  "contentSource": "strapi"
 }
