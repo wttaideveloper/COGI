@@ -508,7 +508,8 @@ header nav a { transition: background-color .2s, color .2s; }
   .hero-cover-media img.absolute { animation: cover-camera 18s ease-in-out infinite alternate; }
 }
 @keyframes cover-camera { to { transform: scale(1.075) translateX(-.8%); } }
-body:has(#main-content .home-experience > div:first-of-type .home-scroll-scene) header { position: fixed; inset: 0 0 auto; transition: background-color .25s, color .25s; }
+body:has(#main-content .home-experience > div:first-of-type .home-scroll-scene) header { position: absolute; inset: 0 0 auto; transition: background-color .25s, color .25s; }
+body:has(#main-content .home-experience > div:first-of-type .home-scroll-scene) header[data-sticky="true"] { position: fixed; }
 body:has(.home-scroll-scene) header[data-home-cover="true"] { background-color: transparent !important; color: white !important; border-color: transparent; box-shadow: none; }
 header[data-home-cover="true"] nav a[aria-current="page"] { background: #35495d; color: white; }
 .home-scroll-stage::after {

@@ -138,11 +138,11 @@ export function Header() {
     window.addEventListener('scroll', update, { passive: true })
     return () => window.removeEventListener('scroll', update)
   }, [])
-  const sticky = pathname === '/' || header.sticky !== false
+  const sticky = header.sticky === true
   const light = isLightColor(header.backgroundColor || '#FFFFFF')
 
   return (
-    <header data-home-cover={pathname === "/" && atTop && !mobileOpen}
+    <header data-sticky={sticky} data-home-cover={pathname === "/" && atTop && !mobileOpen}
       className={clsx('z-40 border-b', light ? 'border-mist-dark shadow-sm' : 'border-white/15', sticky ? 'sticky top-0' : 'relative')}
       style={{ backgroundColor: header.backgroundColor || '#FFFFFF', color: header.textColor || '#1F2937' }}
     >

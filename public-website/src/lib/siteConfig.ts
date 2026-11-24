@@ -139,7 +139,7 @@ const defaults: SiteConfig = {
     logoHeight: 64,
     ctaText: 'Give now',
     ctaLink: '/donate',
-    sticky: true,
+    sticky: false,
   },
   footer: {
     backgroundColor: '#203548',

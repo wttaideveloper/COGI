@@ -86,7 +86,7 @@ export const mockHeader: HeaderSettings = {
   logoHeight: 48,
   ctaText: 'Give now',
   ctaLink: '/donate',
-  sticky: true,
+  sticky: false,
 }
 
 export const mockFooter: FooterSettings = {

@@ -17,7 +17,7 @@
     "logoHeight": 48,
     "ctaText": "Give now",
     "ctaLink": "/donate",
-    "sticky": true
+    "sticky": false
   },
   "footer": {
     "backgroundColor": "#203548",
@@ -970,7 +970,7 @@
       "button": "Search"
     }
   },
-  "updatedAt": "2026-11-22T14:00:40.316Z",
+  "updatedAt": "2026-11-24T04:52:41.983Z",
   "content": {
     "/programs": [
       {
