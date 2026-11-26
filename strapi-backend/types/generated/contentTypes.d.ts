@@ -891,6 +891,8 @@ export interface ApiLocationLocation extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     longitude: Schema.Attribute.Decimal;
+    partners: Schema.Attribute.JSON;
+    programs: Schema.Attribute.JSON;
     publishedAt: Schema.Attribute.DateTime;
     region: Schema.Attribute.String;
     slug: Schema.Attribute.UID<'country'>;

@@ -1,0 +1,29 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cms",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "develop", "--prefix", "strapi-backend"],
+      "env": { "PORT": "1348" },
+      "port": 1348,
+      "autoPort": false
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "public-website", "--", "--port", "5183", "--strictPort"],
+      "env": { "VITE_STRAPI_URL": "http://127.0.0.1:1348" },
+      "port": 5183,
+      "autoPort": false
+    },
+    {
+      "name": "admin",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "admin-portal", "--", "--port", "5184", "--strictPort"],
+      "env": { "VITE_STRAPI_URL": "http://127.0.0.1:1348", "VITE_PUBLIC_SITE_URL": "http://127.0.0.1:5183" },
+      "port": 5184,
+      "autoPort": false
+    }
+  ]
+}
