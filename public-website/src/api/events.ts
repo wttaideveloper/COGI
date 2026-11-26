@@ -11,6 +11,14 @@ function relationLabel(value: unknown): string {
   return String(nested.name || nested.title || nested.country || nested.label || '')
 }
 
+function eventImage(value: unknown): string | undefined {
+  if (!value) return undefined
+  if (typeof value === 'string') return value.startsWith('/') ? (import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337') + value : value
+  if (typeof value !== 'object') return undefined
+  const image = value as Record<string, unknown>
+  return eventImage(image.url || image.attributes || image.data)
+}
+
 function mapEvent(raw: Record<string, unknown>): Event {
   const attrs = (raw.attributes && typeof raw.attributes === 'object' ? raw.attributes : raw) as Record<string, unknown>
   return {
@@ -26,6 +34,7 @@ function mapEvent(raw: Record<string, unknown>): Event {
     category: relationLabel(attrs.category) || String(attrs.category || 'Event'),
     registrationUrl: attrs.externalUrl ? String(attrs.externalUrl) : undefined,
     featured: Boolean(attrs.featured),
+    imageUrl: typeof attrs.imageUrl === 'string' && attrs.imageUrl ? attrs.imageUrl : eventImage(attrs.featuredImage),
   }
 }
 

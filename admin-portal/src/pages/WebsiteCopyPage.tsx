@@ -423,6 +423,14 @@ export default function WebsiteCopyPage() {
                             patch('globalTeam', { ...copy.globalTeam, members })
                           }} placeholder="Kenya" /></Field>
                         </div>
+                        <Field label="Contribution for the Resources page" hint="Add an approved reflection or contribution. Leave blank to omit this member from Resources."><TextArea value={member.contribution || ''} onChange={(v) => {
+                          const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, contribution: v } : row))
+                          patch('globalTeam', { ...copy.globalTeam, members })
+                        }} rows={4} /></Field>
+                        <Field label="Responsibilities within COGI"><TextArea value={member.responsibilities || ''} onChange={(v) => {
+                          const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, responsibilities: v } : row))
+                          patch('globalTeam', { ...copy.globalTeam, members })
+                        }} rows={3} /></Field>
                         <Field label="Bio" required><TextArea value={member.bio} onChange={(v) => {
                           const members = copy.globalTeam.members.map((row, i) => (i === index ? { ...row, bio: v } : row))
                           patch('globalTeam', { ...copy.globalTeam, members })
@@ -492,6 +500,10 @@ export default function WebsiteCopyPage() {
                   />
                   <Card title="Page wording">
                     <Field label="Default card link text"><TextInput value={copy.resources.exploreLabel} onChange={v => patch('resources', { ...copy.resources, exploreLabel: v })} /></Field>
+                  </Card>
+                  <Card title="Kingdom of God video">
+                    <Field label="KOG video URL" hint="Paste the approved video link or uploaded video URL. Leave blank until the correct video is available."><TextInput value={copy.resources.kogVideoUrl || ''} onChange={v => patch('resources', { ...copy.resources, kogVideoUrl: v })} /></Field>
+                    <PhotoField label="KOG video thumbnail" value={copy.resources.kogPosterUrl} onChange={v => patch('resources', { ...copy.resources, kogPosterUrl: v })} />
                   </Card>
                   <Card title="Resource cards">
                     {copy.resources.cards.map((item, index) => (

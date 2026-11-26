@@ -1,3 +1,4 @@
+import { StoryCarousel } from '@/components/home/StoryCarousel'
 import { UpcomingEvents } from '@/components/home/UpcomingEvents'
 import { HeroBackground } from '@/components/home/HeroBackground'
 import { getPrograms } from '@/api/programs'
@@ -65,7 +66,7 @@ export function HomePage() {
 
   const copy = site.copy.homepage
   const matchedStories = stories?.filter((s) => homepage.storiesTeaser.featuredStoryIds.includes(s.id)) ?? []
-  const featuredStories = [...matchedStories, ...(stories || []).filter(story => !matchedStories.some(item => item.id === story.id))].slice(0, 3)
+  const featuredStories = [...matchedStories, ...(stories || []).filter(story => !matchedStories.some(item => item.id === story.id))]
   const heroHeadline = site.homepage.heroHeadline || homepage.hero.headline
   const heroIntro = site.homepage.heroIntro || homepage.hero.intro
   const heroHeadlineSize = site.homepage.heroHeadlineSize || 64
@@ -177,9 +178,20 @@ export function HomePage() {
       </section>
         )
         if (section.id === 'video') return (
-          <section key="video" className="mx-auto max-w-5xl px-4 py-16">
+          <section key="video" id="intro-video" className="mx-auto max-w-5xl scroll-mt-28 px-4 py-16">
             <SectionHeading title={copy.videoTitle} subtitle={copy.videoDescription} />
-            {copy.videoUrl ? <MediaPreview video src={copy.videoUrl} poster={copy.videoImageUrl} alt={copy.videoTitle} className="aspect-video w-full" /> : null}
+            {copy.videoUrl ? <MediaPreview video src={copy.videoUrl} poster={copy.videoImageUrl || siteImages.videoThumb} alt={copy.videoTitle} className="aspect-video w-full" /> : (
+              <figure>
+                <div className="relative overflow-hidden rounded-2xl bg-mist">
+                  <img src={copy.videoImageUrl || siteImages.videoThumb} alt="A COGI training session" className="aspect-video w-full object-cover" loading="lazy" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-6 pb-6 pt-16 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em]">Introduction film</p>
+                    <p className="mt-2 font-display text-2xl md:text-3xl">Our story, coming soon</p>
+                  </div>
+                </div>
+                <figcaption className="mt-4 text-center text-sm text-ink-muted">Preview image · Our introductory video will appear here.</figcaption>
+              </figure>
+            )}
           </section>
         )
         if (section.id === 'mission') return (
@@ -200,7 +212,7 @@ export function HomePage() {
           <h2 className="mx-auto mt-4 max-w-3xl text-center font-display text-3xl font-semibold text-teal-deep md:text-5xl">
             {copy.methodsSubtitle}
           </h2>
-          <div className="method-path mt-14 grid gap-8 md:grid-cols-2 md:gap-x-16">
+          <div className="method-path mt-14 grid gap-8 md:grid-cols-3">
             {(copy.methods || homepage.methods).map((method, i) => (
               <div key={method.id} className="method-step overflow-hidden rounded-xl border border-mist-dark bg-white">
                 <MediaPreview src={method.imageUrl ?? methodImages[i] ?? siteImages.missionField} alt={method.title} className="h-52 w-full object-cover" />
@@ -236,7 +248,7 @@ export function HomePage() {
         <div className="mx-auto max-w-7xl px-4">
           <p className="text-center text-xs font-bold uppercase tracking-[0.3em] text-accent-ink">Programs</p>
           <SectionHeading title={copy.portfolioTitle} subtitle={copy.portfolioSubtitle} />
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="portfolio-grid">
             {(programs || []).map((area, i) => (
               <article key={area.id} className="group overflow-hidden rounded-xl border border-mist-dark bg-white">
                 <Link to={`/programs/${area.slug}`} aria-label={area.title}><img src={portfolioImages[i] || siteImages.clinic} alt="" className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-105" /></Link>
@@ -270,27 +282,7 @@ export function HomePage() {
             <ButtonLink to="/resources/stories?type=video" className="rounded-sm uppercase tracking-[0.2em]">{copy.watchStoriesCta}</ButtonLink>
             <ButtonLink to="/resources/stories?type=written" variant="outline" className="rounded-sm uppercase tracking-[0.2em]">{copy.readStoriesCta}</ButtonLink>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {featuredStories.map((story) => (
-              <article key={story.id} className="overflow-hidden">
-                {story.type === 'video' && story.videoUrl ? (
-                  <MediaPreview video src={story.videoUrl} poster={story.imageUrl} alt={story.title} className="relative h-72 w-full overflow-hidden bg-black" />
-                ) : story.imageUrl ? (
-                  <MediaPreview src={story.imageUrl} alt={story.title} className="h-72 w-full object-cover" />
-                ) : null}
-                <div className="pt-5">
-                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-accent-ink">{story.country} · {story.program}</span>
-                  <h3 className="mt-2 font-display text-2xl text-teal-deep">{story.title}</h3>
-                  {story.summary ? (
-                    <blockquote className="mt-2 font-display text-lg italic text-teal-deep">“{story.summary}”</blockquote>
-                  ) : null}
-                  <Link to={`/resources/stories/${story.slug}`} className="mt-4 inline-block text-xs font-bold uppercase tracking-[0.18em] text-teal-deep hover:text-accent-ink">
-                    {story.type === 'video' ? 'Watch full story' : 'Read'}
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
+          <StoryCarousel stories={featuredStories} />
         </div>
       </section>
         )

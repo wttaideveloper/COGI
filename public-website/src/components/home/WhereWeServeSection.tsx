@@ -37,7 +37,7 @@ export function WhereWeServeSection({ locations, activeCountry, onSelect, title,
 
   return (
     <section id="map" className="scroll-mt-28 bg-white py-9 md:py-12">
-      <div className="mx-auto max-w-3xl px-4">
+      <div className="mx-auto max-w-6xl px-4">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="font-display text-3xl font-semibold tracking-tight text-teal-deep md:text-5xl">
             {title}

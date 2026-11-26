@@ -1,7 +1,3 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { getLocations } from '@/api/locations'
-import { WhereWeServeSection } from '@/components/home/WhereWeServeSection'
 import { AboutHero } from '@/components/layout/AboutHero'
 import { SEO } from '@/components/ui/SEO'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
@@ -13,8 +9,6 @@ function scripturePills(value: string) {
 
 export function AboutPage() {
   const { copy } = useSiteConfig()
-  const { data: locations = [] } = useQuery({ queryKey: ['locations'], queryFn: getLocations })
-  const [activeCountry, setActiveCountry] = useState<string | null>(null)
   const defaults = defaultSiteCopy.about
   const page = copy.about
   const heroTitle = page.heroTitle?.trim() || defaults.heroTitle
@@ -47,7 +41,6 @@ export function AboutPage() {
         </section>
 
       </div>
-      <WhereWeServeSection locations={locations} activeCountry={activeCountry} onSelect={setActiveCountry} title={copy.homepage.mapTitle} subtitle={copy.homepage.mapSubtitle} />
     </>
   )
 }

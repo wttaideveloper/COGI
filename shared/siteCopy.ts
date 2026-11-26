@@ -118,6 +118,8 @@ export type SiteCopy = {
     faqs: Array<{ id: string; question: string; answer: string }>
   }
   resources: {
+    kogVideoUrl?: string
+    kogPosterUrl?: string
     exploreLabel: string
     heroTitle: string
     heroSubtitle: string
@@ -131,7 +133,7 @@ export type SiteCopy = {
     members: Array<{ id: string; name: string; title: string; country: string; bio: string; imageUrl?: string }>
   }
   globalTeam: PageHeroCopy & {
-    members: Array<{ id: string; name: string; title: string; region: string; country: string; bio: string; imageUrl?: string }>
+    members: Array<{ id: string; name: string; title: string; region: string; country: string; bio: string; responsibilities?: string; contribution?: string; imageUrl?: string }>
   }
   partners: PageHeroCopy
   storiesPage: PageHeroCopy
@@ -161,10 +163,10 @@ export const defaultSiteCopy: SiteCopy = {
     "newsletterBannerCta": "Watch stories",
     "legacyTitle": "Communities of Grace in healthcare",
     "legacyBody": "We are a global fellowship of Christ-followers cultivating Communities of Grace in healthcare by accompanying individuals and communities to develop a Kingdom perspective that shapes life, vocation, and service.",
-    "videoTitle": "Healthcare that reaches people",
-    "videoDescription": "Volunteer doctors and nurses bringing free care, medicine, and hope to families who often cannot reach a clinic.",
+    "videoTitle": "Meet Companions of Grace",
+    "videoDescription": "A glimpse of our community, our calling, and the people we serve.",
     "videoImageUrl": "/images/cogi-video-thumb.png",
-    "videoUrl": "https://www.youtube.com/watch?v=r6bd53UB7mk",
+    "videoUrl": "",
     "methodsTitle": "Our methods",
     "methodsSubtitle": "Companionship for a life of mission",
     "portfolioTitle": "What we do",
@@ -246,7 +248,7 @@ export const defaultSiteCopy: SiteCopy = {
   "beliefs": {
     "heroTitle": "Our beliefs",
     "heroSubtitle": "Essential convictions that underlie our mission and purpose",
-    "intro": "We subscribe to the central beliefs of the historic church.",
+    "intro": "We subscribe to the central beliefs of the Church.",
     "imageUrl": "/images/cogi-video-thumb.png",
     "items": [
       {
@@ -326,9 +328,9 @@ export const defaultSiteCopy: SiteCopy = {
     "heroSubtitle": "You may not be able to travel, but your gift can.",
     "intro": "Help faculty travel to equip healthcare workers. Your support brings training and companionship to communities and helps missional healthcare grow.",
     "imageUrl": "/images/cogi-give.png",
-    "giveTitle": "Send. Equip. Multiply.",
-    "giveBody": "Support faculty travel and training with a one-time or recurring gift.",
-    "giveCta": "Give today",
+    "giveTitle": "Buy Us a Coffee",
+    "giveBody": "Turn the cost of your next coffee into encouragement for someone who cares for others. Your gift helps COGI faculty travel, train, and walk alongside healthcare professionals. Give once or make it a monthly act of kindness—choose an amount that works for you.",
+    "giveCta": "Give a coffee-sized gift",
     "mailTitle": "Mail a check",
     "mailBody": "Companions of Grace International · Northern New Jersey, United States. Email info@coginternational.org for mailing details.",
     "stockTitle": "Donate stock or assets",
@@ -774,6 +776,7 @@ export function mergeSiteCopy(partial?: Partial<SiteCopy> | null): SiteCopy {
     beliefs: {
       ...d.beliefs,
       ...p.beliefs,
+      intro: p.beliefs?.intro === "We subscribe to the central beliefs of the historic church." ? d.beliefs.intro : p.beliefs?.intro || d.beliefs.intro,
       items: Array.isArray(p.beliefs?.items) ? p.beliefs!.items : d.beliefs.items,
     },
     getInvolved: {

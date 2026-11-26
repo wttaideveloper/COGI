@@ -1,3 +1,4 @@
+import { createEarthRenderer } from '@/lib/earthRenderer'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import type { Location } from '@/types'
@@ -22,7 +23,7 @@ function NationPanel({
   const { copy } = useSiteConfig()
   const team = copy.globalTeam.members.filter(member => member.country === selected.country)
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-3 md:flex-row md:items-start md:gap-8">
+    <div className="mx-auto flex max-w-3xl flex-col gap-3 md:items-start md:gap-8">
       <div className="min-w-0 flex-1 text-center md:text-left">
         <p className="text-xs font-bold uppercase tracking-[0.28em]" style={{ color: palette.light ? palette.pinDeep : palette.pinLight }}>
           {selected.region}
@@ -34,9 +35,10 @@ function NationPanel({
           {selected.summary}
         </p>
         {team.length > 0 && <div className="mt-4"><h4 className="font-semibold">Team</h4><p className="mt-1 text-sm">{team.map(member => member.name).join(' · ')}</p></div>}
-        {['Ghana', 'Tanzania', 'Uganda', 'Kenya'].includes(selected.country) && <p className="mt-3 text-sm">Local partner: CMF {selected.country}</p>}
+        <div className="mt-5"><h4 className="font-semibold">Partners</h4>{selected.partners?.length ? <ul className="mt-2 space-y-2 text-sm">{selected.partners.map(partner => <li key={partner}>{partner}</li>)}</ul> : <p className="mt-2 text-sm" style={{ color: palette.muted }}>Partner details coming soon.</p>}</div>
       </div>
       <div className="flex flex-col items-center gap-3 md:min-w-[13rem] md:items-end md:pt-5">
+        <h4 className="font-semibold">Active programs</h4>
         {selected.programs.length ? (
           <div className="flex flex-wrap justify-center gap-1.5 md:justify-end">
             {selected.programs.map((program) => (
@@ -53,7 +55,7 @@ function NationPanel({
               </span>
             ))}
           </div>
-        ) : null}
+        ) : <p className="text-sm">Program details coming soon.</p>}
         <button
           type="button"
           onClick={onClear}
@@ -82,46 +84,40 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   const selected = locations.find(loc => loc.country === activeCountry)
   const reduced = useReducedMotion()
   const [autoSpin, setAutoSpin] = useState(true)
-  const [hovered, setHovered] = useState(false)
   const [view, setView] = useState(initialView)
-  const [land, setLand] = useState<ReturnType<typeof surface>[]>([])
+  const [land, setLand] = useState<Uint8ClampedArray | null>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const renderer = useRef<ReturnType<typeof createEarthRenderer>>(null)
   const drag = useRef<{ x: number; y: number; lat: number; lng: number } | null>(null)
 
   useEffect(() => {
-    if (!autoSpin || reduced || hovered || activeCountry) return
+    if (!autoSpin || reduced) return
     const timer = window.setInterval(() => {
-      if (!drag.current) setView(current => ({ ...current, lng: (current.lng + 0.25) % 360 }))
+      if (!drag.current) setView(current => ({ ...current, lng: (current.lng + 0.75) % 360 }))
     }, 50)
     return () => window.clearInterval(timer)
-  }, [autoSpin, reduced, hovered, activeCountry])
+  }, [autoSpin, reduced])
 
   useEffect(() => {
     if (selected?.lat != null && selected.lng != null) setView({ lat: selected.lat, lng: selected.lng })
   }, [selected?.lat, selected?.lng])
 
   useEffect(() => {
+    if (canvas.current) renderer.current = createEarthRenderer(canvas.current)
     const image = new Image()
     image.onload = () => {
+      if (renderer.current) { renderer.current.setImage(image); return }
       const texture = document.createElement('canvas')
-      texture.width = 720
-      texture.height = 360
+      texture.width = 2048
+      texture.height = 1024
       const ctx = texture.getContext('2d')
       if (!ctx) return
-      ctx.drawImage(image, 0, 0, 720, 360)
-      const pixels = ctx.getImageData(0, 0, 720, 360).data
-      const points = []
-      for (let lat = -89; lat < 90; lat += 1.6) {
-        const step = 1.6 / Math.cos(lat * rad)
-        for (let lng = -180; lng < 180; lng += step) {
-          const index = Math.floor((90 - lat) * 2) * 720 + Math.floor((lng + 180) * 2)
-          if (pixels[index * 4 + 3] > 100) points.push(surface(lat, lng))
-        }
-      }
-      setLand(points)
+      ctx.drawImage(image, 0, 0, 2048, 1024)
+      const pixels = ctx.getImageData(0, 0, 2048, 1024).data
+      setLand(pixels)
     }
-    image.src = '/images/world-equirectangular.svg'
-    return () => { image.onload = null }
+    image.src = '/images/earth-blue-marble-hd.jpg'
+    return () => { image.onload = null; renderer.current?.destroy(); renderer.current = null }
   }, [])
 
   const project = useMemo(() => {
@@ -134,6 +130,7 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
   }, [view])
 
   useEffect(() => {
+    if (renderer.current) { renderer.current.draw(view); return }
     const ctx = canvas.current?.getContext('2d')
     if (!ctx) return
     ctx.clearRect(0, 0, 720, 720)
@@ -145,21 +142,43 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
     ctx.beginPath()
     ctx.arc(360, 360, 353, 0, 2 * Math.PI)
     ctx.fill()
-    ctx.fillStyle = palette.land
-    ctx.beginPath()
-    for (const point of land) {
-      const { x, y, z } = project(point)
-      if (z <= 0) continue
-      const px = 360 + x * 353, py = 360 - y * 353, size = 1.3 + z * 2.5
-      ctx.moveTo(px + size, py)
-      ctx.arc(px, py, size, 0, Math.PI * 2)
+    if (!land) return
+    // Inverse orthographic projection keeps coastlines solid as Earth rotates.
+    const raster = document.createElement('canvas')
+    raster.width = raster.height = 280
+    const rasterContext = raster.getContext('2d')
+    if (!rasterContext) return
+    const frame = rasterContext.createImageData(280, 280)
+    const a = view.lng * rad, b = view.lat * rad
+    for (let py = 0; py < 280; py++) for (let px = 0; px < 280; px++) {
+      const x = (px - 139.5) / 139, y = (139.5 - py) / 139
+      const square = x * x + y * y
+      if (square > 1) continue
+      const z = Math.sqrt(1 - square)
+      const worldY = Math.cos(b) * y + Math.sin(b) * z
+      const forward = -Math.sin(b) * y + Math.cos(b) * z
+      const worldX = Math.cos(a) * x + Math.sin(a) * forward
+      const worldZ = -Math.sin(a) * x + Math.cos(a) * forward
+      const lat = Math.asin(Math.max(-1, Math.min(1, worldY))) / rad
+      const lng = Math.atan2(worldX, worldZ) / rad
+      const tx = Math.min(2047, Math.max(0, Math.floor((lng + 180) / 360 * 2048)))
+      const ty = Math.min(1023, Math.max(0, Math.floor((90 - lat) / 180 * 1024)))
+      const pixel = (ty * 2048 + tx) * 4
+      const color = [land[pixel], land[pixel + 1], land[pixel + 2]]
+      const light = .6 + .55 * Math.max(0, -.3 * x + .3 * y + .85 * z)
+      const index = (py * 280 + px) * 4
+      frame.data[index] = color[0] * light
+      frame.data[index + 1] = color[1] * light
+      frame.data[index + 2] = color[2] * light
+      frame.data[index + 3] = 255
     }
-    ctx.fill()
-  }, [land, palette, project])
+    rasterContext.putImageData(frame, 0, 0)
+    ctx.drawImage(raster, 7, 7, 706, 706)
+  }, [land, palette, project, view])
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-mist-dark" style={{ background: palette.panel, color: palette.ink }}>
-      <div className="globe-environment" onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)} onFocus={() => setHovered(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setHovered(false) }}><div className="orbital-backdrop" aria-hidden="true"><i /><i /><i /></div><div className="mx-auto my-3 relative aspect-square w-[min(72%,18rem)]">
+    <div className="globe-layout overflow-hidden rounded-2xl border border-mist-dark" style={{ background: palette.panel, color: palette.ink }}>
+      <div className="globe-environment"><div className="earth-orb mx-auto my-6 relative aspect-square w-[min(85%,26rem)]">
         <canvas ref={canvas} width={720} height={720} aria-label="Rotatable world globe" tabIndex={0}
           className="h-full w-full cursor-grab touch-none rounded-full active:cursor-grabbing"
           onKeyDown={e => {
@@ -196,10 +215,11 @@ export function WorldMap({ locations, activeCountry, onSelect }: Props) {
       </div>
       </div><div className="relative flex flex-wrap items-center justify-center gap-4 px-4 pb-5 text-sm">
         <span>Rotate by dragging or using arrow keys.</span>
-        <button type="button" aria-pressed={autoSpin && !reduced} disabled={reduced} className="rounded-full border px-3 py-2 disabled:opacity-50" onClick={() => { onSelect(null); setAutoSpin(value => !value) }}>{autoSpin && !reduced ? 'Pause rotation' : 'Auto spin'}</button>
+        <button type="button" aria-pressed={autoSpin && !reduced} disabled={reduced} className="rounded-full border px-3 py-2 disabled:opacity-50" onClick={() => { setAutoSpin(value => !value) }}>{autoSpin && !reduced ? 'Pause rotation' : 'Auto spin'}</button>
         <button type="button" className="rounded-full border px-3 py-1" onClick={() => { onSelect(null); setView(initialView) }}>Reset view</button>
       </div>
-      {selected && <div className="border-t px-5 py-5" style={{ borderColor: palette.border }}>
+      <p className="earth-credit px-4 pb-4 text-center text-xs"><a href="https://svs.gsfc.nasa.gov/12564/" target="_blank" rel="noopener noreferrer">Earth imagery: NASA/GSFC · Reto Stöckli</a></p>
+      {selected && <div role="region" aria-label={`${selected.country} programs and partners`} className="globe-detail border-t px-5 py-5" style={{ borderColor: palette.border }}>
         <NationPanel selected={selected} palette={palette} onClear={() => onSelect(null)} />
       </div>}
     </div>

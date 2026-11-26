@@ -185,6 +185,7 @@ export interface BlogPost {
 }
 
 export interface Event {
+  imageUrl?: string
   id: string
   slug: string
   title: string
@@ -205,6 +206,7 @@ export interface Location {
   region: string
   summary: string
   programs: string[]
+  partners?: string[]
   lat?: number
   lng?: number
 }

@@ -17,6 +17,7 @@ export async function getLocations(): Promise<Location[]> {
       region: l.region || fallback?.region || '',
       summary: l.summary || fallback?.summary || '',
       programs: l.programs?.length ? l.programs : fallback?.programs ?? [],
+      partners: Array.isArray(l.partners) ? l.partners.filter((name): name is string => typeof name === 'string') : fallback?.partners ?? [],
       lat: l.lat ?? l.latitude ?? fallback?.lat,
       lng: l.lng ?? l.longitude ?? fallback?.lng,
     }

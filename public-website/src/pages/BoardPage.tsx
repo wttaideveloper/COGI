@@ -1,5 +1,4 @@
 import { AboutHero } from '@/components/layout/AboutHero'
-import { MediaPreview } from '@/components/ui/MediaPreview'
 import { useState } from 'react'
 import { SEO } from '@/components/ui/SEO'
 import { Card } from '@/components/ui/Card'
@@ -15,6 +14,18 @@ function initials(name: string) {
     .join('')
     .slice(0, 2)
     .toUpperCase()
+}
+
+function BoardPortrait({ name, src }: { name: string; src?: string }) {
+  const [failed, setFailed] = useState(false)
+  return src && !failed ? (
+    <img src={src} alt={name} onError={() => setFailed(true)} className="aspect-[4/5] w-full rounded-xl object-cover object-top" />
+  ) : (
+    <div className="flex aspect-[4/5] w-full flex-col items-center justify-center gap-3 rounded-xl bg-mist text-teal-deep">
+      <span aria-hidden="true" className="font-display text-4xl">{initials(name)}</span>
+      <span className="text-sm">Photograph coming soon</span>
+    </div>
+  )
 }
 
 export function BoardPage() {
@@ -34,13 +45,9 @@ export function BoardPage() {
             {members.map((member) => (
               <div key={member.id} className="text-left">
                 <Card className="h-full transition-shadow hover:shadow-md hover:border-gold/40">
-                  {member.imageUrl ? (
-                    <MediaPreview src={member.imageUrl} alt={member.name} className="mb-4 h-20 w-20 rounded-full object-cover" />
-                  ) : (
-                    <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-mist-dark bg-white text-2xl font-display font-bold text-accent-ink">
-                      {initials(member.name) || '—'}
-                    </div>
-                  )}
+                  <button type="button" onClick={() => setSelectedId(member.id)} className="mb-5 block w-full rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-4" aria-label={`Open photograph and profile for ${member.name}`}>
+                    <BoardPortrait key={member.imageUrl || member.id} name={member.name} src={member.imageUrl} />
+                  </button>
                   <h2 className="font-display text-xl text-teal-deep"><button type="button" onClick={() => setSelectedId(member.id)} className="text-left hover:underline" aria-label={`View profile for ${member.name}`}>{member.name}</button></h2>
                   <p className="text-sm font-semibold text-accent-ink">{member.title}</p>
                   {member.country ? <p className="mt-1 text-sm text-ink-muted">{member.country}</p> : null}
@@ -56,11 +63,12 @@ export function BoardPage() {
       </div>
       <Modal isOpen={!!selected} onClose={() => setSelectedId(null)} title={selected?.name ?? ''}>
         {selected ? (
-          <>
-            <p className="font-semibold text-accent-ink">{selected.title}</p>
+          <div className="grid gap-6 sm:grid-cols-[160px_1fr]">
+            <div className="mx-auto w-40 sm:mx-0"><BoardPortrait key={selected.imageUrl || selected.id} name={selected.name} src={selected.imageUrl} /></div>
+            <div><p className="font-semibold text-accent-ink">{selected.title}</p>
             {selected.country ? <p className="text-sm text-ink-muted">{selected.country}</p> : null}
-            <p className="mt-4 whitespace-pre-line leading-relaxed text-ink">{stripHtml(selected.bio)}</p>
-          </>
+            <p className="mt-4 whitespace-pre-line leading-relaxed text-ink">{stripHtml(selected.bio)}</p></div>
+          </div>
         ) : null}
       </Modal>
     </>

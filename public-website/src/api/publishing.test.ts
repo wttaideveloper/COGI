@@ -20,3 +20,13 @@ it('still provides fallback content when the backend is unavailable', async () =
   vi.mocked(fetchFromStrapi).mockResolvedValue(null)
   expect((await getPrograms()).length).toBeGreaterThan(0)
 })
+
+it('uses published country partners and respects an explicitly empty list', async () => {
+  vi.mocked(fetchFromStrapi).mockResolvedValue({ data: [
+    { id: 'kenya', country: 'Kenya', partners: ['Published partner'] },
+    { id: 'ghana', country: 'Ghana', partners: [] },
+  ] })
+  const locations = await getLocations()
+  expect(locations[0].partners).toEqual(['Published partner'])
+  expect(locations[1].partners).toEqual([])
+})

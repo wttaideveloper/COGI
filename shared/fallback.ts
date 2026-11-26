@@ -287,6 +287,7 @@ export const fallbackGlobalTeam: TeamMember[] = [
 ]
 
 export const fallbackPartners: Partner[] = [
+  { id: "emmanuel-hospital-association", name: "Emmanuel Hospital Association (EHA)", description: "", order: 13 },
   {
     "id": "capro",
     "name": "CAPRO",
@@ -559,6 +560,7 @@ export const fallbackLocations: Location[] = [
   {
     "id": "india",
     "country": "India",
+    "partners": ["Emmanuel Hospital Association (EHA)"],
     "lat": 20.6,
     "lng": 79,
     "programs": [
@@ -571,6 +573,7 @@ export const fallbackLocations: Location[] = [
   {
     "id": "uganda",
     "country": "Uganda",
+    "partners": ["CMF Uganda"],
     "lat": 1.37,
     "lng": 32.3,
     "programs": [
@@ -582,6 +585,7 @@ export const fallbackLocations: Location[] = [
   {
     "id": "kenya",
     "country": "Kenya",
+    "partners": ["CMF Kenya"],
     "lat": -0.02,
     "lng": 37.9,
     "programs": [
@@ -594,6 +598,7 @@ export const fallbackLocations: Location[] = [
   {
     "id": "tanzania",
     "country": "Tanzania",
+    "partners": ["CMF Tanzania"],
     "lat": -6.37,
     "lng": 34.9,
     "programs": [
@@ -616,6 +621,7 @@ export const fallbackLocations: Location[] = [
   {
     "id": "ghana",
     "country": "Ghana",
+    "partners": ["CMF Ghana"],
     "lat": 7.95,
     "lng": -1.02,
     "programs": [

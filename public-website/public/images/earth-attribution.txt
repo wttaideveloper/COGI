@@ -1,0 +1,6 @@
+earth-blue-marble.jpg
+NASA Blue Marble Next Generation, July 2004.
+Credit: NASA's Goddard Space Flight Center. Blue Marble data courtesy of Reto Stockli (NASA/GSFC).
+Source: https://svs.gsfc.nasa.gov/12564/
+Original: https://svs.gsfc.nasa.gov/vis/a010000/a012500/a012564/frames/5400x2700_2x1_60p/world.topo.2004-07.png
+Resized to 2048 x 1024 and encoded as JPEG for the website.

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getPrograms } from '@/api/programs'
 import { SEO } from '@/components/ui/SEO'
-import { PageHero, Card, Skeleton } from '@/components/ui/Card'
+import { PageHero, Skeleton } from '@/components/ui/Card'
 import { ButtonLink } from '@/components/ui/Button'
 import { useSiteConfig } from '@/contexts/SiteConfigContext'
 
@@ -19,9 +19,9 @@ export function ProgramsPage() {
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-56" />)}</div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2">
-            {programs?.map((program) => (
-              <Card key={program.id} as="article" className="flex flex-col">
+          <div className="program-editorial">
+            {programs?.map((program, index) => (
+              <article key={program.id} className="program-row"><span className="program-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><div>
                 <span className="text-xs font-semibold uppercase tracking-wide text-accent-ink">{program.area}</span>
                 <h2 className="mt-2 font-display text-2xl text-teal-deep">
                   <Link to={`/programs/${program.slug}`} className="hover:text-accent-ink">{program.title}</Link>
@@ -41,7 +41,7 @@ export function ProgramsPage() {
                   <ButtonLink to={`/programs/${program.slug}`} size="sm">{page.learnMore}</ButtonLink>
                   <ButtonLink to="/get-involved" variant="outline" size="sm">{page.expressInterest}</ButtonLink>
                 </div>
-              </Card>
+              </div></article>
             ))}
           </div>
         )}
