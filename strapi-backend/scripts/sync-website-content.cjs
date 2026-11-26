@@ -49,7 +49,7 @@ async function main() {
     for (const row of snapshot.content['/locations']) {
       await upsert('api::location.location', 'country', row.country, {
         country: row.country, slug: row.id, region: row.region,
-        summary: row.programs.join(' · '), programs: row.programs, latitude: row.lat, longitude: row.lng,
+        summary: row.programs.join(' · '), programs: row.programs, partners: row.partners || [], latitude: row.lat, longitude: row.lng,
       });
     }
 
